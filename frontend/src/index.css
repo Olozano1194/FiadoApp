@@ -15,7 +15,8 @@
     --color-surface-container-high: #dce9ff;
     --color-surface-variant: #404944;
     --color-bg: #f9f9ff;
-    --color-on-surface: #0b1c30;
+    --color-on-surface: #f9f9ff;
+    --color-on-surface-variant: #404944;
     --color-outline: #707974;
     --color-outline-variant: #bfc9c3;
     --color-text-primary: #003527;

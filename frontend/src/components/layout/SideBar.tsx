@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-// import { useAuth } from "../context/useAuth";
+import { useNavigate, Link } from "react-router-dom";
 // icons
-import { RiMenu3Line, RiCloseLine, RiLogoutCircleLine } from "react-icons/ri";
-// import SideBarUser from "./sideBar/SideBarUser";
-// import FormHeader from "./form/formTitle/FormHeader";
-//img
-// import Logo from "../../public/favicon-32x32.png";
+import { RiLogoutCircleLine, RiGroupLine } from "react-icons/ri";
+import { IoHomeOutline } from "react-icons/io5";
+import { MdOutlineInventory2, MdOutlinePointOfSale, MdOutlineAnalytics } from "react-icons/md";
+
+
 
 
 export interface SubMenuState {
@@ -19,27 +17,9 @@ export interface SubMenuState {
 
 const SideBar = () => {
     const navigate = useNavigate();
-    const [toggleMenu, setToggleMenu] = useState(false);
-    const [showSubMenu, setShowSubMenu] = useState<SubMenuState>({
-        menu1: false,
-        menu2: false,
-        menu3: false,
-        menu4: false,
-        menu5: false,
-    });
-    // const { user, logout } = useAuth();
+    // const [toggleMenu, setToggleMenu] = useState(false);      
 
-    //este useEfect es para obtener el rol del usuario
-    // const userRoles = user?.roles ?? [];
-    // const firstRole = userRoles[0] ?? "";
-
-    //Funcion para mostrar y ocultar los submenus
-    const handleToggleSubMenu = (submenu: keyof SubMenuState) => {
-        setShowSubMenu((prev) => ({
-            ...prev,
-            [submenu]: !prev[submenu],
-        }));
-    };
+ 
 
     // Esta función nos sirve para cerrar la sesión
     const handleLogOut = () => {
@@ -53,20 +33,50 @@ const SideBar = () => {
 
     return (
         <>
-            <div
-                className={`bg-slate-50  border-r border-slate-100 duration-200 ease-in-out fixed flex flex-col justify-between h-full px-3 py-6 top-0 transition-all w-64 z-50 md:w-[40%] lg:w-[35%] xl:w-auto xl:h-screen xl:static ${toggleMenu ? "left-0" : "-left-full"}`}
+            <aside
+                className={`bg-on-surface border-r border-outline-variant duration-200 ease-in-out fixed flex-col hidden justify-between h-full px-3 py-6 top-0 transition-all w-64 z-50 sm:flex md:w-[40%] lg:w-[35%] xl:w-auto xl:h-screen xl:static`}
             >
                 {/* Menu */}
                 <div>
                     {/* logo + Name gym */}
-                    <section className="flex flex-col gap-3 items-center mb-10 px-6">
+                    <section className="px-6 py-8">
                         {/* <FormHeader logo={Logo} title="ControlFit" highlight="Colombia" /> */}
-                        <h1 className="text-center text-2xl font-black text-dark mb-10">
-                            {}
-                            <span className="text-primary">.</span>
+                        <h1 className="leading-9 text-4xl font-bold text-text-primary">
+                            La Tiendita                            
                         </h1>
+                        <span className="font-semibold leading-6 text-[16px] text-surface-variant">Gestión de Negocio</span>
                     </section>
-                    <nav>                        
+                    <nav className="flex-1 px-2 space-y-1">
+                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                                <IoHomeOutline  />
+                            </span>                            
+                            Inicio
+                        </Link>
+                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                                <MdOutlineInventory2 />
+                            </span>                            
+                            Inventario
+                        </Link>
+                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                                <RiGroupLine />
+                            </span>                            
+                            Clientes/Fiados
+                        </Link>
+                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                                <MdOutlinePointOfSale />
+                            </span>                            
+                            Venta Rápida
+                        </Link>
+                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                                <MdOutlineAnalytics />
+                            </span>                            
+                            Reportes
+                        </Link>                        
                     </nav>
                 </div>
                 {/* Cerrar Sesión */}
@@ -78,18 +88,18 @@ const SideBar = () => {
                                 className="w-full flex items-center gap-3 py-2 px-4 rounded-lg hover:bg-slate-100 text-nav font-semibold transition-colors"
                             >
                                 <RiLogoutCircleLine className="text-primary" />
-                                Cerrar Sesión
+                                Cerrar Turno
                             </button>
                         </li>
                     </ul>
                 </nav>
-            </div>
-            <button
+            </aside>
+            {/* <button
                 onClick={() => setToggleMenu(!toggleMenu)}
                 className="cursor-pointer xl:hidden fixed bottom-4 right-4 bg-pulse-gradient text-white transition-transform p-3 rounded-full shadow-2xl z-50 hover:scale-110"
             >
                 {toggleMenu ? <RiCloseLine /> : <RiMenu3Line />}
-            </button>
+            </button> */}
         </>
     );
 };
