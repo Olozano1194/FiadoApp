@@ -1,94 +1,47 @@
-// import { useAuth } from "../../context/useAuth";
 // icons
-import { RiArrowDownSLine, RiSettings3Line, RiLogoutCircleRLine } from "react-icons/ri";
-//Enlaces
-import { Link, useNavigate } from "react-router-dom";
+import { CiSearch } from "react-icons/ci";
 //react-menu
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Menu } from '@headlessui/react';
 //Component
 import NotificationMenu from "../../components/headerNav/NotificationMenu";
 // logo
 import logo from "../../assets/logo.png"
 
 const NavHeader = () => {
-    const navigate = useNavigate();  
-    
-    // const { user, logout } = useAuth();
-
-    // Esta función nos sirve para cerrar la sesión    
-     const handleLogOut = () => {
-        // logout();
-        navigate('/');        
-    }
-
-    const defaultAvatar = "https://img.freepik.com/foto-gratis/feliz-optimista-guapo-gerente-ventas-latina-apuntando-lado-mirando-camara_1262-12679.jpg";
     
     return (
-        <nav className="flex items-center gap-x-2">
-            {/* Logo y nombre */}
+        <nav className="flex items-center justify-between gap-x-2 w-full">
+            {/* Logo y nombre - lado izquierdo */}
             <Menu>
-                <div className="flex gap-1 w-auto items-center">
+                <div className="flex gap-2 w-auto items-center">
                     <img
                         className="rounded-lg size-9 h-8 w-auto cursor-pointer"
                         src={logo}
                         alt="logo"
-                        // onClick={() => handleLogoClick(isHome, navigate)}
                     />
-                    <button
-                        // onClick={() => handleLogoClick(isHome, navigate)}
-                        className="font-bold text-xl tracking-tight text-text-primary cursor-pointer"
-                    >
+                    <button className="font-bold text-xl tracking-tight text-text-primary cursor-pointer">
                         FiadoApp
                     </button>
                 </div>
-            </Menu>            
-            {/* este seria el menu de las notificaciones */}
-            <Menu>                
-                <NotificationMenu />
             </Menu>
-            {/* aca comienza el menu desplegable del usuario */}
-            <Menu>
-                <MenuButton className="flex items-center gap-x-2 hover:bg-gray-100 p-2 rounded-lg transition-colors">
-                
-                <span className="text-title font-semibold"></span>
-                <RiArrowDownSLine className="text-2xl" />
-                </MenuButton>
-                <MenuItems anchor='bottom' className='bg-surface-container-lowest mt-1 p-4 rounded-lg'>
-                    <MenuItem as='div' className='p-0'>
-                            <Link to='#' className="rounded-lg transition-colors text-title hover:bg-gray-100 flex items-center gap-x-4 py-2 px-4">
-                                <img 
-                                    src={ defaultAvatar } alt="img-user"
-                                    className="w-10 h-10 object-cover rounded-full"
-                                />
-                                <div className="flex flex-col gap-1 text-sm">
-                                    <span className="font-semibold text-title text-sm"></span>
-                                    <span className="text-nav text-xm"></span>
-                                </div>
-                            </Link>
-                            
-                    </MenuItem>
-                    <hr className="my-4 border-nav/20" />
 
-                    <MenuItem as='div' className='p-0'>
-                            <Link to='/dashboard/profile' className="rounded-lg transition-colors text-nav hover:bg-gray-100 flex items-center gap-x-4 py-2 px-4 flex-1">
-                                <RiSettings3Line className="text-2xl text-primary" />
-                                Configuración                                                
-                            </Link>
-                            
-                    </MenuItem>
-                    <hr className="my-4 border-nav/20" />
-
-                    <MenuItem as='div' className='p-0'>
-                        <button
-                            onClick={handleLogOut}
-                            className="w-full rounded-lg transition-colors text-nav hover:bg-gray-100 flex items-centerr gap-x-4 py-2 px-4 flex-1">
-                            <RiLogoutCircleRLine className="text-xl text-primary" />
-                            Cerrar Sesión                                      
-                        </button>                            
-                    </MenuItem>
-                </MenuItems>                   
-            </Menu>
-        </nav>        
-    );    
+            {/* Buscador y notificaciones - lado derecho */}
+            <div className="flex items-center gap-4">
+                {/* Buscador */}
+                <div className="relative hidden sm:block">
+                    <CiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-outline size-5" />
+                    <input
+                        type="search"
+                        className="bg-surface-container-low border-none outline-none pl-10 pr-4 py-2 rounded-full text-xs w-64 focus:outline-none focus:ring-2 focus:ring-secondary md:text-sm"
+                        placeholder="Buscar producto o cliente..."
+                    />
+                </div>
+                {/* Menú de notificaciones */}
+                <Menu>
+                    <NotificationMenu />
+                </Menu>
+            </div>
+        </nav>
+    );
 }
 export default NavHeader;                    

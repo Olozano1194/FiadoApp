@@ -1,6 +1,6 @@
 import React from "react";
 //icons
-import { RiCloseLine, RiInformationLine, RiCheckLine, RiInboxLine } from 'react-icons/ri';
+import { RiInboxLine } from 'react-icons/ri';
 import { IoMdNotifications } from "react-icons/io";
 import { FaWhatsapp } from "react-icons/fa6";
 //Enlaces
@@ -14,8 +14,8 @@ const NotificationMenu = () => {
 
     return (
         <Menu>
-            <MenuButton className="border-r border-nav/30 cursor-pointer text-nav relative hover:text-title p-2 transition-colors">
-                <IoMdNotifications className="text-2xl" />                
+            <MenuButton className="cursor-pointer text-nav relative hover:text-title p-2 transition-colors">
+                <IoMdNotifications className="text-2xl text-surface-variant" />                
             </MenuButton>
             <MenuItems anchor='bottom end' className='bg-surface-container-lowest mt-1 p-4 rounded-lg max-h-[70vh] overflow-y-auto w-96'>
                 <div className="flex justify-between items-center mb-2">
@@ -54,8 +54,7 @@ const NotificationMenu = () => {
                                             Enviar mensaje por WhatsApp
                                         </a>                                   
                                 </div>
-                            </MenuItem>
-                            {<hr className="my-3 border-nav" />}
+                            </MenuItem>                            
                         </React.Fragment>                   
                 <hr className="my-3 border-nav/30" />
                 <MenuItem as='div' className='p-0 hover:bg-slate-100 flex justify-center cursor-default rounded-xl'>

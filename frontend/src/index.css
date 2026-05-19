@@ -11,12 +11,14 @@
     --color-primary-container: #2563eb;
     --color-secondary: #434655;
     --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #f0f3ff;
     --color-surface-container-high: #dce9ff;
+    --color-surface-variant: #404944;
     --color-bg: #f9f9ff;
     --color-on-surface: #0b1c30;
     --color-outline: #707974;
     --color-outline-variant: #bfc9c3;
-    --color-text-primary: #0284c7;
+    --color-text-primary: #003527;
     --color-nav: #64748b;
     --color-title: #0f172a;
     --color-tertiary: #006242;
