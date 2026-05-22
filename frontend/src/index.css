@@ -23,6 +23,8 @@
     --color-text-primary: #003527;
     --color-nav: #64748b;
     --color-title: #0f172a;
-    --color-tertiary: #006242;
+    --color-tertiary: #623c00;
+    --color-tertiary-container: #f69f0d;
     --color-text-error: #ba1a1a;
+    --color-error-container: #ffdad6;
 }
