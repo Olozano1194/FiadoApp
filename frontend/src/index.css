@@ -7,9 +7,10 @@
     --font-roboto: 'Roboto', sans-serif;
     --glass-bg: rgba(248, 249, 255, 0.8);
     --glass-blur: 24px;
-    --color-primary: #151c27;
+    --color-primary: #003527;
     --color-primary-container: #2563eb;
-    --color-secondary: #434655;
+    --color-secondary: #476c5b;
+    --color-secondary-container: #c3ecd7;
     --color-surface-container-lowest: #ffffff;
     --color-surface-container-low: #f0f3ff;
     --color-surface-container-high: #dce9ff;

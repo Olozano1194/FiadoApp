@@ -32,7 +32,7 @@ const NavHeader = () => {
                     <CiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-outline size-5" />
                     <input
                         type="search"
-                        className="bg-surface-container-low border-none outline-none pl-10 pr-4 py-2 rounded-full text-xs w-64 focus:outline-none focus:ring-2 focus:ring-secondary md:text-sm"
+                        className="bg-surface-container-low border-none outline-none pl-10 pr-4 py-2 rounded-full text-xs text-nav w-64 focus:outline-none focus:ring-2 focus:ring-secondary md:text-sm"
                         placeholder="Buscar producto o cliente..."
                     />
                 </div>
