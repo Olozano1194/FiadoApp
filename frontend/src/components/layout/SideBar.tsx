@@ -49,40 +49,40 @@ const SideBar = () => {
                     </section>
                     <nav className="flex-1 px-2 space-y-1">
                         {/* Inicio */}
-                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                        <Link to="/" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
                             <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
                                 <IoHomeOutline  />
                             </span>                            
                             Inicio
                         </Link>
                         {/* Inventario */}
-                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                        <Link to="/inventario" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
                             <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
                                 <MdOutlineInventory2 />
                             </span>                            
                             Inventario
                         </Link>
                         {/* Clientes/Fiados */}
-                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                        <Link to="/clientes" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
                             <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
                                 <RiGroupLine />
                             </span>                            
                             Clientes/Fiados
                         </Link>
                         {/* Venta Rápida */}
-                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                        <Link to="/ventas" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
                             <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
                                 <MdOutlinePointOfSale />
                             </span>                            
                             Venta Rápida
                         </Link>
-                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                        <Link to="/reportes" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
                             <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
                                 <MdOutlineAnalytics />
                             </span>                            
                             Reportes
                         </Link>
-                        <Link to="#" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
+                        <Link to="/ajustes" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
                             <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
                                 <CiSettings />
                             </span>                            
