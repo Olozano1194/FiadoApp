@@ -9,7 +9,8 @@ from decimal import Decimal
 from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment
 from .serializers import (
     CategorySerializer, ProductSerializer, ClientSerializer,
-    SaleSerializer, SaleItemSerializer, FiadoPaymentSerializer
+    SaleSerializer, SaleItemSerializer, FiadoPaymentSerializer,
+    SaleCreateSerializer
 )
 
 
@@ -44,6 +45,11 @@ class ClientViewSet(viewsets.ModelViewSet):
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return SaleCreateSerializer
+        return SaleSerializer
 
     @action(detail=False)
     def recent(self, request):
