@@ -1,4 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
 // icons
 import { RiLogoutCircleLine, RiGroupLine } from "react-icons/ri";
 import { IoHomeOutline } from "react-icons/io5";
@@ -24,8 +25,8 @@ const SideBar = () => {
 
     // Esta función nos sirve para cerrar la sesión
     const handleLogOut = () => {
-        // logout();
-        navigate("/");
+        useAuthStore.getState().logout();
+        navigate("/login");
     };
 
     //función para capitalizar
