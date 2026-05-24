@@ -57,14 +57,6 @@ const NotificationMenu = () => {
                             </MenuItem>                            
                         </React.Fragment>                   
                 <hr className="my-3 border-nav/30" />
-                <MenuItem as='div' className='p-0 hover:bg-slate-100 flex justify-center cursor-default rounded-xl'>
-                    <Link
-                        to="/dashboard/notifications"
-                        className="text-title text-sm hover:text-nav/80 transition-colors font-medium"
-                    >
-                        Ver todas las notificaciones
-                    </Link>
-                </MenuItem>
             </MenuItems>
         </Menu>
     );

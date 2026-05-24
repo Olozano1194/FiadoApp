@@ -172,7 +172,7 @@ const ClientsPage = () => {
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary"
+                  className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -182,7 +182,7 @@ const ClientsPage = () => {
                     type="text"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary"
+                    className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
                   />
                 </div>
                 <div>
@@ -191,7 +191,7 @@ const ClientsPage = () => {
                     type="email"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary"
+                    className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
                   />
                 </div>
               </div>
@@ -201,7 +201,7 @@ const ClientsPage = () => {
                   type="text"
                   value={formData.address}
                   onChange={e => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary"
+                  className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
                 />
               </div>
               <div>
@@ -212,7 +212,7 @@ const ClientsPage = () => {
                   required
                   value={formData.credit_limit}
                   onChange={e => setFormData({ ...formData, credit_limit: e.target.value })}
-                  className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary"
+                  className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
                 />
               </div>
               <div className="flex justify-end gap-3 pt-2">

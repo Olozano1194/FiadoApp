@@ -19,7 +19,7 @@ const Error404 = () => {
                     Lo sentimos, la página que estás buscando no existe.
                 </p>
                 <button 
-                    className='border-solid border-2 border-sky-600 rounded-lg p-3 text-white text-lg font-semibold bg-btn-primary hover:bg-btn-primary/90 hover:scale-110 cursor-pointer md:mt-3 lg:text-xl'
+                    className='border-solid border-2 border-sky-600 rounded-lg p-3 text-primary text-lg font-semibold bg-btn-primary hover:bg-btn-primary/90 hover:scale-110 cursor-pointer md:mt-3 lg:text-xl'
                     onClick={handleRedirect}
                 >
                     Regresar al inicio

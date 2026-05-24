@@ -1,3 +1,4 @@
+import React from 'react';
 //Enlaces
 import { Link } from "react-router-dom";
 //Mensajes
@@ -19,7 +20,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ id, editPath, onDelete, c
 
         try {
             await onDelete(id);
-            toast.success('Membresía Eliminada', {
+            toast.success('Eliminado correctamente', {
                 duration: 3000,
                 position: 'bottom-right',
                 style: {

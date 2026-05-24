@@ -78,7 +78,7 @@ const Table = <T,>({ data, columns, totalRow }: TableProps<T>) => {
                                 <tr key={row.id} className="group transition-colors hover:bg-nav/5">
                                     {
                                         row.getVisibleCells().map(cell => (
-                                            <td key={cell.id} className="px-2 py-4">{flexRender(cell.column.columnDef.cell, cell.getContext())
+                                            <td key={cell.id} className="px-2 py-4 text-outline">{flexRender(cell.column.columnDef.cell, cell.getContext())
                                             }</td>
                                         ))
                                     }
