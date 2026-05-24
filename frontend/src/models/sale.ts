@@ -1,5 +1,21 @@
+import type { Product } from './product';
+
 export type PaymentMethod = 'CASH' | 'CREDIT';
 export type SaleStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface SaleCreatePayload {
+  items: { product: number; quantity: number; unit_price: number }[];
+  payment_method: 'CASH' | 'CREDIT';
+  client?: number | null;
+  total: number;
+  status?: 'COMPLETED';
+}
 
 export interface Sale {
   id: number;
