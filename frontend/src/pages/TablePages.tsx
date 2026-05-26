@@ -7,7 +7,7 @@ import { IoIosAdd } from "react-icons/io";
 const TableSection = () => {
     return (
         <>
-        <section id="planes" className="grid grid-cols-1 gap-8 md:grid-cols-12">
+        <section id="planes" className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <section className="space-y-4 md:col-span-8">
                 <TablePage />
             </section>

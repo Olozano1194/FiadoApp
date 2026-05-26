@@ -15,13 +15,13 @@ const LowStockSection = () => {
 
   useEffect(() => {
     fetchLowStock();
-  }, []);
+  }, [fetchLowStock]);
 
   return (
-    <section className="space-y-4 md:col-span-4">
+    <section className="space-y-4 md:col-span-8 lg:col-span-4">
       <div className="flex items-center justify-between px-2">
         <h5 className="font-semibold text-primary text-lg md:text-xl">Stock Bajo</h5>
-        <span className="text-text-error text-xl"><MdOutlineInventory /></span>
+        <span className="text-text-error text-2xl"><MdOutlineInventory /></span>
       </div>
       <div className="space-y-3">
         {loading ? (

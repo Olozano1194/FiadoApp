@@ -41,7 +41,7 @@ export function PaginationSection({
                 <button
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-100 transition disabled:opacity-30"
+                    className="flex items-center justify-center w-10 h-10 rounded-lg border border-surface-container-high hover:bg-outline-variant transition text-primary disabled:opacity-30"
                 >
                     <FaChevronLeft />
                 </button>
@@ -51,13 +51,13 @@ export function PaginationSection({
                     <>
                         <button
                             onClick={() => onPageChange(1)}
-                            className="w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                            className="w-10 h-10 rounded-lg border border-surface-container-high hover:bg-outline-variant transition"
                         >
                             1
                         </button>
 
                         {start > 2 && (
-                            <span className="px-2 text-gray-400">...</span>
+                            <span className="px-2 text-surface-variant">...</span>
                         )}
                     </>
                 )}
@@ -68,8 +68,8 @@ export function PaginationSection({
                         key={page}
                         onClick={() => onPageChange(page)}
                         className={`w-10 h-10 rounded-lg border transition ${currentPage === page
-                                ? "bg-blue-500 text-white border-blue-500"
-                                : "border-gray-200 hover:bg-gray-100"
+                                ? "bg-secondary text-surface-container-high border-primary"
+                                : "border-surface-container-high text-primary hover:bg-outline-variant"
                             }`}
                     >
                         {page}
@@ -80,12 +80,12 @@ export function PaginationSection({
                 {end < totalPages && (
                     <>
                         {end < totalPages - 1 && (
-                            <span className="px-2 text-gray-400">...</span>
+                            <span className="px-2 text-surface-variant">...</span>
                         )}
 
                         <button
                             onClick={() => onPageChange(totalPages)}
-                            className="w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                            className="w-10 h-10 rounded-lg border border-surface-container-high hover:bg-outline-variant transition"
                         >
                             {totalPages}
                         </button>
@@ -96,7 +96,7 @@ export function PaginationSection({
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 hover:bg-gray-100 transition disabled:opacity-30"
+                    className="flex items-center justify-center w-10 h-10 rounded-lg border border-surface-container-high hover:bg-outline-variant transition text-primary disabled:opacity-30"
                 >
                     <FaChevronRight />
                 </button>

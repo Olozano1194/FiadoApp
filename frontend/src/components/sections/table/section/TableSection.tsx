@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
 import Table from '../../../layout/Table';
@@ -78,7 +79,11 @@ const TablePage = () => {
   ] as ColumnDef<RecentSale | TotalRow>[];
 
   return (
-    <main className="bg-surface-container-lowest w-full flex flex-col justify-center items-center gap-y-4 p-4 rounded-xl">
+    <main className="space-y-4 lg:col-span-8">
+      <div className='flex items-center justify-between'>
+        <h5 className='font-bold text-xl text-on-bg'>Ventas Recientes</h5>
+        <Link to='#' className='font-semibold text-lg text-primary hover:underline'>Ver todas</Link>
+      </div>
       {loading ? (
         <div className="text-center py-4 text-on-surface-variant">Cargando ventas...</div>
       ) : (
