@@ -15,11 +15,11 @@ interface TotalRow {
 }
 
 const TablePage = () => {
-  const { recentSales, loading, fetchRecentSales } = useSaleStore();
+  const { recentSales, loading, error, fetchRecentSales } = useSaleStore();
 
   useEffect(() => {
     fetchRecentSales();
-  }, []);
+  }, [fetchRecentSales]);
 
   const columnHelper = createColumnHelper<RecentSale | TotalRow>();
 
@@ -82,10 +82,27 @@ const TablePage = () => {
     <main className="space-y-4 lg:col-span-8">
       <div className='flex items-center justify-between'>
         <h5 className='font-bold text-xl text-on-bg'>Ventas Recientes</h5>
-        <Link to='#' className='font-semibold text-lg text-primary hover:underline'>Ver todas</Link>
+        <Link to='/ventas/historial' className='font-semibold text-lg text-primary hover:underline'>Ver todas</Link>
       </div>
       {loading ? (
-        <div className="text-center py-4 text-on-surface-variant">Cargando ventas...</div>
+        <div className="text-center py-8 text-on-surface-variant animate-pulse">
+          <div className="text-lg">Cargando ventas...</div>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 text-text-error">
+          <p className="text-lg font-medium">{error}</p>
+          <button
+            onClick={() => fetchRecentSales()}
+            className="mt-2 text-primary hover:underline cursor-pointer"
+          >
+            Intentar de nuevo
+          </button>
+        </div>
+      ) : recentSales.length === 0 ? (
+        <div className="text-center py-8 text-on-surface-variant">
+          <p className="text-lg">No hay ventas recientes</p>
+          <p className="text-sm mt-1">Las ventas completadas aparecerán aquí</p>
+        </div>
       ) : (
         <Table
           data={recentSales}

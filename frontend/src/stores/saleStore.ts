@@ -47,10 +47,13 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     }
   },
   fetchRecentSales: async (limit = 10) => {
+    set({ loading: true, error: null });
     try {
       const res = await salesApi.getRecentSales(limit);
-      set({ recentSales: res.data });
-    } catch { /* silent */ }
+      set({ recentSales: res.data, loading: false });
+    } catch {
+      set({ loading: false, error: 'Error al cargar ventas recientes' });
+    }
   },
   createSale: async (data) => {
     try {
