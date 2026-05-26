@@ -8,3 +8,11 @@ export interface Client {
   current_debt: string;
   created_at: string;
 }
+
+export interface ClientFormData {
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  credit_limit: string;  
+}
