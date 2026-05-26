@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, F
 from django.utils import timezone
 from datetime import timedelta
@@ -54,22 +55,48 @@ class SaleViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def recent(self, request):
         limit = int(request.query_params.get('limit', 10))
-        sales = Sale.objects.filter(status='COMPLETED').order_by('-created_at')[:limit]
-        serializer = self.get_serializer(sales, many=True)
+        sales = Sale.objects.filter(status='COMPLETED').select_related('client').order_by('-created_at')[:limit]
         data = []
-        for sale in serializer.data:
+        for sale in sales:
             data.append({
-                'id': sale['id'],
-                'cliente': sale.get('client_name', '—'),
-                'hora': timezone.localtime(sale['created_at']).strftime('%I:%M %p'),
+                'id': sale.id,
+                'cliente': sale.client.name if sale.client else '—',
+                'hora': timezone.localtime(sale.created_at).strftime('%I:%M %p'),
                 'estado': {
                     'COMPLETED': 'Completada',
                     'PENDING': 'Pendiente',
                     'CANCELLED': 'Cancelada'
-                }.get(sale['status'], sale['status']),
-                'total': f"{sale['total']:.2f}"
+                }.get(sale.status, sale.status),
+                'total': f"{sale.total:.2f}"
             })
         return Response(data)
+
+
+    @action(detail=False)
+    def history(self, request):
+        """Listado paginado de todas las ventas para el historial."""
+        paginator = PageNumberPagination()
+        paginator.page_size = 15
+        paginator.page_size_query_param = 'page_size'
+        paginator.max_page_size = 100
+        sales = Sale.objects.all().select_related('client').order_by('-created_at')
+        page = paginator.paginate_queryset(sales, request)
+        data = []
+        for sale in page:
+            data.append({
+                'id': sale.id,
+                'cliente': sale.client.name if sale.client else '—',
+                'fecha': timezone.localtime(sale.created_at).strftime('%d/%m/%Y'),
+                'hora': timezone.localtime(sale.created_at).strftime('%I:%M %p'),
+                'metodo_pago': 'Efectivo' if sale.payment_method == 'CASH' else 'Fiado',
+                'estado': {
+                    'COMPLETED': 'Completada',
+                    'PENDING': 'Pendiente',
+                    'CANCELLED': 'Cancelada'
+                }.get(sale.status, sale.status),
+                'total': f"{sale.total:.2f}"
+            })
+        return paginator.get_paginated_response(data)
 
 
 class FiadoPaymentViewSet(viewsets.ModelViewSet):
