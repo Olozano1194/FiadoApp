@@ -1,0 +1,146 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { getSalesHistory } from '../api/sales.api';
+import type { SaleHistoryItem } from '../models/sale';
+import { PaginationSection } from '../components/sections/table/section/PaginationSection';
+
+const PAGE_SIZE = 15;
+
+const SalesHistoryPage = () => {
+  const [sales, setSales] = useState<SaleHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchHistory = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getSalesHistory(page, PAGE_SIZE);
+      setSales(res.data.results);
+      setTotalPages(Math.max(1, Math.ceil(res.data.count / PAGE_SIZE)));
+    } catch {
+      setError('Error al cargar el historial de ventas');
+    } finally {
+      setLoading(false);
+    }
+  }, [page]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  const formatCurrency = (amount: number): string =>
+    new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+
+  const estadoBadge = (estado: string) => {
+    const styles: Record<string, string> = {
+      Completada: 'bg-green-100 text-green-800',
+      Pendiente: 'bg-yellow-100 text-yellow-800',
+      Cancelada: 'bg-red-100 text-red-800',
+    };
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${styles[estado] || 'bg-gray-100 text-gray-800'}`}>
+        {estado}
+      </span>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Encabezado */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-on-bg">Historial de Ventas</h2>
+          <p className="text-on-surface-variant text-sm">Todas las ventas registradas en el sistema</p>
+        </div>
+        <Link
+          to="/ventas"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-on-surface rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm"
+        >
+          + Nueva Venta
+        </Link>
+      </div>
+
+      {/* Tabla */}
+      <section className="border border-outline-variant/10 rounded-xl shadow-sm overflow-hidden bg-surface-container-lowest">
+        <div className="overflow-x-auto">
+          <table className="border-collapse text-left w-full">
+            <thead>
+              <tr className="bg-surface-container-lowest/50">
+                {['N°', 'Cliente', 'Fecha', 'Hora', 'Método de Pago', 'Estado', 'Total'].map((header) => (
+                  <th
+                    key={header}
+                    className="border-b border-outline-variant/10 font-black px-3 py-4 text-[11px] text-secondary tracking-widest uppercase"
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/10 text-sm lg:text-base">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-on-surface-variant animate-pulse">
+                    Cargando ventas...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12">
+                    <p className="text-text-error font-medium">{error}</p>
+                    <button
+                      onClick={() => { setPage(1); }}
+                      className="mt-2 text-primary hover:underline cursor-pointer"
+                    >
+                      Intentar de nuevo
+                    </button>
+                  </td>
+                </tr>
+              ) : sales.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-on-surface-variant">
+                    <p className="text-lg">No hay ventas registradas</p>
+                    <p className="text-sm mt-1">
+                      Las ventas aparecerán aquí una vez que realices tu primera venta
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                sales.map((sale, index) => (
+                  <tr key={sale.id} className="group transition-colors hover:bg-nav/5">
+                    <td className="px-3 py-4 text-outline">{(page - 1) * PAGE_SIZE + index + 1}</td>
+                    <td className="px-3 py-4 text-outline font-medium">{sale.cliente}</td>
+                    <td className="px-3 py-4 text-outline">{sale.fecha}</td>
+                    <td className="px-3 py-4 text-outline">{sale.hora}</td>
+                    <td className="px-3 py-4 text-outline">{sale.metodo_pago}</td>
+                    <td className="px-3 py-4">{estadoBadge(sale.estado)}</td>
+                    <td className="px-3 py-4 text-outline font-semibold">
+                      {formatCurrency(parseFloat(sale.total) || 0)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Paginación server-side */}
+      {!loading && !error && totalPages > 1 && (
+        <PaginationSection
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(p) => setPage(p)}
+        />
+      )}
+    </div>
+  );
+};
+export default SalesHistoryPage;
