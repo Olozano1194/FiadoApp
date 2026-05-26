@@ -27,8 +27,7 @@ const emptyForm: ProductFormData = {
 const ProductsPage = () => {
   const { products, loading, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductStore();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [categories, setCategories] = useState<Category[]>([]);
-  // const [formData, setFormData] = useState<ProductFormData>(emptyForm);
+  const [categories, setCategories] = useState<Category[]>([]); 
 
   const editId = searchParams.get('edit');
   const isCreate = searchParams.has('create');
@@ -42,26 +41,7 @@ const ProductsPage = () => {
   useEffect(() => {
     fetchProducts();
     categoriesApi.getCategories().then(res => setCategories(res.data));
-  }, []);
-
-  //   useEffect(() => {
-  //   if (editingProduct) {
-  //     setFormData({
-  //       name: editingProduct.name,
-  //       description: editingProduct.description || '',
-  //       price: editingProduct.price,
-  //       cost: editingProduct.cost || '',
-  //       stock: editingProduct.stock,
-  //       min_stock: editingProduct.min_stock,
-  //       category: editingProduct.category ?? null,
-  //       barcode: editingProduct.barcode || '',
-  //     });
-  //     return;
-  //   }
-  //   if (isCreate) {
-  //     setFormData(emptyForm);
-  //   }
-  // }, [editingProduct, isCreate]);
+  }, [fetchProducts]);
 
   const closeModal = () => setSearchParams({});
 
@@ -175,7 +155,7 @@ const ProductsPage = () => {
 
       {isModalOpen && (
         <ProductModal
-          key={editId ?? 'create'}              // 👈 esto es lo que resetea el form
+          key={editId ?? 'create'}              // esto es lo que resetea el form
           initialData={
             editingProduct
               ? {
