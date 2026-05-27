@@ -5,9 +5,9 @@ import {
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
-    getSortedRowModel    
+    getSortedRowModel
 } from '@tanstack/react-table';
-import type { ColumnDef, SortingState, Column} from '@tanstack/react-table';
+import type { ColumnDef, SortingState, Column } from '@tanstack/react-table';
 // Sections
 import { PaginationSection } from "../sections/table/section/PaginationSection";
 
@@ -20,7 +20,7 @@ interface TableProps<T> {
 
 
 const Table = <T,>({ data, columns, totalRow }: TableProps<T>) => {
-    //const [users, setUser] = useState([]);    
+    "use no memo";
     const [sorting, setSorting] = useState<SortingState>([]);
 
     const table = useReactTable({
@@ -88,13 +88,13 @@ const Table = <T,>({ data, columns, totalRow }: TableProps<T>) => {
                         {/* Fila del total que estará siempre al final */}
                         {totalRow && (
                             <tr
-                                className="bg-surface-container-high text-on-surface font-bold md:text-xl">
+                                className="bg-surface-container-high text-secondary font-bold md:text-xl">
                                 {table.getAllColumns().map((column) => {
                                     const accessorKey = column.id;
                                     const value = totalRow[accessorKey as keyof typeof totalRow] ?? '';
 
                                     return (
-                                        <td key={column.id} className="px-6 py-2">
+                                        <td key={column.id} className="px-2 py-2">
                                             {String(value)}
                                         </td>
                                     );
@@ -102,38 +102,7 @@ const Table = <T,>({ data, columns, totalRow }: TableProps<T>) => {
                             </tr>
                         )}
                     </tbody>
-                </table>
-                {/* contenedor de los btn de paginación */}
-                {/* <div className="w-full flex md:justify-center md:items-center gap-x-4 pt-4">
-                    <button
-                        onClick={() => table.setPageIndex(0)}
-                        disabled={!table.getCanPreviousPage()}
-                        className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:bg-gray-400 md:ml-0"
-                    >
-                        Primera Página
-                    </button>
-                    <button
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                        className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:bg-gray-400"
-                    >
-                        Página Anterior
-                    </button>
-                    <button
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                        className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:bg-gray-400"
-                    >
-                        Página Siguiente
-                    </button>
-                    <button
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                        disabled={!table.getCanNextPage()}
-                        className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:bg-gray-400"
-                    >
-                        Última Página
-                    </button>
-                </div> */}
+                </table>                
                 <PaginationSection
                     currentPage={table.getState().pagination.pageIndex + 1}
                     totalPages={table.getPageCount()}
