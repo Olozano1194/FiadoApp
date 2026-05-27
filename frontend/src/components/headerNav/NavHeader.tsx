@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useDeferredValue } from "react";
 import { useNavigate } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
 import { Menu } from '@headlessui/react';
@@ -14,16 +14,20 @@ const NavHeader = () => {
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
 
+  const deferredQuery = useDeferredValue(query);
+
   useEffect(() => {
-    if (!query.trim()) {
-      setResults(null);
-      setShowDropdown(false);
-      return;
+    if (!deferredQuery.trim()) {
+      const timer = setTimeout(() => {
+        setResults(null);
+        setShowDropdown(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const timer = setTimeout(async () => {
       try {
-        const res = await searchAll(query);
+        const res = await searchAll(deferredQuery);
         setResults(res.data);
         setShowDropdown(true);
       } catch {
@@ -32,7 +36,7 @@ const NavHeader = () => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [deferredQuery]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -112,7 +116,7 @@ const NavHeader = () => {
                     <button
                       key={`c-${c.id}`}
                       onClick={() => handleSelect("clients", c.id)}
-                      className="w-full text-left px-3 py-2 text-sm text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-sm text-on-surface-variant/50 hover:bg-surface-container-high transition-colors cursor-pointer"
                     >
                       {c.name}
                     </button>

@@ -80,5 +80,4 @@ const SaleReceipt = () => {
     </div>
   );
 };
-
 export default SaleReceipt;

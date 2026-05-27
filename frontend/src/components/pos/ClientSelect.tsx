@@ -24,7 +24,7 @@ const ClientSelect = ({ isOpen, onClose }: ClientSelectProps) => {
 
   useEffect(() => {
     if (isOpen) fetchClients();
-  }, [isOpen]);
+  }, [isOpen, fetchClients]);
 
   const filtered = query
     ? clients.filter(c =>

@@ -17,7 +17,7 @@ const CardsSection = () => {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   if (loading && !stats) {
     return (

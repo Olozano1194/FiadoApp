@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useProductStore } from '../../stores/productStore';
 import { useSaleStore } from '../../stores/saleStore';
-import type { Product } from '../../models/product';
+
 
 const formatCurrency = (amount: number | string): string => {
   return new Intl.NumberFormat('es-CO', {
@@ -15,14 +15,14 @@ const formatCurrency = (amount: number | string): string => {
 const ProductSearch = () => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>| undefined>(undefined);
   const { products, fetchProducts } = useProductStore();
   const addToCart = useSaleStore(s => s.addToCart);
   const cart = useSaleStore(s => s.cart);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -102,5 +102,4 @@ const ProductSearch = () => {
     </div>
   );
 };
-
 export default ProductSearch;
