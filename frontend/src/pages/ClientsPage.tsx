@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -7,10 +7,13 @@ import ActionButtons from '../components/sections/table/ActionButton';
 import { useClientStore } from '../stores/clientStore';
 import type { Client } from '../models/client';
 import { toast } from 'react-hot-toast';
+import { CiSearch } from 'react-icons/ci';
 // Modals
 import ClientsModal from '../components/ui/ClientsModal';
 // Models
 import type { ClientFormData } from '../models/client';
+// components
+import SumaryBentoSection from '../components/sections/clients/SumaryBentoSection';
 
 const defaultForm: ClientFormData = {
   name: '',
@@ -34,23 +37,21 @@ const ClientsPage = () => {
     }, [clients, editId]);
   const isModalOpen = !!(editId || isCreate);
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredClients = useMemo(() => {
+    if (!searchQuery.trim()) return clients;
+    const q = searchQuery.toLowerCase();
+    return clients.filter(
+      client =>
+        client.name.toLowerCase().includes(q) ||
+        client.phone?.toLowerCase().includes(q)
+    );
+  }, [clients, searchQuery]);
+
   useEffect(() => {
     fetchClients();
   }, [fetchClients]);
-
-  // useEffect(() => {
-  //   if (editingClient) {
-  //     setFormData({
-  //       name: editingClient.name,
-  //       phone: editingClient.phone || '',
-  //       email: editingClient.email || '',
-  //       address: editingClient.address || '',
-  //       credit_limit: editingClient.credit_limit,
-  //     });
-  //   } else if (isCreate) {
-  //     setFormData({ ...defaultForm });
-  //   }
-  // }, [editId, isCreate, editingClient]);
 
   const closeModal = () => setSearchParams({});
 
@@ -93,7 +94,7 @@ const ClientsPage = () => {
 
   const columnHelper = createColumnHelper<Client>();
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.display({
       id: 'index',
       header: 'N°',
@@ -143,10 +144,11 @@ const ClientsPage = () => {
         />
       ),
     }),
-  ] as ColumnDef<Client>[];
+  ] as ColumnDef<Client>[], []);
 
   return (
     <div className="space-y-6">
+      <SumaryBentoSection />
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-text-primary">Clientes / Fiados</h1>
         <button
@@ -157,12 +159,23 @@ const ClientsPage = () => {
         </button>
       </div>
 
+      <div className="relative w-full sm:w-80">
+        <CiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-outline size-5" />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="bg-surface-container-low border-none outline-none pl-10 pr-4 py-2 rounded-full text-xs text-outline w-full focus:outline-none focus:ring-2 focus:ring-secondary md:text-sm"
+          placeholder="Buscar cliente..."
+        />
+      </div>
+
       {loading ? (
         <div className="bg-surface-container-lowest w-full flex flex-col justify-center items-center p-8 rounded-xl">
           <p className="text-on-surface-variant">Cargando clientes...</p>
         </div>
       ) : (
-        <Table data={clients} columns={columns} />
+        <Table data={filteredClients} columns={columns} />
       )}
 
       {isModalOpen && (
