@@ -84,7 +84,7 @@ const ProductsPage = () => {
 
   const columnHelper = createColumnHelper<Product>();
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.display({
       id: 'index',
       header: 'N°',
@@ -110,7 +110,7 @@ const ProductsPage = () => {
     columnHelper.accessor('stock', {
       header: 'Stock',
       cell: info => (
-        <span className={info.getValue() <= info.row.original.min_stock ? 'text-text-error font-bold' : ''}>
+        <span className={info.row.original.is_low_stock ? 'text-text-error font-bold' : ''}>
           {info.getValue()} uni.
         </span>
       ),
@@ -131,7 +131,7 @@ const ProductsPage = () => {
         />
       ),
     }),
-  ] as ColumnDef<Product>[];
+  ] as ColumnDef<Product>[], []);
 
   return (
     <div className="space-y-6">

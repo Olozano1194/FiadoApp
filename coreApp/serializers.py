@@ -21,10 +21,14 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
+    is_low_stock = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_is_low_stock(self, obj):
+        return obj.stock < obj.min_stock
 
 
 class ClientSerializer(serializers.ModelSerializer):

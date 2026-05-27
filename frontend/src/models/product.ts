@@ -8,6 +8,7 @@ export interface Product {
   min_stock: number;
   category?: number;
   category_name?: string;
+  is_low_stock?: boolean;
   barcode?: string;
   image?: string;
   created_at: string;
