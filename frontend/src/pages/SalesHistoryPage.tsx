@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getSalesHistory } from '../api/sales.api';
 import type { SaleHistoryItem } from '../models/sale';
@@ -12,24 +12,34 @@ const SalesHistoryPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  const fetchHistory = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await getSalesHistory(page, PAGE_SIZE);
-      setSales(res.data.results);
-      setTotalPages(Math.max(1, Math.ceil(res.data.count / PAGE_SIZE)));
-    } catch {
-      setError('Error al cargar el historial de ventas');
-    } finally {
-      setLoading(false);
-    }
-  }, [page]);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
+    cancelledRef.current = false;
+
+    const fetchHistory = async () => {
+      try {
+        const res = await getSalesHistory(page, PAGE_SIZE);
+        if (cancelledRef.current) return;
+        setSales(res.data.results);
+        setTotalPages(Math.max(1, Math.ceil(res.data.count / PAGE_SIZE)));
+        setError(null);
+      } catch {
+        if (cancelledRef.current) return;
+        setError('Error al cargar el historial de ventas');
+      } finally {
+        if (!cancelledRef.current) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchHistory();
-  }, [fetchHistory]);
+
+    return () => {
+      cancelledRef.current = true;
+    };
+  }, [page]);
 
   const formatCurrency = (amount: number): string =>
     new Intl.NumberFormat('es-CO', {
