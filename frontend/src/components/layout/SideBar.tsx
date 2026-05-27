@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 // icons
 import { RiLogoutCircleLine, RiGroupLine } from "react-icons/ri";
@@ -19,6 +19,10 @@ export interface SubMenuState {
 
 const SideBar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isActive = (path: string) => location.pathname === path;
+
     // const [toggleMenu, setToggleMenu] = useState(false);      
 
  
@@ -50,41 +54,41 @@ const SideBar = () => {
                     </section>
                     <nav className="flex-1 px-2 space-y-1">
                         {/* Inicio */}
-                        <Link to="/" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
-                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                        <Link to="/" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/') ? ' text-text-primary' : ''}`}>
                                 <IoHomeOutline  />
                             </span>                            
                             Inicio
                         </Link>
                         {/* Inventario */}
-                        <Link to="/inventario" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
-                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                        <Link to="/inventario" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/inventario') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/inventario') ? ' text-text-primary' : ''}`}>
                                 <MdOutlineInventory2 />
                             </span>                            
                             Inventario
                         </Link>
                         {/* Clientes/Fiados */}
-                        <Link to="/clientes" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
-                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                        <Link to="/clientes" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/clientes') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/clientes') ? ' text-text-primary' : ''}`}>
                                 <RiGroupLine />
                             </span>                            
                             Clientes/Fiados
                         </Link>
                         {/* Venta Rápida */}
-                        <Link to="/ventas" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
-                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                        <Link to="/ventas" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/ventas') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/ventas') ? ' text-text-primary' : ''}`}>
                                 <MdOutlinePointOfSale />
                             </span>                            
                             Venta Rápida
                         </Link>
-                        <Link to="/reportes" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
-                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                        <Link to="/reportes" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/reportes') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/reportes') ? ' text-text-primary' : ''}`}>
                                 <MdOutlineAnalytics />
                             </span>                            
                             Reportes
                         </Link>
-                        <Link to="/ajustes" className="flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high">
-                            <span className="font-black group-hover:text-text-primary mr-3 text-outline text-lg">
+                        <Link to="/ajustes" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/ajustes') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/ajustes') ? ' text-text-primary' : ''}`}>
                                 <CiSettings />
                             </span>                            
                             Ajustes
