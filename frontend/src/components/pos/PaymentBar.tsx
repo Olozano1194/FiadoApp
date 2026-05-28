@@ -121,5 +121,4 @@ const PaymentBar = () => {
     </>
   );
 };
-
 export default PaymentBar;
