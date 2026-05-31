@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MdOutlineInventory } from "react-icons/md";
 import { useProductStore } from "../../../../stores/productStore";
+import StockOrderModal from "../../../ui/StockOrderModal";
 
 const placeholderColors = [
   "bg-primary",
@@ -12,6 +13,7 @@ const placeholderColors = [
 
 const LowStockSection = () => {
   const { lowStockProducts, loading, fetchLowStock } = useProductStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLowStock();
@@ -49,10 +51,14 @@ const LowStockSection = () => {
             </article>
           ))
         )}
-        <button className="border border-dashed border-outline-variant cursor-pointer font-semibold py-3 rounded-xl text-outline-variant transition-colors w-full hover:bg-surface-container-high">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="border border-dashed border-outline-variant cursor-pointer font-semibold py-3 rounded-xl text-outline-variant transition-colors w-full hover:bg-surface-container-high"
+        >
           Generar pedido de stock
         </button>
       </div>
+      <StockOrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 };
