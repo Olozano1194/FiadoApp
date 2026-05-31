@@ -53,7 +53,7 @@ const ClientSelect = ({ isOpen, onClose }: ClientSelectProps) => {
           placeholder="Buscar por nombre o teléfono..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full bg-surface text-on-surface border border-surface-border rounded-lg px-4 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-secondary outline-none"
+          className="w-full bg-surface text-outline border border-surface-border rounded-lg px-4 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-secondary outline-none"
           autoFocus
         />
         <div className="flex-1 overflow-y-auto space-y-2">
@@ -80,12 +80,12 @@ const ClientSelect = ({ isOpen, onClose }: ClientSelectProps) => {
                 </div>
                 <div className="flex justify-between items-center mt-1">
                   {debt > 0 && (
-                    <span className={`text-sm ${isOverLimit ? 'text-error font-bold' : 'text-warning'}`}>
+                    <span className={`text-sm text-outline ${isOverLimit ? 'text-text-error font-bold' : 'text-error-container'}`}>
                       Deuda: {formatCurrency(debt)}
                     </span>
                   )}
                   {limit > 0 && (
-                    <span className={`text-xs ${isOverLimit ? 'text-error' : 'text-on-surface-variant'}`}>
+                    <span className={`text-xs text-outline ${isOverLimit ? 'text-text-error' : 'text-on-surface-variant'}`}>
                       Límite: {formatCurrency(limit)}
                     </span>
                   )}

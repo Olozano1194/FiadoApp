@@ -100,7 +100,7 @@ const NavHeader = () => {
                     <button
                       key={`p-${p.id}`}
                       onClick={() => handleSelect("products", p.id)}
-                      className="w-full text-left px-3 py-2 text-sm text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-sm text-on-surface-variant/50 hover:bg-surface-container-high transition-colors cursor-pointer"
                     >
                       {p.name}
                     </button>
