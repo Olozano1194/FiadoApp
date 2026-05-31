@@ -1,11 +1,11 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, F
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from decimal import Decimal
 from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment
 from .serializers import (
@@ -103,19 +103,47 @@ class FiadoPaymentViewSet(viewsets.ModelViewSet):
     queryset = FiadoPayment.objects.all()
     serializer_class = FiadoPaymentSerializer
 
+    def perform_create(self, serializer):
+        payment = serializer.save()
+        if payment.client:
+            client = payment.client
+            client.current_debt -= payment.amount
+            if client.current_debt < Decimal('0.00'):
+                client.current_debt = Decimal('0.00')
+            client.save(update_fields=['current_debt'])
+
+    @action(detail=False)
+    def today(self, request):
+        today = timezone.localdate()
+        today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+        today_end = today_start + timedelta(days=1)
+        payments = FiadoPayment.objects.filter(
+            date__range=(today_start, today_end)
+        )
+        total = payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        return Response({
+            'total': f"{total:.2f}",
+            'count': payments.count(),
+        })
+
 
 class DashboardStatsView(APIView):
     def get(self, request):
         today = timezone.localdate()
         yesterday = today - timedelta(days=1)
 
+        today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+        today_end = today_start + timedelta(days=1)
+        yesterday_start = timezone.make_aware(datetime.combine(yesterday, datetime.min.time()))
+        yesterday_end = yesterday_start + timedelta(days=1)
+
         ventas_hoy = Sale.objects.filter(
-            created_at__date=today,
+            created_at__range=(today_start, today_end),
             status='COMPLETED'
         ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
 
         ventas_ayer = Sale.objects.filter(
-            created_at__date=yesterday,
+            created_at__range=(yesterday_start, yesterday_end),
             status='COMPLETED'
         ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
 
