@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { IoIosTrendingUp } from "react-icons/io";
 import { GoCheckCircle } from "react-icons/go";
 import { useClientStore } from "../../../stores/clientStore";
+import { getTodayPayments } from "../../../api/fiado-payments.api";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("es-CO", {
@@ -23,6 +25,19 @@ const SkeletonCard = () => (
 
 const SumaryBentoSection = () => {
   const { clients, loading } = useClientStore();
+  const [todayTotal, setTodayTotal] = useState("0.00");
+  const [todayCount, setTodayCount] = useState(0);
+  const [todayLoading, setTodayLoading] = useState(true);
+
+  useEffect(() => {
+    getTodayPayments()
+      .then(res => {
+        setTodayTotal(res.data.total);
+        setTodayCount(res.data.count);
+      })
+      .catch(() => {})
+      .finally(() => setTodayLoading(false));
+  }, []);
 
   const totalDebt = clients.reduce(
     (sum, client) => sum + parseFloat(client.current_debt || "0"),
@@ -83,14 +98,18 @@ const SumaryBentoSection = () => {
           <p className="font-bold text-lg text-outline tracking-wider uppercase">
             Cobros de hoy
           </p>
-          <h3 className="font-semibold mt-2 text-2xl text-primary">$0</h3>
+          <h3 className="font-semibold mt-2 text-2xl text-primary">
+            {todayLoading ? "..." : formatCurrency(parseFloat(todayTotal))}
+          </h3>
         </div>
         <div className="bg-white/40 flex items-center mt-4 px-2 py-1 rounded-md self-start text-secondary-container">
           <span className="text-[16px] mr-1 text-secondary">
             <GoCheckCircle />
           </span>
           <span className="font-medium text-sm text-secondary">
-            Próximamente
+            {todayCount === 0
+              ? "Sin cobros registrados hoy"
+              : `${todayCount} ${todayCount === 1 ? "pago" : "pagos"} registrado${todayCount !== 1 ? "s" : ""} hoy`}
           </span>
         </div>
       </article>

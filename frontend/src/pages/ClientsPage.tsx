@@ -8,8 +8,10 @@ import { useClientStore } from '../stores/clientStore';
 import type { Client } from '../models/client';
 import { toast } from 'react-hot-toast';
 import { CiSearch } from 'react-icons/ci';
+import { MdOutlinePayments } from 'react-icons/md';
 // Modals
 import ClientsModal from '../components/ui/ClientsModal';
+import PaymentModal from '../components/ui/PaymentModal';
 // Models
 import type { ClientFormData } from '../models/client';
 // components
@@ -38,6 +40,7 @@ const ClientsPage = () => {
   const isModalOpen = !!(editId || isCreate);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [payingClient, setPayingClient] = useState<Client | null>(null);
 
   const filteredClients = useMemo(() => {
     if (!searchQuery.trim()) return clients;
@@ -135,14 +138,28 @@ const ClientsPage = () => {
     columnHelper.display({
       id: 'acciones',
       header: 'Acciones',
-      cell: info => (
-        <ActionButtons
-          id={info.row.original.id}
-          editPath={`?edit=${info.row.original.id}`}
-          onDelete={handleDelete}
-          confirmMessage="¿Estás seguro de eliminar este cliente?"
-        />
-      ),
+      cell: info => {
+        const debt = parseFloat(info.row.original.current_debt) || 0;
+        return (
+          <div className="flex items-center gap-2">
+            {debt > 0 && (
+              <button
+                onClick={() => setPayingClient(info.row.original)}
+                className="text-green-600 text-lg p-2 rounded-md hover:scale-110 cursor-pointer"
+                title="Registrar pago"
+              >
+                <MdOutlinePayments />
+              </button>
+            )}
+            <ActionButtons
+              id={info.row.original.id}
+              editPath={`?edit=${info.row.original.id}`}
+              onDelete={handleDelete}
+              confirmMessage="¿Estás seguro de eliminar este cliente?"
+            />
+          </div>
+        );
+      },
     }),
   ] as ColumnDef<Client>[], []);
 
@@ -195,6 +212,23 @@ const ClientsPage = () => {
           isEditing={!!editingClient}
           onSubmit={handleSubmit}
           onClose={closeModal}
+        />
+      )}
+
+      {payingClient && (
+        <PaymentModal
+          key={payingClient.id}
+          client={payingClient}
+          onClose={() => setPayingClient(null)}
+          onSuccess={() => {
+            setPayingClient(null);
+            fetchClients();
+            toast.success('Pago registrado correctamente', {
+              duration: 3000,
+              position: 'bottom-right',
+              style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+            });
+          }}
         />
       )}
     </div>
