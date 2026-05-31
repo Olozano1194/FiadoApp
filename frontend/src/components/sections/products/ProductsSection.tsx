@@ -13,9 +13,10 @@ const formatCurrency = (amount: number | string): string => {
 
 interface ProductsSectionProps {
     query: string;
+    categoryId?: number | null;
 }
 
-const ProductsSection = ({ query }: ProductsSectionProps) => {
+const ProductsSection = ({ query, categoryId }: ProductsSectionProps) => {
     const { products, fetchProducts } = useProductStore();
     const addToCart = useSaleStore(s => s.addToCart);
     const cart = useSaleStore(s => s.cart);
@@ -25,11 +26,12 @@ const ProductsSection = ({ query }: ProductsSectionProps) => {
         fetchProducts();
     }, [fetchProducts]);
 
-    const filtered = deferredQuery
-        ? products.filter(p =>
-            p.name.toLowerCase().includes(deferredQuery.toLowerCase())
-        )
-        : products;
+    const filtered = products.filter(p => {
+        const matchesQuery = !deferredQuery ||
+            p.name.toLowerCase().includes(deferredQuery.toLowerCase());
+        const matchesCategory = !categoryId || p.category === categoryId;
+        return matchesQuery && matchesCategory;
+    });
 
     const getItemQtyInCart = (productId: number) => {
         const item = cart.find(i => i.product.id === productId);

@@ -1,4 +1,6 @@
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { useEffect, useState } from 'react';
+import type { Category } from '../../../models/category';
+import { getCategories } from '../../../api/categories.api';
 // Components
 import ProductsSection from "./ProductsSection";
 
@@ -7,32 +9,43 @@ interface CategoryFilterSectionProps {
 }
 
 const CategoryFilterSection = ({ query }: CategoryFilterSectionProps) => {
-  return (
-    <TabGroup>
-      <TabList className="flex gap-2 lg:justify-end">
-        <Tab className="bg-surface-container-high cursor-pointer font-medium px-4 py-2 rounded-full text-on-surface-variant transition-colors hover:bg-surface-container data-selected:text-on-surface data-selected:bg-primary-container/60">
-          Todo
-        </Tab>
-        <Tab className="bg-surface-container-high cursor-pointer font-medium px-4 py-2 rounded-full text-on-surface-variant transition-colors hover:bg-surface-container data-selected:text-on-surface data-selected:bg-primary-container/60">
-          Bebidas
-        </Tab>
-        <Tab className="bg-surface-container-high cursor-pointer font-medium px-4 py-2 rounded-full text-on-surface-variant transition-colors hover:bg-surface-container data-selected:text-on-surface data-selected:bg-primary-container/60">
-          Snacks
-        </Tab>
-      </TabList>
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
-      <TabPanels>
-        <TabPanel className="mt-8">
-          <ProductsSection query={query} />
-        </TabPanel>
-        <TabPanel className="w-full flex justify-center items-center mt-8 text-2xl text-violet-950 font-bold">
-          Tipos
-        </TabPanel>
-        <TabPanel className="w-full flex justify-center items-center mt-8 text-2xl text-violet-950 font-bold">            
-          Filtros
-        </TabPanel>
-      </TabPanels>
-    </TabGroup>
+  useEffect(() => {
+    getCategories()
+      .then(res => setCategories(res.data))
+      .catch(() => {});
+  }, []);
+
+  const btnBase = "cursor-pointer font-medium px-4 py-2 rounded-full transition-colors";
+  const btnActive = "bg-primary-container/60 text-on-surface";
+  const btnInactive = "bg-surface-container-high text-on-surface-variant hover:bg-surface-container";
+
+  return (
+    <div>
+      <div className="flex gap-2 lg:justify-end flex-wrap">
+        <button
+          onClick={() => setSelectedCategoryId(null)}
+          className={`${btnBase} ${selectedCategoryId === null ? btnActive : btnInactive}`}
+        >
+          Todo
+        </button>
+        {categories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategoryId(cat.id)}
+            className={`${btnBase} ${selectedCategoryId === cat.id ? btnActive : btnInactive}`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <ProductsSection query={query} categoryId={selectedCategoryId} />
+      </div>
+    </div>
   );
 };
 export default CategoryFilterSection;
