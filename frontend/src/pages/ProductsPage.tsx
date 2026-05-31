@@ -22,6 +22,7 @@ const emptyForm: ProductFormData = {
   min_stock: 0,
   category: null,
   barcode: '',
+  image: '',
 };
 
 const ProductsPage = () => {
@@ -92,7 +93,24 @@ const ProductsPage = () => {
     }),
     columnHelper.accessor('name', {
       header: 'Nombre',
-      cell: info => info.getValue(),
+      cell: info => (
+        <div className="flex items-center gap-3">
+          {info.row.original.image ? (
+            <img
+              src={info.row.original.image}
+              alt={info.getValue()}
+              className="w-10 h-10 rounded-lg object-cover shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <span className="text-xs text-on-surface-variant font-bold">
+                {info.getValue().charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="truncate">{info.getValue()}</span>
+        </div>
+      ),
     }),
     columnHelper.accessor('category_name', {
       id: 'category_name',
@@ -167,6 +185,7 @@ const ProductsPage = () => {
                 min_stock: editingProduct.min_stock,
                 category: editingProduct.category ?? null,
                 barcode: editingProduct.barcode || '',
+                image: editingProduct.image || '',
               }
               : emptyForm
           }

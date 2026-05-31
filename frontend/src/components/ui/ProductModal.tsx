@@ -111,6 +111,33 @@ const ProductModal = ({ initialData, isEditing, categories, onSubmit, onClose }:
                   className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-on-surface-variant mb-1">URL de Imagen</label>
+                <div className="flex gap-3 items-start">
+                  <div className="flex-1">
+                    <input
+                      type="url"
+                      value={formData.image || ''}
+                      onChange={e => setFormData({ ...formData, image: e.target.value })}
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                      className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
+                    />
+                  </div>
+                  {formData.image && (
+                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-outline-variant">
+                      <img
+                        src={formData.image}
+                        alt="preview"
+                        className="w-full h-full object-cover"
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Pegá una URL de internet o dejalo vacío si no tenés imagen
+                </p>
+              </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-on-surface-variant font-semibold hover:opacity-80 cursor-pointer">
               Cancelar
