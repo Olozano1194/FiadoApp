@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { ProductFormData } from "../../models/product";
 import type { Category } from "../../models/category";
 
@@ -11,7 +11,31 @@ interface ProductModalProps {
 }
 
 const ProductModal = ({ initialData, isEditing, categories, onSubmit, onClose }: ProductModalProps) => {
-  const [formData, setFormData ] = useState<ProductFormData>(initialData);
+  const [formData, setFormData] = useState<ProductFormData>(initialData);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (formData.image instanceof File) {
+      const url = URL.createObjectURL(formData.image);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setPreviewUrl(formData.image || null);
+  }, [formData.image]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, image: '' });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,31 +136,39 @@ const ProductModal = ({ initialData, isEditing, categories, onSubmit, onClose }:
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-on-surface-variant mb-1">URL de Imagen</label>
+                <label className="block text-sm font-medium text-on-surface-variant mb-1">Imagen del Producto</label>
                 <div className="flex gap-3 items-start">
                   <div className="flex-1">
                     <input
-                      type="url"
-                      value={formData.image || ''}
-                      onChange={e => setFormData({ ...formData, image: e.target.value })}
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                      className="w-full bg-surface-container-low border-none outline-none rounded-lg px-3 py-2 text-sm text-outline focus:ring-2 focus:ring-secondary"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-on-surface hover:file:opacity-90 cursor-pointer file:cursor-pointer"
                     />
+                    {!formData.image && (
+                      <p className="text-xs text-on-surface-variant mt-1">
+                        Seleccioná una imagen del producto (opcional)
+                      </p>
+                    )}
                   </div>
-                  {formData.image && (
-                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-outline-variant">
+                  {previewUrl && (
+                    <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-outline-variant group">
                       <img
-                        src={formData.image}
+                        src={previewUrl}
                         alt="preview"
                         className="w-full h-full object-cover"
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold"
+                      >
+                        Quitar
+                      </button>
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-on-surface-variant mt-1">
-                  Pegá una URL de internet o dejalo vacío si no tenés imagen
-                </p>
               </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-on-surface-variant font-semibold hover:opacity-80 cursor-pointer">

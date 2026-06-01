@@ -24,5 +24,5 @@ export interface ProductFormData {
   min_stock: number;
   category?: number | null;
   barcode?: string;
-  image?: string;
+  image?: string | File;
 }

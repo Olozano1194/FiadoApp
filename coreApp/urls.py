@@ -1,4 +1,6 @@
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
@@ -42,4 +44,4 @@ urlpatterns = [
     path('api/export/clients/', ExportClientsView.as_view(), name='export-clients'),
     path('api/export/products/', ExportProductsView.as_view(), name='export-products'),
     path('api/export/sales/', ExportSalesView.as_view(), name='export-sales'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

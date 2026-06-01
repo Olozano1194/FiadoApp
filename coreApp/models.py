@@ -24,7 +24,7 @@ class Product(models.Model):
         Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products'
     )
     barcode = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    image = models.URLField(max_length=500, null=True, blank=True)
+    image = models.ImageField(upload_to='productos/', max_length=500, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
