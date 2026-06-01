@@ -1,4 +1,3 @@
-import csv
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -391,64 +390,122 @@ class ChangePasswordView(APIView):
         return Response({'detail': 'Contraseña actualizada correctamente'})
 
 
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, numbers
+
+
+def _build_xlsx_response(filename: str, headers: list[str], rows: list[list]):
+    """Helper que construye un XLSX estilizado y devuelve un HttpResponse."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Datos"
+
+    # ── Estilos ──────────────────────────────────────────
+    header_font = Font(name="Calibri", bold=True, color="FFFFFF", size=11)
+    header_fill = PatternFill(start_color="2563EB", end_color="2563EB", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    cell_font = Font(name="Calibri", size=11)
+    cell_alignment = Alignment(vertical="center")
+    thin_border = Border(
+        left=Side(style="thin", color="D1D5DB"),
+        right=Side(style="thin", color="D1D5DB"),
+        top=Side(style="thin", color="D1D5DB"),
+        bottom=Side(style="thin", color="D1D5DB"),
+    )
+
+    # ── Header ─────────────────────────────────────────
+    for col_idx, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_idx, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = thin_border
+
+    # ── Filas ──────────────────────────────────────────
+    for row_idx, row_data in enumerate(rows, 2):
+        for col_idx, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.font = cell_font
+            cell.alignment = cell_alignment
+            cell.border = thin_border
+
+    # ── Ancho automático (con un límite razonable) ─────
+    for col_cells in ws.columns:
+        max_len = 0
+        col_letter = col_cells[0].column_letter
+        for cell in col_cells:
+            try:
+                length = len(str(cell.value or ""))
+                if length > max_len:
+                    max_len = length
+            except Exception:
+                pass
+        ws.column_dimensions[col_letter].width = min(max_len + 3, 50)
+
+    # ── Freeze pane ────────────────────────────────────
+    ws.freeze_panes = "A2"
+
+    # ── Response ───────────────────────────────────────
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response
+
+
 class ExportClientsView(APIView):
     def get(self, request):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="clientes.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['ID', 'Nombre', 'Teléfono', 'Email', 'Dirección',
-                         'Límite de Crédito', 'Deuda Actual', 'Creado'])
-
-        for c in Client.objects.all():
-            writer.writerow([
-                c.id, c.name, c.phone or '', c.email or '', c.address or '',
-                str(c.credit_limit), str(c.current_debt),
-                c.created_at.strftime('%d/%m/%Y') if c.created_at else ''
-            ])
-
-        return response
+        headers = [
+            "ID", "Nombre", "Teléfono", "Email", "Dirección",
+            "Límite de Crédito", "Deuda Actual", "Creado",
+        ]
+        rows = [
+            [
+                c.id, c.name, c.phone or "", c.email or "", c.address or "",
+                c.credit_limit, c.current_debt,
+                c.created_at.strftime("%d/%m/%Y") if c.created_at else "",
+            ]
+            for c in Client.objects.all()
+        ]
+        return _build_xlsx_response("clientes.xlsx", headers, rows)
 
 
 class ExportProductsView(APIView):
     def get(self, request):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="productos.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['ID', 'Nombre', 'Categoría', 'Precio', 'Costo',
-                         'Stock', 'Stock Mínimo', 'Código de Barras', 'Creado'])
-
-        for p in Product.objects.select_related('category').all():
-            writer.writerow([
-                p.id, p.name, p.category.name if p.category else '',
-                str(p.price), str(p.cost), p.stock, p.min_stock,
-                p.barcode or '',
-                p.created_at.strftime('%d/%m/%Y') if p.created_at else ''
-            ])
-
-        return response
+        headers = [
+            "ID", "Nombre", "Categoría", "Precio", "Costo",
+            "Stock", "Stock Mínimo", "Código de Barras", "Creado",
+        ]
+        rows = [
+            [
+                p.id, p.name, p.category.name if p.category else "",
+                p.price, p.cost, p.stock, p.min_stock,
+                p.barcode or "",
+                p.created_at.strftime("%d/%m/%Y") if p.created_at else "",
+            ]
+            for p in Product.objects.select_related("category").all()
+        ]
+        return _build_xlsx_response("productos.xlsx", headers, rows)
 
 
 class ExportSalesView(APIView):
     def get(self, request):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="ventas.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['ID', 'Cliente', 'Fecha', 'Hora', 'Método de Pago',
-                         'Estado', 'Total', 'Notas'])
-
-        for s in Sale.objects.select_related('client').all():
-            writer.writerow([
+        headers = [
+            "ID", "Cliente", "Fecha", "Hora", "Método de Pago",
+            "Estado", "Total", "Notas",
+        ]
+        rows = [
+            [
                 s.id,
-                s.client.name if s.client else '—',
-                timezone.localtime(s.created_at).strftime('%d/%m/%Y'),
-                timezone.localtime(s.created_at).strftime('%I:%M %p'),
-                'Efectivo' if s.payment_method == 'CASH' else 'Fiado',
+                s.client.name if s.client else "—",
+                timezone.localtime(s.created_at).strftime("%d/%m/%Y"),
+                timezone.localtime(s.created_at).strftime("%I:%M %p"),
+                "Efectivo" if s.payment_method == "CASH" else "Fiado",
                 dict(Sale.Status.choices).get(s.status, s.status),
-                str(s.total),
-                s.notes or ''
-            ])
-
-        return response
+                s.total,
+                s.notes or "",
+            ]
+            for s in Sale.objects.select_related("client").all()
+        ]
+        return _build_xlsx_response("ventas.xlsx", headers, rows)

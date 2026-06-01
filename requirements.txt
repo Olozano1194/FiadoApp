@@ -8,3 +8,4 @@ mysqlclient
 dj-database-url==2.3.0
 python-dotenv==1.0.1
 djangorestframework-simplejwt==5.5.0
+openpyxl==3.1.5

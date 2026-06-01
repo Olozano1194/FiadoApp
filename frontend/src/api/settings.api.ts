@@ -21,15 +21,15 @@ const triggerDownload = (data: Blob, filename: string) => {
 
 export const exportClients = async () => {
   const response = await api.get('/export/clients/', { responseType: 'blob' });
-  triggerDownload(response.data, 'clientes.csv');
+  triggerDownload(response.data, 'clientes.xlsx');
 };
 
 export const exportProducts = async () => {
   const response = await api.get('/export/products/', { responseType: 'blob' });
-  triggerDownload(response.data, 'productos.csv');
+  triggerDownload(response.data, 'productos.xlsx');
 };
 
 export const exportSales = async () => {
   const response = await api.get('/export/sales/', { responseType: 'blob' });
-  triggerDownload(response.data, 'ventas.csv');
+  triggerDownload(response.data, 'ventas.xlsx');
 };
