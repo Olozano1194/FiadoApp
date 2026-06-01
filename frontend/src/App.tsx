@@ -8,8 +8,8 @@ import ProductsPage from "./pages/ProductsPage";
 import ClientsPage from "./pages/ClientsPage";
 import PosPage from "./pages/PosPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
+import ReportPage from "./pages/ReportPage";
 
-const ReportsPage = () => <div className="p-8 text-center text-on-surface-variant"><h2 className="text-2xl font-bold">Reportes</h2><p className="mt-2">Próximamente</p></div>;
 const SettingsPage = () => <div className="p-8 text-center text-on-surface-variant"><h2 className="text-2xl font-bold">Ajustes</h2><p className="mt-2">Próximamente</p></div>;
 
 const App = () => {
@@ -23,7 +23,7 @@ const App = () => {
           <Route path="clientes" element={<ClientsPage />} />
           <Route path="ventas/historial" element={<SalesHistoryPage />} />
           <Route path="ventas" element={<PosPage />} />
-          <Route path="reportes" element={<ReportsPage />} />
+          <Route path="reportes" element={<ReportPage />} />
           <Route path="ajustes" element={<SettingsPage />} />
         </Route>
       </Route>
