@@ -1,3 +1,4 @@
+from collections import Counter
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -73,17 +74,19 @@ class SaleCreateSerializer(serializers.ModelSerializer):
             products = Product.objects.select_for_update().filter(id__in=product_ids)
             product_map = {p.id: p for p in products}
 
-            for item in items_data:
-                product_id = item['product'].id
+            # Validar stock contra cantidad TOTAL por producto
+            # (evita bypass si el mismo producto se agrega 2 veces al carrito)
+            product_counts = Counter(item['product'].id for item in items_data)
+            for product_id, total_qty in product_counts.items():
                 product = product_map.get(product_id)
                 if not product:
                     raise serializers.ValidationError(
                         {'items': f"Product {product_id} not found"}
                     )
-                if product.stock < item['quantity']:
+                if product.stock < total_qty:
                     raise serializers.ValidationError(
                         {'items': f"Insufficient stock for {product.name}: "
-                                  f"{product.stock} available, {item['quantity']} requested"}
+                                  f"{product.stock} available, {total_qty} requested"}
                     )
 
             for item in items_data:
