@@ -37,30 +37,18 @@ export const useProductStore = create<ProductStore>((set) => ({
     }
   },
   createProduct: async (data) => {
-    try {
-      await productsApi.createProduct(data);
-      const res = await productsApi.getProducts();
-      set({ products: res.data });
-    } catch {
-      // error handled by axios interceptor
-    }
+    await productsApi.createProduct(data);
+    const res = await productsApi.getProducts();
+    set({ products: res.data });
   },
   updateProduct: async (id, data) => {
-    try {
-      await productsApi.updateProduct(id, data);
-      const res = await productsApi.getProducts();
-      set({ products: res.data });
-    } catch {
-      // error handled by axios interceptor
-    }
+    await productsApi.updateProduct(id, data);
+    const res = await productsApi.getProducts();
+    set({ products: res.data });
   },
   deleteProduct: async (id) => {
-    try {
-      await productsApi.deleteProduct(id);
-      const res = await productsApi.getProducts();
-      set({ products: res.data });
-    } catch {
-      // error handled by axios interceptor
-    }
+    await productsApi.deleteProduct(id);
+    const res = await productsApi.getProducts();
+    set({ products: res.data });
   },
 }));

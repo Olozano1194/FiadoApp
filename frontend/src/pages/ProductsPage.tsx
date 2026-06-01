@@ -64,9 +64,12 @@ const ProductsPage = () => {
         });
       }
       closeModal();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al guardar';
-      toast.error(errorMessage);
+    } catch (error: any) {
+      const detail = error?.response?.data?.detail
+        || Object.values(error?.response?.data || {}).flat().join(', ')
+        || error?.message
+        || 'Error al guardar';
+      toast.error(detail);
     }
   };
 
