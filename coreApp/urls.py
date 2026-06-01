@@ -6,7 +6,8 @@ from coreApp.serializers import CustomTokenObtainPairSerializer
 from coreApp.views import (
     CategoryViewSet, ProductViewSet, ClientViewSet,
     SaleViewSet, FiadoPaymentViewSet,
-    DashboardStatsView, SearchView
+    DashboardStatsView, SearchView,
+    ReportStatsView, RecentActivityView
 )
 
 #api versioning
@@ -33,4 +34,6 @@ urlpatterns = [
     path('api/token/verify/', token_verify_view, name='token_verify'),
     path('api/dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
     path('api/search/', SearchView.as_view(), name='search'),
+    path('api/reports/stats/', ReportStatsView.as_view(), name='reports-stats'),
+    path('api/reports/recent-activity/', RecentActivityView.as_view(), name='reports-recent-activity'),
 ]
