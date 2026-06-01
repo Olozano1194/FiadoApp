@@ -9,8 +9,7 @@ import ClientsPage from "./pages/ClientsPage";
 import PosPage from "./pages/PosPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
 import ReportPage from "./pages/ReportPage";
-
-const SettingsPage = () => <div className="p-8 text-center text-on-surface-variant"><h2 className="text-2xl font-bold">Ajustes</h2><p className="mt-2">Próximamente</p></div>;
+import SettingsPage from "./pages/SettingsPage";
 
 const App = () => {
   return (
