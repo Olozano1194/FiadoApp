@@ -1,9 +1,12 @@
+import csv
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum, F
+from django.http import HttpResponse
 from django.utils import timezone
 from datetime import timedelta, datetime
 from decimal import Decimal
@@ -354,3 +357,98 @@ class RecentActivityView(APIView):
             del item['_sort']
 
         return Response(combined)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        if not old_password or not new_password:
+            return Response(
+                {'detail': 'old_password y new_password son requeridos'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.check_password(old_password):
+            return Response(
+                {'detail': 'La contraseña actual no es correcta'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(new_password) < 8:
+            return Response(
+                {'detail': 'La nueva contraseña debe tener al menos 8 caracteres'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({'detail': 'Contraseña actualizada correctamente'})
+
+
+class ExportClientsView(APIView):
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="clientes.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Nombre', 'Teléfono', 'Email', 'Dirección',
+                         'Límite de Crédito', 'Deuda Actual', 'Creado'])
+
+        for c in Client.objects.all():
+            writer.writerow([
+                c.id, c.name, c.phone or '', c.email or '', c.address or '',
+                str(c.credit_limit), str(c.current_debt),
+                c.created_at.strftime('%d/%m/%Y') if c.created_at else ''
+            ])
+
+        return response
+
+
+class ExportProductsView(APIView):
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="productos.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Nombre', 'Categoría', 'Precio', 'Costo',
+                         'Stock', 'Stock Mínimo', 'Código de Barras', 'Creado'])
+
+        for p in Product.objects.select_related('category').all():
+            writer.writerow([
+                p.id, p.name, p.category.name if p.category else '',
+                str(p.price), str(p.cost), p.stock, p.min_stock,
+                p.barcode or '',
+                p.created_at.strftime('%d/%m/%Y') if p.created_at else ''
+            ])
+
+        return response
+
+
+class ExportSalesView(APIView):
+    def get(self, request):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="ventas.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Cliente', 'Fecha', 'Hora', 'Método de Pago',
+                         'Estado', 'Total', 'Notas'])
+
+        for s in Sale.objects.select_related('client').all():
+            writer.writerow([
+                s.id,
+                s.client.name if s.client else '—',
+                timezone.localtime(s.created_at).strftime('%d/%m/%Y'),
+                timezone.localtime(s.created_at).strftime('%I:%M %p'),
+                'Efectivo' if s.payment_method == 'CASH' else 'Fiado',
+                dict(Sale.Status.choices).get(s.status, s.status),
+                str(s.total),
+                s.notes or ''
+            ])
+
+        return response

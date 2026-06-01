@@ -7,7 +7,9 @@ from coreApp.views import (
     CategoryViewSet, ProductViewSet, ClientViewSet,
     SaleViewSet, FiadoPaymentViewSet,
     DashboardStatsView, SearchView,
-    ReportStatsView, RecentActivityView
+    ReportStatsView, RecentActivityView,
+    ChangePasswordView, ExportClientsView,
+    ExportProductsView, ExportSalesView
 )
 
 #api versioning
@@ -36,4 +38,8 @@ urlpatterns = [
     path('api/search/', SearchView.as_view(), name='search'),
     path('api/reports/stats/', ReportStatsView.as_view(), name='reports-stats'),
     path('api/reports/recent-activity/', RecentActivityView.as_view(), name='reports-recent-activity'),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('api/export/clients/', ExportClientsView.as_view(), name='export-clients'),
+    path('api/export/products/', ExportProductsView.as_view(), name='export-products'),
+    path('api/export/sales/', ExportSalesView.as_view(), name='export-sales'),
 ]
