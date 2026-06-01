@@ -58,7 +58,11 @@ const ClientSelect = ({ isOpen, onClose }: ClientSelectProps) => {
         />
         <div className="flex-1 overflow-y-auto space-y-2">
           <button
-            onClick={() => handleSelect({ id: 0, name: 'Consumidor Final', phone: '', email: '', address: '', credit_limit: '0', current_debt: '0', created_at: '' } as Client)}
+            onClick={() => {
+              setSelectedClient(null);
+              onClose();
+              setQuery('');
+            }}
             className="w-full bg-surface rounded-lg p-3 text-left hover:bg-surface-alt transition-colors cursor-pointer border border-surface-border"
           >
             <span className="font-medium text-text-primary">Consumidor Final</span>
