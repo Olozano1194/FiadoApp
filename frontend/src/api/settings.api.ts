@@ -1,6 +1,12 @@
 import api from './axios.config';
 
-export const changePassword = async (oldPassword: string, newPassword: string) => {
+export const changePassword = async ({
+  oldPassword,
+  newPassword,
+}: {
+  oldPassword: string;
+  newPassword: string;
+}) => {
   const response = await api.post('/change-password/', {
     old_password: oldPassword,
     new_password: newPassword,
