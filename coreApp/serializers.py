@@ -27,6 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at',)
 
     def get_is_low_stock(self, obj):
         return obj.stock < obj.min_stock
@@ -36,6 +37,7 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = '__all__'
+        read_only_fields = ('current_debt',)
 
 
 class SaleItemSerializer(serializers.ModelSerializer):
@@ -104,6 +106,13 @@ class SaleCreateSerializer(serializers.ModelSerializer):
 
             if sale.payment_method == 'CREDIT' and sale.client:
                 client = sale.client
+                if client.current_debt + sale.total > client.credit_limit:
+                    raise serializers.ValidationError(
+                        f"El cliente ha excedido su límite de crédito. "
+                        f"Deuda actual: {client.current_debt}, "
+                        f"Límite: {client.credit_limit}, "
+                        f"Total venta: {sale.total}"
+                    )
                 client.current_debt += sale.total
                 client.save(update_fields=['current_debt'])
 
@@ -114,3 +123,4 @@ class FiadoPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = FiadoPayment
         fields = '__all__'
+        read_only_fields = ('date',)

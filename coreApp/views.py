@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import serializers, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -110,6 +110,11 @@ class FiadoPaymentViewSet(viewsets.ModelViewSet):
         payment = serializer.save()
         if payment.client:
             client = payment.client
+            if payment.amount > client.current_debt:
+                payment.delete()
+                raise serializers.ValidationError(
+                    f"El pago ({payment.amount}) no puede exceder la deuda actual ({client.current_debt})"
+                )
             client.current_debt -= payment.amount
             if client.current_debt < Decimal('0.00'):
                 client.current_debt = Decimal('0.00')
