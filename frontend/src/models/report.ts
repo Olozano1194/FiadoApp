@@ -25,6 +25,7 @@ export interface TopProduct {
   name: string;
   units_sold: number;
   revenue: number;
+  image?: string;
 }
 
 export interface ReportStats {

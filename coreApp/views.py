@@ -274,13 +274,24 @@ class ReportStatsView(APIView):
 
         top_product = SaleItem.objects.filter(
             sale__in=week_sales
-        ).values('product__name').annotate(
+        ).values('product').annotate(
             units_sold=Sum('quantity'),
             revenue=Sum('subtotal')
         ).order_by('-units_sold').first()
 
         fiado_total = Client.objects.aggregate(total=Sum('current_debt'))['total'] or Decimal('0.00')
         fiado_client_count = Client.objects.filter(current_debt__gt=0).count()
+
+        if top_product:
+            product = Product.objects.get(id=top_product['product'])
+            top_product_data = {
+                'name': product.name,
+                'units_sold': top_product['units_sold'],
+                'revenue': float(top_product['revenue']),
+                'image': request.build_absolute_uri(product.image.url) if product.image else None,
+            }
+        else:
+            top_product_data = None
 
         return Response({
             'week_days': week_days,
@@ -293,11 +304,7 @@ class ReportStatsView(APIView):
                 'total': float(fiado_total),
                 'client_count': fiado_client_count,
             },
-            'top_product': {
-                'name': top_product['product__name'],
-                'units_sold': top_product['units_sold'],
-                'revenue': float(top_product['revenue']),
-            } if top_product else None,
+            'top_product': top_product_data,
         })
 
 

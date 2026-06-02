@@ -115,11 +115,28 @@ const MetricsSection = () => {
                     </div>
                     {stats?.top_product ? (
                         <div className="flex gap-4 items-center">
-                            <picture className="bg-surface-container h-20 overflow-hidden rounded-lg relative w-20 flex-shrink-0">
-                                <div className="flex items-center justify-center h-full text-outline">
+                            <div className="bg-surface-container h-20 overflow-hidden rounded-lg relative w-20 flex-shrink-0">
+                                {stats.top_product.image ? (
+                                    <img
+                                        src={stats.top_product.image}
+                                        alt={stats.top_product.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            const img = e.currentTarget;
+                                            img.onerror = null;
+                                            img.style.display = 'none';
+                                            const parent = img.parentElement;
+                                            if (parent) {
+                                                const star = parent.querySelector('.fallback-star');
+                                                if (star) star.classList.remove('hidden');
+                                            }
+                                        }}
+                                    />
+                                ) : null}
+                                <div className={`fallback-star flex items-center justify-center w-full h-full text-outline ${stats.top_product.image ? 'hidden' : ''}`}>
                                     <FaRegStar className="text-3xl" />
                                 </div>
-                            </picture>
+                            </div>
                             <div>
                                 <h5 className="font-bold text-lg text-on-bg md:text-xl">{stats.top_product.name}</h5>
                                 <p className="font-semibold text-on-surface-variant">{stats.top_product.units_sold} unidades vendidas</p>
