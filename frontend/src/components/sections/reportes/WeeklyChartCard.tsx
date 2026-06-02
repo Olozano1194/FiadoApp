@@ -40,7 +40,7 @@ function getWeekRange(weekStart: string): string {
 }
 
 const SkeletonBar = ({ height }: { height: number }) => (
-  <div className="flex-1 flex flex-col gap-2 items-center">
+  <div className="flex-1 flex flex-col justify-end items-center">
     <div className="w-full bg-surface-container-low rounded-t-lg" style={{ height: `${height}%` }} />
     <span className="h-3 bg-surface-container-low rounded w-6" />
   </div>
@@ -57,7 +57,7 @@ const WeeklyChartCard = () => {
   if (loading && !stats) {
     return (
       <div className="animate-pulse">
-        <div className="flex gap-2 h-40 items-end justify-between">
+        <div className="flex gap-2 h-40 justify-between">
           {DAY_LABELS.map((_, i) => (
             <SkeletonBar key={i} height={(i + 1) * 12} />
           ))}
@@ -110,7 +110,7 @@ const WeeklyChartCard = () => {
         </button>
       </div>
 
-      <div className="flex gap-2 h-48 items-end justify-between mb-4">
+      <div className="flex gap-2 h-48 justify-between mb-4">
         {weekDays.map((day) => {
           const isSelected = selectedDay?.date === day.date;
           const height = day.total > 0
@@ -118,7 +118,7 @@ const WeeklyChartCard = () => {
             : 4;
 
           return (
-            <div key={day.date} className="flex-1 flex flex-col gap-2 items-center">
+            <div key={day.date} className="flex-1 flex flex-col justify-end items-center">
               <button
                 onClick={() => setSelectedDay(isSelected ? null : day)}
                 className={`w-full rounded-t-lg transition-all cursor-pointer ${
@@ -129,7 +129,7 @@ const WeeklyChartCard = () => {
                 style={{ height: `${isSelected ? height + 8 : height}%` }}
                 title={formatCurrency(day.total)}
               />
-              <span className="font-medium text-xs text-on-surface-variant">
+              <span className="font-medium text-xs text-on-surface-variant pt-0.5">
                 {day.day_name}
               </span>
             </div>
