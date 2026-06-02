@@ -51,12 +51,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isLoading: false,
         error: null,
       });
-    } catch (err: any) {
-      const message =
-        err.response?.data?.detail ||
-        err.response?.data?.[0]?.detail ||
-        err.message ||
-        'Error al iniciar sesión';
+    } catch (err: unknown) {
+      let message = 'Error al iniciar sesión';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { detail?: string } } };
+        message = axiosErr.response?.data?.detail ??
+          (err as { response?: { data?: Array<{ detail: string }> } }).response?.data?.[0]?.detail ??
+          message;
+      }
       set({ isLoading: false, error: message, isAuthenticated: false });
     }
   },

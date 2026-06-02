@@ -57,7 +57,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   },
   createSale: async (data) => {
     try {
-      await salesApi.createSale(data as SaleCreatePayload);
+      await salesApi.createSale(data as unknown as SaleCreatePayload);
       const res = await salesApi.getSales();
       set({ sales: res.data });
     } catch { /* handled by interceptor */ }

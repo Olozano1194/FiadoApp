@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ErrorBoundary from "./components/ErrorBoundary";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import LayoutAdmin from "./layouts/LayoutAdmin";
@@ -13,6 +14,7 @@ import SettingsPage from "./pages/SettingsPage";
 
 const App = () => {
   return (
+    <ErrorBoundary>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
@@ -28,6 +30,7 @@ const App = () => {
       </Route>
       <Route path="*" element={<Error404 />} />
     </Routes>
+    </ErrorBoundary>
   );
 };
 export default App;

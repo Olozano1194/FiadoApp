@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Product } from '../models/product';
+import type { Product, ProductFormData } from '../models/product';
 import * as productsApi from '../api/products.api';
 
 interface ProductStore {
@@ -9,8 +9,8 @@ interface ProductStore {
   loading: boolean;
   fetchProducts: () => Promise<void>;
   fetchLowStock: () => Promise<void>;
-  createProduct: (data: any) => Promise<void>;
-  updateProduct: (id: number, data: any) => Promise<void>;
+  createProduct: (data: ProductFormData) => Promise<void>;
+  updateProduct: (id: number, data: ProductFormData) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
 }
 

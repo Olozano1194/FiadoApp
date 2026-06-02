@@ -34,12 +34,13 @@ api.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: any) => void;
-  reject: (reason?: any) => void;
-}> = [];
+interface QueueItem {
+  resolve: (value: unknown) => void;
+  reject: (reason: unknown) => void;
+}
+let failedQueue: QueueItem[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null): void => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
