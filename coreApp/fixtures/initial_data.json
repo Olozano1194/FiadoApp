@@ -1,0 +1,537 @@
+[
+  {
+    "model": "coreApp.category",
+    "pk": 1,
+    "fields": { "name": "Granos y Abarrotes", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 2,
+    "fields": { "name": "Huevos", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 3,
+    "fields": { "name": "Panadería", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 4,
+    "fields": { "name": "Bebidas", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 5,
+    "fields": { "name": "Snacks y Confitería", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 6,
+    "fields": { "name": "Aseo Personal", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 7,
+    "fields": { "name": "Aseo Hogar", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 8,
+    "fields": { "name": "Condimentos y Salsas", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 9,
+    "fields": { "name": "Embutidos", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 10,
+    "fields": { "name": "Enlatados", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 11,
+    "fields": { "name": "Cigarrillos", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 12,
+    "fields": { "name": "Verduras", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 13,
+    "fields": { "name": "Lácteos", "description": "" }
+  },
+  {
+    "model": "coreApp.category",
+    "pk": 14,
+    "fields": { "name": "Otros", "description": "" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 1,
+    "fields": { "name": "Arroz", "category": 1, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Arroz blanco por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 2,
+    "fields": { "name": "Azúcar", "category": 1, "price": "2800.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Azúcar blanca por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 3,
+    "fields": { "name": "Panela", "category": 1, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Panela por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 4,
+    "fields": { "name": "Café", "category": 1, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Café molido por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 5,
+    "fields": { "name": "Lentejas", "category": 1, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Lentejas por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 6,
+    "fields": { "name": "Frijoles", "category": 1, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Frijoles por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 7,
+    "fields": { "name": "Harina de trigo", "category": 1, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Harina de trigo por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 8,
+    "fields": { "name": "Harina de maíz", "category": 1, "price": "1800.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Harina de maíz precocida" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 9,
+    "fields": { "name": "Aceite vegetal", "category": 1, "price": "4500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Aceite vegetal botella 500ml" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 10,
+    "fields": { "name": "Sal", "category": 1, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Sal de mesa por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 11,
+    "fields": { "name": "Pasta (espagueti)", "category": 1, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Espagueti por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 12,
+    "fields": { "name": "Avena", "category": 1, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Avena en hojuelas por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 13,
+    "fields": { "name": "Huevo (unidad)", "category": 2, "price": "800.00", "cost": "0.00", "stock": 0, "min_stock": 30, "barcode": "", "description": "Huevo de gallina por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 14,
+    "fields": { "name": "Huevos (panal x30)", "category": 2, "price": "12000.00", "cost": "0.00", "stock": 0, "min_stock": 5, "barcode": "", "description": "Panal de 30 huevos" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 15,
+    "fields": { "name": "Pan blanco (unidad)", "category": 3, "price": "500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Pan blanco por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 16,
+    "fields": { "name": "Pan de molde", "category": 3, "price": "4000.00", "cost": "0.00", "stock": 0, "min_stock": 5, "barcode": "", "description": "Pan de molde por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 17,
+    "fields": { "name": "Galletas dulces (paquete)", "category": 3, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Galletas dulces por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 18,
+    "fields": { "name": "Galletas saladas (paquete)", "category": 3, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Galletas saladas por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 19,
+    "fields": { "name": "Agua en bolsa", "category": 4, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Agua purificada en bolsa" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 20,
+    "fields": { "name": "Agua en botella (1.5L)", "category": 4, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Agua purificada botella 1.5 litros" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 21,
+    "fields": { "name": "Agua en botella (5L)", "category": 4, "price": "5000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Agua purificada botellón 5 litros" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 22,
+    "fields": { "name": "Gaseosa personal", "category": 4, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Gaseosa personal 250ml" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 23,
+    "fields": { "name": "Gaseosa mediana", "category": 4, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Gaseosa mediana 1.5L" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 24,
+    "fields": { "name": "Gaseosa grande", "category": 4, "price": "4500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Gaseosa grande 3L" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 25,
+    "fields": { "name": "Cerveza (unidad)", "category": 4, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 24, "barcode": "", "description": "Cerveza por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 26,
+    "fields": { "name": "Cerveza (six-pack)", "category": 4, "price": "10000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Six-pack de cerveza" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 27,
+    "fields": { "name": "Jugo en caja", "category": 4, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Jugo en caja 200ml" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 28,
+    "fields": { "name": "Malta", "category": 4, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Malta por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 29,
+    "fields": { "name": "Café instantáneo", "category": 4, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Café instantáneo frasco pequeño" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 30,
+    "fields": { "name": "Papas fritas (paquete pequeño)", "category": 5, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Papas fritas paquete pequeño" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 31,
+    "fields": { "name": "Papas fritas (paquete grande)", "category": 5, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Papas fritas paquete grande" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 32,
+    "fields": { "name": "Chitos/Maicitos", "category": 5, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Chitos o maicitos por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 33,
+    "fields": { "name": "Dulces surtidos (unidad)", "category": 5, "price": "200.00", "cost": "0.00", "stock": 0, "min_stock": 50, "barcode": "", "description": "Dulces por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 34,
+    "fields": { "name": "Chocolatina", "category": 5, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Barra de chocolate" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 35,
+    "fields": { "name": "Chicles (unidad)", "category": 5, "price": "200.00", "cost": "0.00", "stock": 0, "min_stock": 50, "barcode": "", "description": "Chicle por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 36,
+    "fields": { "name": "Chicles (paquete)", "category": 5, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Paquete de chicles" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 37,
+    "fields": { "name": "Bombones", "category": 5, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Bombones rellenos por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 38,
+    "fields": { "name": "Maní salado", "category": 5, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Maní salado por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 39,
+    "fields": { "name": "Galletas wafer", "category": 5, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Galletas tipo wafer por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 40,
+    "fields": { "name": "Jabón de baño (barra)", "category": 6, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Jabón de baño por barra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 41,
+    "fields": { "name": "Jabón líquido", "category": 6, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Jabón líquido para manos" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 42,
+    "fields": { "name": "Champú (bolsa)", "category": 6, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Champú en bolsa (dosis)" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 43,
+    "fields": { "name": "Champú (botella)", "category": 6, "price": "8000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Champú en botella 400ml" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 44,
+    "fields": { "name": "Desodorante (barra)", "category": 6, "price": "5000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Desodorante en barra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 45,
+    "fields": { "name": "Crema dental", "category": 6, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Crema dental 75ml" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 46,
+    "fields": { "name": "Papel higiénico (unidad)", "category": 6, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Rollo de papel higiénico" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 47,
+    "fields": { "name": "Papel higiénico (paquete)", "category": 6, "price": "7000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Paquete de 4 rollos de papel higiénico" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 48,
+    "fields": { "name": "Jabón ropa en polvo (500g)", "category": 7, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Jabón en polvo para ropa 500g" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 49,
+    "fields": { "name": "Jabón ropa en polvo (1kg)", "category": 7, "price": "6500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Jabón en polvo para ropa 1kg" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 50,
+    "fields": { "name": "Jabón ropa en barra", "category": 7, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Jabón de ropa en barra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 51,
+    "fields": { "name": "Detergente líquido", "category": 7, "price": "4000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Detergente líquido para ropa" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 52,
+    "fields": { "name": "Lavaplatos", "category": 7, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Lavaplatos líquido" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 53,
+    "fields": { "name": "Cloro", "category": 7, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Cloro por botella" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 54,
+    "fields": { "name": "Limpiavidrios", "category": 7, "price": "3000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Limpiavidrios por botella" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 55,
+    "fields": { "name": "Suavizante", "category": 7, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Suavizante para ropa" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 56,
+    "fields": { "name": "Condimento Completísimo", "category": 8, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Condimento Completísimo sobre" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 57,
+    "fields": { "name": "Condimento Maggi", "category": 8, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Condimento Maggi sobre" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 58,
+    "fields": { "name": "Condimento RicoStilla", "category": 8, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Condimento RicoStilla sobre" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 59,
+    "fields": { "name": "Salsa de tomate", "category": 8, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Salsa de tomate por botella" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 60,
+    "fields": { "name": "Mayonesa", "category": 8, "price": "3000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Mayonesa por botella" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 61,
+    "fields": { "name": "Mostaza", "category": 8, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Mostaza por botella" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 62,
+    "fields": { "name": "Sal de ajo", "category": 8, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Sal de ajo por bolsa" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 63,
+    "fields": { "name": "Comino molido", "category": 8, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Comino molido por bolsa" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 64,
+    "fields": { "name": "Vinagre", "category": 8, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Vinagre por botella" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 65,
+    "fields": { "name": "Salchichón", "category": 9, "price": "3000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Salchichón por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 66,
+    "fields": { "name": "Salchicha (paquete)", "category": 9, "price": "4000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Paquete de salchichas" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 67,
+    "fields": { "name": "Jamón", "category": 9, "price": "5000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Jamón por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 68,
+    "fields": { "name": "Tocineta", "category": 9, "price": "4500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Tocineta por paquete" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 69,
+    "fields": { "name": "Mortadela", "category": 9, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Mortadela por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 70,
+    "fields": { "name": "Atún (lata)", "category": 10, "price": "4500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Atún en lata" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 71,
+    "fields": { "name": "Sardinas (lata)", "category": 10, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Sardinas en lata" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 72,
+    "fields": { "name": "Frijoles enlatados", "category": 10, "price": "3000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Frijoles enlatados" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 73,
+    "fields": { "name": "Salchichas enlatadas", "category": 10, "price": "4000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Salchichas enlatadas" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 74,
+    "fields": { "name": "Verduras enlatadas (arvejas/maíz)", "category": 10, "price": "2500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Arvejas o maíz enlatado" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 75,
+    "fields": { "name": "Cigarrillos (unidad)", "category": 11, "price": "500.00", "cost": "0.00", "stock": 0, "min_stock": 50, "barcode": "", "description": "Cigarrillo por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 76,
+    "fields": { "name": "Cigarrillos (paquete pequeño)", "category": 11, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Paquete pequeño de cigarrillos (10 unidades)" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 77,
+    "fields": { "name": "Cigarrillos (paquete grande)", "category": 11, "price": "7000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Paquete grande de cigarrillos (20 unidades)" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 78,
+    "fields": { "name": "Tomate", "category": 12, "price": "500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Tomate por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 79,
+    "fields": { "name": "Cebolla", "category": 12, "price": "500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Cebolla por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 80,
+    "fields": { "name": "Papa", "category": 12, "price": "500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Papa por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 81,
+    "fields": { "name": "Limón", "category": 12, "price": "300.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Limón por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 82,
+    "fields": { "name": "Plátano", "category": 12, "price": "800.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Plátano por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 83,
+    "fields": { "name": "Ajo (cabeza)", "category": 12, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Cabeza de ajo" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 84,
+    "fields": { "name": "Leche (bolsa 1L)", "category": 13, "price": "3000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Leche entera en bolsa 1 litro" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 85,
+    "fields": { "name": "Yogur", "category": 13, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Yogur por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 86,
+    "fields": { "name": "Queso campesino", "category": 13, "price": "4500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Queso campesino por libra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 87,
+    "fields": { "name": "Mantequilla", "category": 13, "price": "3000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Mantequilla por barra" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 88,
+    "fields": { "name": "Crema de leche", "category": 13, "price": "3500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Crema de leche por bolsa" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 89,
+    "fields": { "name": "Pilas AA", "category": 14, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Pilas AA por par" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 90,
+    "fields": { "name": "Velas", "category": 14, "price": "1000.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Vela por unidad" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 91,
+    "fields": { "name": "Fósforos", "category": 14, "price": "500.00", "cost": "0.00", "stock": 0, "min_stock": 20, "barcode": "", "description": "Caja de fósforos" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 92,
+    "fields": { "name": "Servilletas (paquete)", "category": 14, "price": "1500.00", "cost": "0.00", "stock": 0, "min_stock": 15, "barcode": "", "description": "Paquete de servilletas" }
+  },
+  {
+    "model": "coreApp.product",
+    "pk": 93,
+    "fields": { "name": "Bolsas de basura", "category": 14, "price": "2000.00", "cost": "0.00", "stock": 0, "min_stock": 10, "barcode": "", "description": "Paquete de bolsas para basura" }
+  }
+]
