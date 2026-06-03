@@ -8,9 +8,16 @@ interface CategoryFilterSectionProps {
     query: string;
 }
 
+const FEATURED_CATEGORIES = [
+  "Granos y Abarrotes",
+  "Bebidas",
+  "Snacks y Confitería",
+];
+
 const CategoryFilterSection = ({ query }: CategoryFilterSectionProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     getCategories()
@@ -18,9 +25,16 @@ const CategoryFilterSection = ({ query }: CategoryFilterSectionProps) => {
       .catch(() => {});
   }, []);
 
+  const visibleCategories = !showAll
+    ? categories.filter(cat => FEATURED_CATEGORIES.includes(cat.name))
+    : categories;
+
+  const hasMore = categories.length > FEATURED_CATEGORIES.length;
+
   const btnBase = "cursor-pointer font-medium px-4 py-2 rounded-full transition-colors";
   const btnActive = "bg-primary-container/60 text-on-surface";
   const btnInactive = "bg-surface-container-high text-on-surface-variant hover:bg-surface-container";
+  const btnMore = "cursor-pointer font-medium px-4 py-2 rounded-full transition-colors bg-secondary-container text-on-surface hover:bg-secondary-container/80";
 
   return (
     <div>
@@ -31,7 +45,7 @@ const CategoryFilterSection = ({ query }: CategoryFilterSectionProps) => {
         >
           Todo
         </button>
-        {categories.map(cat => (
+        {visibleCategories.map(cat => (
           <button
             key={cat.id}
             onClick={() => setSelectedCategoryId(cat.id)}
@@ -40,6 +54,14 @@ const CategoryFilterSection = ({ query }: CategoryFilterSectionProps) => {
             {cat.name}
           </button>
         ))}
+        {hasMore && (
+          <button
+            onClick={() => setShowAll(prev => !prev)}
+            className={btnMore}
+          >
+            {showAll ? "Ver menos" : `+${categories.length - FEATURED_CATEGORIES.length} más`}
+          </button>
+        )}
       </div>
 
       <div className="mt-8">
