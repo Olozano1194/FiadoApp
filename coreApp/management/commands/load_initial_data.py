@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -135,11 +136,15 @@ class Command(BaseCommand):
     def _handle_products(self):
         self.stdout.write("\n== Productos ==")
 
-        fixture_path = (
-            Path(__file__).parent.parent.parent
-            / "fixtures"
-            / "initial_data.json"
-        )
+        # Resolve fixture path — supports PyInstaller frozen mode
+        if getattr(sys, 'frozen', False):
+            fixture_path = Path(sys._MEIPASS) / "coreApp" / "fixtures" / "initial_data.json"
+        else:
+            fixture_path = (
+                Path(__file__).parent.parent.parent
+                / "fixtures"
+                / "initial_data.json"
+            )
 
         if not fixture_path.exists():
             self.stdout.write(

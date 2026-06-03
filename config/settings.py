@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
@@ -17,7 +18,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Support PyInstaller packaging — FIADOAPP_DATA_DIR overrides BASE_DIR for persistent data
+_data_dir = os.environ.get('FIADOAPP_DATA_DIR')
+if _data_dir:
+    BASE_DIR = Path(_data_dir)
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -150,7 +156,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# If running in frozen PyInstaller mode, media goes to data dir
+_media_root = os.environ.get('FIADOAPP_MEDIA_ROOT')
+if _media_root:
+    MEDIA_ROOT = _media_root
+else:
+    MEDIA_ROOT = os.path.join(str(BASE_DIR), 'media')
 
 
 # CORS Configuration actualizada para cookies
