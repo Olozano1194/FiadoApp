@@ -29,7 +29,7 @@ const Table = <T,>({ data, columns, totalRow }: TableProps<T>) => {
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         initialState: {
-            pagination: { pageIndex: 0, pageSize: 5 },
+            pagination: { pageIndex: 0, pageSize: 10 },
         },
         getSortedRowModel: getSortedRowModel(),
         state: {
