@@ -11,13 +11,22 @@ const placeholderColors = [
   "bg-on-surface-variant",
 ];
 
+const INITIAL_SHOWN = 5;
+
 const LowStockSection = () => {
   const { lowStockProducts, loading, fetchLowStock } = useProductStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetchLowStock();
   }, [fetchLowStock]);
+
+  const visibleProducts = showAll
+    ? lowStockProducts
+    : lowStockProducts.slice(0, INITIAL_SHOWN);
+
+  const hasMore = lowStockProducts.length > INITIAL_SHOWN;
 
   return (
     <section className="space-y-4 md:col-span-8 lg:col-span-4">
@@ -31,25 +40,37 @@ const LowStockSection = () => {
         ) : lowStockProducts.length === 0 ? (
           <div className="text-center py-4 text-on-surface-variant">No hay productos con stock bajo</div>
         ) : (
-          lowStockProducts.map((product, index) => (
-            <article key={product.id} className="bg-white border border-outline-variant flex gap-4 group items-center p-4 rounded-xl transition-all hover:shadow-sm">
-              <div className={`${placeholderColors[index % placeholderColors.length]} flex h-12 items-center justify-center overflow-hidden rounded-lg shrink-0 w-12`}>
-                {product.image ? (
-                  <img src={product.image} className="h-full object-cover w-full" alt={product.name} />
-                ) : (
-                  <span className="text-white font-bold text-lg">{product.name.charAt(0).toUpperCase()}</span>
-                )}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-on-bg text-lg lg:text-xl">{product.name}</p>
-                <p className="font-mono text-on-surface-variant lg:text-lg">{product.category_name || 'Sin categoría'}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-text-error text-lg lg:text-xl">{product.stock} uni.</p>
-                <p className="font-mono text-on-surface-variant lg:text-lg">min: {product.min_stock}</p>
-              </div>
-            </article>
-          ))
+          <>
+            {visibleProducts.map((product, index) => (
+              <article key={product.id} className="bg-white border border-outline-variant flex gap-4 group items-center p-4 rounded-xl transition-all hover:shadow-sm">
+                <div className={`${placeholderColors[index % placeholderColors.length]} flex h-12 items-center justify-center overflow-hidden rounded-lg shrink-0 w-12`}>
+                  {product.image ? (
+                    <img src={product.image} className="h-full object-cover w-full" alt={product.name} />
+                  ) : (
+                    <span className="text-white font-bold text-lg">{product.name.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-on-bg text-lg lg:text-xl">{product.name}</p>
+                  <p className="font-mono text-on-surface-variant lg:text-lg">{product.category_name || 'Sin categoría'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-text-error text-lg lg:text-xl">{product.stock} uni.</p>
+                  <p className="font-mono text-on-surface-variant lg:text-lg">min: {product.min_stock}</p>
+                </div>
+              </article>
+            ))}
+            {hasMore && (
+              <button
+                onClick={() => setShowAll(prev => !prev)}
+                className="border border-dashed border-outline-variant cursor-pointer font-semibold py-2 rounded-xl text-primary transition-colors w-full hover:bg-surface-container-high"
+              >
+                {showAll
+                  ? "Ver menos"
+                  : `Ver todo (+${lowStockProducts.length - INITIAL_SHOWN} más)`}
+              </button>
+            )}
+          </>
         )}
         <button
           onClick={() => setIsModalOpen(true)}
