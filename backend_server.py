@@ -7,6 +7,9 @@ import os
 import sys
 from pathlib import Path
 
+# Detect if running as Tauri sidecar
+IS_TAURI_SIDECAR = os.environ.get('FIADOAPP_TAURI', '').lower() in ('true', '1', 'yes')
+
 
 def _is_frozen():
     """Check if running as a PyInstaller executable."""
@@ -65,10 +68,11 @@ def main():
 
     django.setup()
 
-    print("=" * 60)
-    print("  FiadoApp Backend Server")
-    print("  Data directory: {}".format(data_dir))
-    print("=" * 60)
+    if not IS_TAURI_SIDECAR:
+        print("=" * 60)
+        print("  FiadoApp Backend Server")
+        print("  Data directory: {}".format(data_dir))
+        print("=" * 60)
 
     print("[FiadoApp] Running database migrations...")
     call_command('migrate', verbosity=0)

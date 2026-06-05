@@ -56,6 +56,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Mid-session disconnection — server went down
+    if (!error.response && error.code === 'ERR_NETWORK') {
+      const { toast } = await import('react-hot-toast')
+      toast.error('Se perdió la conexión con el servidor')
+      return Promise.reject(error)
+    }
+
     if (
       error.response?.status !== 401 ||
       originalRequest._retry ||

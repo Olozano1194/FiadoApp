@@ -304,3 +304,129 @@ FiadoApp/
 - [ ] Impresión de tickets
 - [ ] Múltiples precios (por unidad, por mayoreo)
 - [ ] Reporte de ganancias (precio de costo vs precio de venta)
+
+---
+
+## 🖥️ Desktop Packaging con Tauri v2
+
+FiadoApp se empaqueta como aplicación de escritorio nativa para Windows usando **Tauri v2**. El frontend React + Vite se renderiza en WebView2, y el backend Django corre como proceso sidecar.
+
+### Arquitectura
+
+```
+┌──────────────────────────────────────────┐
+│ Tauri Window (WebView2)                  │
+│  ┌────────────────────────────────────┐  │
+│  │ React SPA (frontend/dist/)         │  │
+│  │ Axios → http://localhost:8000/api/ │  │
+│  └────────────────────────────────────┘  │
+│                     │                     │
+│  ┌────────────────────────────────────┐  │
+│  │ Rust Core (tauri-plugin-shell)     │  │
+│  │ Spawn / Kill → fiadoapp-backend    │  │
+│  └────────────────────────────────────┘  │
+└──────────────────┬───────────────────────┘
+                   │
+┌──────────────────▼───────────────────────┐
+│ Sidecar: fiadoapp-backend.exe (Django)   │
+│ SQLite + media en %APPDATA%/FiadoApp     │
+│ http://127.0.0.1:8000                    │
+└──────────────────────────────────────────┘
+```
+
+**Clave**: La comunicación es 100% HTTP. No hay IPC Rust ↔ Frontend. La capa de API (axios) no requirió cambios.
+
+### Prerrequisitos
+
+| Herramienta | Versión | Instalación |
+|------------|---------|-------------|
+| Rust | ≥ 1.80 | https://rustup.rs |
+| MSVC Build Tools | 2022 | VS Build Tools + "Desktop C++" workload |
+| Node.js | ≥ 20 | https://nodejs.org |
+| Python | 3.12 | https://python.org |
+| Tauri CLI | 2.x | `npm install -D @tauri-apps/cli` |
+
+### Desarrollo
+
+```bash
+# Terminal 1: Backend
+python backend_server.py
+
+# Terminal 2: Frontend + Tauri
+cd frontend
+npm run tauri:dev
+```
+
+- `tauri:dev` abre ventana nativa apuntando a Vite dev server (HMR funciona)
+- Backend corre independientemente en `:8000`
+
+### Build completo (MSI Installer)
+
+```powershell
+# 1. Activar entorno virtual
+env\Scripts\Activate.ps1
+
+# 2. Construir backend (sin ventana de consola)
+pyinstaller fiadoapp-windowed.spec --noconfirm
+
+# 3. Ejecutar script de build Tauri
+scripts\build-tauri.ps1
+```
+
+O en un solo paso:
+
+```powershell
+env\Scripts\Activate.ps1 && scripts\build-tauri.ps1
+```
+
+### Output del build
+
+```
+frontend/src-tauri/target/release/bundle/
+├── msi/
+│   └── FiadoApp_0.1.0_x64_es-ES.msi    ~5 MB
+└── nsis/
+    └── FiadoApp_0.1.0_x64-setup.exe     ~4 MB
+```
+
+### Sidecar
+
+El backend Django se empaqueta con PyInstaller y se copia a `src-tauri/binaries/` con el sufijo de target triple:
+
+```
+fiadoapp-backend-x86_64-pc-windows-msvc.exe  (~8 MB)
+_internal/                                     (~55 MB, Python runtime)
+```
+
+Tauri lo lanza al abrir la app y lo mata al cerrar la ventana. Los logs del backend se muestran en la terminal de desarrollo.
+
+### Datos persistentes
+
+- **Base de datos**: `%APPDATA%/FiadoApp/fiadoapp.db` (SQLite)
+- **Imágenes subidas**: `%APPDATA%/FiadoApp/media/`
+- **Logs**: `%APPDATA%/FiadoApp/logs/`
+
+### Solución de problemas
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| "WebView2 not found" | Windows sin WebView2 | Tauri lo instala automáticamente, o descargar de Microsoft |
+| Ventana en blanco | Backend no arrancó | Esperar ~5s, verificar que el puerto 8000 no esté ocupado |
+| "Connection refused" | Sidecar no iniciado | Cerrar y reabrir la app. Si persiste, revisar logs |
+| MSI no se instala | Windows Defender | Click en "Más info" → "Ejecutar de todas formas" |
+
+### Estructura de src-tauri/
+
+```
+frontend/src-tauri/
+├── Cargo.toml              # Dependencias Rust
+├── tauri.conf.json         # Config: ventana, bundle, CSP
+├── build.rs                # Build script Tauri
+├── capabilities/
+│   └── default.json        # Permisos (shell sidecar)
+├── icons/                  # Iconos multi-resolución
+├── binaries/               # Sidecar binary (gitignored)
+└── src/
+    ├── main.rs             # Entry point
+    └── lib.rs              # Sidecar lifecycle + setup
+```
