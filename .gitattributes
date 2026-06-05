@@ -1,0 +1,67 @@
+# Auto detect text files and normalize to LF in repo
+* text=auto
+
+# Python
+*.py text diff=python
+*.pyw text
+*.spec text
+
+# JavaScript / TypeScript
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.json text
+
+# Web
+*.html text
+*.css text
+*.scss text
+*.svg text
+
+# Config files
+*.yml text
+*.yaml text
+*.toml text
+*.ini text
+*.cfg text
+*.conf text
+
+# PowerShell / Batch
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Shell scripts (keep LF)
+*.sh text eol=lf
+
+# Git files
+.gitattributes text
+.gitignore text
+
+# Documentation
+*.md text
+*.txt text
+
+# Binaries (never normalize)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.pdf binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.db binary
+*.sqlite binary
+*.pyc binary
+*.pyd binary
+
+# Lock files (text but keep as-is)
+package-lock.json text
+Cargo.lock text
