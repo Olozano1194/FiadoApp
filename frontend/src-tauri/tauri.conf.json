@@ -38,6 +38,9 @@
     ],
     "publisher": "FiadoApp",
     "externalBin": ["binaries/fiadoapp-backend"],
+    "resources": {
+      "binaries/_internal/": "_internal/"
+    },
     "windows": {
       "wix": {
         "language": "es-ES"
