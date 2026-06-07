@@ -19,7 +19,7 @@ const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 const HEALTH_CHECK_URL = 'http://localhost:8000/api/'
 const POLL_INTERVAL = 500
-const MAX_ATTEMPTS = 30
+const MAX_ATTEMPTS = 60
 
 type BackendStatus = 'loading' | 'error' | 'ready' | 'retrying'
 
