@@ -113,9 +113,10 @@ def _serve_wsgi(wsgi_app, host: str, port: int):
     # Patch ServerHandler to log requests
     orig_handle_run = ServerHandler.run
 
-    def log_handle_run(self):
-        logging.info("Handling: %s %s", self.command, self.path)
-        return orig_handle_run(self)
+    def log_handle_run(self, application):
+        req_handler = self.request_handler
+        logging.info("Handling: %s %s", req_handler.command, req_handler.path)
+        return orig_handle_run(self, application)
 
     ServerHandler.run = log_handle_run
 
