@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from coreApp.serializers import CustomTokenObtainPairSerializer
 from coreApp.views import (
-    CategoryViewSet, ProductViewSet, ClientViewSet,
+    HealthCheckView, CategoryViewSet, ProductViewSet, ClientViewSet,
     SaleViewSet, FiadoPaymentViewSet,
     DashboardStatsView, SearchView,
     ReportStatsView, RecentActivityView,
@@ -32,6 +32,8 @@ token_verify_view = TokenVerifyView.as_view()
 token_verify_view.permission_classes = [AllowAny]
 
 urlpatterns = [
+    # Public health-check root — MUST go BEFORE router include so /api/ matches first
+    path('api/', HealthCheckView.as_view(), name='health-check'),
     path('api/', include(router.urls)),
     path('api/token/', token_obtain_view, name='token_obtain_pair'),
     path('api/token/refresh/', token_refresh_view, name='token_refresh'),

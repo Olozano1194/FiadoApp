@@ -17,7 +17,7 @@ import api from './api/axios.config'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
-const HEALTH_CHECK_URL = 'http://localhost:8000/api/'
+const HEALTH_CHECK_URL = 'http://127.0.0.1:8000/api/'
 const POLL_INTERVAL = 500
 const MAX_ATTEMPTS = 60
 

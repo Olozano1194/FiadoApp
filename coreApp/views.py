@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Sum, F
 from django.http import HttpResponse
 from django.utils import timezone
@@ -16,6 +16,15 @@ from .serializers import (
     SaleSerializer, SaleItemSerializer, FiadoPaymentSerializer,
     SaleCreateSerializer
 )
+
+
+class HealthCheckView(APIView):
+    """Public health check endpoint for Tauri splash screen polling."""
+    permission_classes = [AllowAny]
+    authentication_classes = []  # no auth needed
+
+    def get(self, request):
+        return Response({'status': 'ok'}, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
