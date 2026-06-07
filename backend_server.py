@@ -101,6 +101,43 @@ def _install_excepthook(log_file: Path):
     sys.excepthook = excepthook
 
 
+def _serve_wsgi(wsgi_app, host: str, port: int):
+    """
+    Serve the WSGI application directly using wsgiref.
+    This avoids any threading/management-command quirks in frozen PyInstaller mode.
+    """
+    import http.server
+    import socketserver
+    from wsgiref.simple_server import WSGIRequestHandler, ServerHandler, WSGIServer
+
+    # Patch ServerHandler to log requests
+    orig_handle_run = ServerHandler.run
+
+    def log_handle_run(self):
+        logging.info("Handling: %s %s", self.command, self.path)
+        return orig_handle_run(self)
+
+    ServerHandler.run = log_handle_run
+
+    server = WSGIServer((host, port), WSGIRequestHandler)
+    server.set_app(wsgi_app)
+
+    logging.info("WSGI server listening on http://%s:%s", host, port)
+    logging.info("Press Ctrl+C to stop")
+
+    # Test that the server actually responds
+    try:
+        import socket
+        s = socket.create_connection((host, port), timeout=2)
+        s.close()
+        logging.info("Port %s is open and accepting connections", port)
+    except Exception as e:
+        logging.warning("Quick port check failed: %s", e)
+
+    # Serve forever
+    server.serve_forever()
+
+
 def main():
     try:
         base_dir = _get_base_dir()
@@ -123,6 +160,7 @@ def main():
 
         import django
         from django.core.management import call_command
+        from django.core.wsgi import get_wsgi_application
 
         django.setup()
         logging.info("Django setup complete")
@@ -135,8 +173,10 @@ def main():
         call_command('load_initial_data', verbosity=0)
         logging.info("Initial data loaded")
 
-        logging.info("Starting server at http://127.0.0.1:8000")
-        call_command('runserver', '--noreload', '127.0.0.1:8000')
+        # Use direct WSGI server instead of runserver management command
+        # This avoids threading issues in frozen PyInstaller environments
+        wsgi_app = get_wsgi_application()
+        _serve_wsgi(wsgi_app, '127.0.0.1', 8000)
 
     except Exception as e:
         logging.critical("FATAL: %s: %s", type(e).__name__, e)
