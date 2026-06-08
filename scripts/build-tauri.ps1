@@ -13,7 +13,7 @@ Write-Host "=== FiadoApp Tauri Build ===" -ForegroundColor Cyan
 Write-Host "Project root: $ProjectRoot"
 
 # Step 1: Build PyInstaller backend (windowed mode)
-Write-Host "[1/4] Building backend (PyInstaller)..." -ForegroundColor Yellow
+Write-Host "[1/5] Building backend (PyInstaller)..." -ForegroundColor Yellow
 Push-Location $ProjectRoot
 try {
     & pyinstaller fiadoapp-windowed.spec --noconfirm
@@ -23,7 +23,7 @@ try {
 }
 
 # Step 2: Build frontend
-Write-Host "[2/4] Building frontend (Vite)..." -ForegroundColor Yellow
+Write-Host "[2/5] Building frontend (Vite)..." -ForegroundColor Yellow
 Push-Location $FrontendDir
 try {
     & npm run build
@@ -33,7 +33,7 @@ try {
 }
 
 # Step 3: Copy sidecar binary with target-triple suffix
-Write-Host "[3/4] Copying sidecar binary..." -ForegroundColor Yellow
+Write-Host "[3/5] Copying sidecar binary..." -ForegroundColor Yellow
 if (-not (Test-Path $BinariesDir)) {
     New-Item -ItemType Directory -Path $BinariesDir -Force | Out-Null
 }
@@ -53,14 +53,41 @@ Copy-Item -Path $sidecarSource -Destination $sidecarDest -Force
 Write-Host "  Copied: $sidecarDest"
 
 # Also copy _internal folder (Python runtime dependencies)
+$internalSrc = Join-Path $DistBackend "_internal"
 $internalDest = Join-Path $BinariesDir "_internal"
-if (Test-Path (Join-Path $DistBackend "_internal")) {
-    Copy-Item -Path (Join-Path $DistBackend "_internal") -Destination $BinariesDir -Recurse -Force
-    Write-Host "  Copied: _internal/"
+
+if (-not (Test-Path $internalSrc)) {
+    Write-Error "ERROR: _internal folder not found at: $internalSrc"
+    Write-Error "El directorio _internal es REQUERIDO para que el sidecar funcione."
+    exit 1
 }
 
-# Step 4: Build Tauri MSI
-Write-Host "[4/4] Building Tauri MSI installer..." -ForegroundColor Yellow
+# Eliminar _internal anterior para evitar archivos desactualizados
+if (Test-Path $internalDest) {
+    Write-Host "  Limpiando _internal anterior..." -ForegroundColor Gray
+    Remove-Item -Path $internalDest -Recurse -Force
+}
+
+Copy-Item -Path $internalSrc -Destination $BinariesDir -Recurse -Force
+$internalCount = (Get-ChildItem -Path $internalDest -Recurse -File).Count
+Write-Host "  Copied: _internal/ ($internalCount archivos)"
+
+# Step 4: Limpiar cache de Tauri para evitar binarios desactualizados
+Write-Host "[4/5] Limpiando cache de Tauri..." -ForegroundColor Yellow
+$tauriReleaseDir = Join-Path $SrcTauriDir "target" "release"
+if (Test-Path $tauriReleaseDir) {
+    # Solo limpiar el bundle, no toda la compilacion Rust (eso tarda mucho)
+    $bundleDir = Join-Path $tauriReleaseDir "bundle"
+    if (Test-Path $bundleDir) {
+        Remove-Item -Path $bundleDir -Recurse -Force
+        Write-Host "  Cache de bundle limpiada."
+    }
+} else {
+    Write-Host "  No hay cache previo."
+}
+
+# Step 5: Build Tauri MSI
+Write-Host "[5/5] Building Tauri MSI installer..." -ForegroundColor Yellow
 Push-Location $FrontendDir
 try {
     & cargo tauri build

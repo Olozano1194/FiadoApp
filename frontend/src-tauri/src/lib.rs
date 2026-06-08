@@ -23,31 +23,43 @@ pub fn run() {
             let sidecar_command = shell.sidecar("fiadoapp-backend")
                 .expect("Failed to create sidecar command");
 
-            let (mut rx, child) = sidecar_command
-                .spawn()
-                .expect("Failed to spawn sidecar");
+            let spawn_result = sidecar_command.spawn();
 
-            // Store the child handle for cleanup
-            let state = app.state::<SidecarState>();
-            *state.child.lock().unwrap() = Some(child);
-
-            // Log sidecar output in background
-            tauri::async_runtime::spawn(async move {
-                while let Some(event) = rx.recv().await {
-                    match event {
-                        tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
-                            println!("[django] {}", String::from_utf8_lossy(&line));
-                        }
-                        tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
-                            eprintln!("[django:err] {}", String::from_utf8_lossy(&line));
-                        }
-                        tauri_plugin_shell::process::CommandEvent::Terminated(status) => {
-                            eprintln!("[django] Process terminated: {:?}", status);
-                        }
-                        _ => {}
-                    }
+            match spawn_result {
+                Err(e) => {
+                    // El sidecar no pudo iniciar — antivirus, permisos, _internal faltante, etc.
+                    eprintln!("[tauri] ERROR: No se pudo iniciar el backend: {}", e);
+                    // La UI mostrará el error de conexión y el usuario puede revisar los logs
+                    // en %APPDATA%\FiadoApp\backend.log
                 }
-            });
+                Ok((mut rx, child)) => {
+                    // Guardar el handle del proceso para limpiar al cerrar
+                    let state = app.state::<SidecarState>();
+                    *state.child.lock().unwrap() = Some(child);
+
+                    // Registrar output del sidecar en background para diagnóstico
+                    tauri::async_runtime::spawn(async move {
+                        while let Some(event) = rx.recv().await {
+                            match event {
+                                tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
+                                    println!("[django] {}", String::from_utf8_lossy(&line));
+                                }
+                                tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
+                                    eprintln!("[django:err] {}", String::from_utf8_lossy(&line));
+                                }
+                                tauri_plugin_shell::process::CommandEvent::Terminated(status) => {
+                                    eprintln!(
+                                        "[django] Proceso terminado — código: {:?}, señal: {:?}",
+                                        status.code,
+                                        status.signal
+                                    );
+                                }
+                                _ => {}
+                            }
+                        }
+                    });
+                }
+            }
 
             Ok(())
         })

@@ -171,6 +171,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "tauri://localhost",
     "https://tauri.localhost",
+    "http://tauri.localhost",
     # "https://gimnasio-react-django.vercel.app",
 ]
 CORS_EXPOSE_HEADERS = ['Content-Type', 'Authorization']

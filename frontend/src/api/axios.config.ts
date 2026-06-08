@@ -40,6 +40,10 @@ interface QueueItem {
 }
 let failedQueue: QueueItem[] = [];
 
+// Evitar mostrar múltiples toasts de error de red al mismo tiempo
+let networkErrorToastShownAt = 0;
+const NETWORK_ERROR_TOAST_COOLDOWN_MS = 5000;
+
 const processQueue = (error: unknown, token: string | null = null): void => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -58,8 +62,19 @@ api.interceptors.response.use(
 
     // Mid-session disconnection — server went down
     if (!error.response && error.code === 'ERR_NETWORK') {
-      const { toast } = await import('react-hot-toast')
-      toast.error('Se perdió la conexión con el servidor')
+      // Evitar mostrar el toast de error para las peticiones de Health Check
+      const url = originalRequest?.url || '';
+      const isHealthCheck = url === '' || url === '/' || url === '/api/' || url === '/api' || url.endsWith('/api/') || url.endsWith('/api');
+
+      if (!isHealthCheck) {
+        const now = Date.now();
+        // Solo mostrar el toast si no se mostró en los últimos 5 segundos
+        if (now - networkErrorToastShownAt > NETWORK_ERROR_TOAST_COOLDOWN_MS) {
+          networkErrorToastShownAt = now;
+          const { toast } = await import('react-hot-toast')
+          toast.error('Se perdió la conexión con el servidor')
+        }
+      }
       return Promise.reject(error)
     }
 

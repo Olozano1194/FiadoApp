@@ -101,29 +101,40 @@ def _install_excepthook(log_file: Path):
     sys.excepthook = excepthook
 
 
+def _check_port_available(host: str, port: int) -> bool:
+    """Check if the port is available before trying to bind to it."""
+    import socket
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((host, port))
+        return True
+    except OSError:
+        return False
+
+
 def _serve_wsgi(wsgi_app, host: str, port: int):
     """
-    Serve the WSGI application directly using wsgiref.
+    Serve the WSGI application directly using a multi-threaded WSGIServer.
     This avoids any threading/management-command quirks in frozen PyInstaller mode.
     """
-    import http.server
-    import socketserver
-    from wsgiref.simple_server import WSGIRequestHandler, ServerHandler, WSGIServer
+    from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
+    from socketserver import ThreadingMixIn
 
-    # Patch ServerHandler to log requests
-    orig_handle_run = ServerHandler.run
+    class ThreadingWSGIServer(ThreadingMixIn, WSGIServer):
+        daemon_threads = True
 
-    def log_handle_run(self, application):
-        req_handler = self.request_handler
-        logging.info("Handling: %s %s", req_handler.command, req_handler.path)
-        return orig_handle_run(self, application)
+    class LoggingWSGIRequestHandler(WSGIRequestHandler):
+        def log_message(self, format, *args):
+            origin = self.headers.get('Origin', 'None')
+            status_code = args[1] if len(args) > 1 else '?'
+            # args[0] is request line (e.g. GET /api/ HTTP/1.1), args[1] is status code
+            logging.info("WSGI: %s | Status: %s | Origin: %s", args[0], status_code, origin)
 
-    ServerHandler.run = log_handle_run
-
-    server = WSGIServer((host, port), WSGIRequestHandler)
+    server = ThreadingWSGIServer((host, port), LoggingWSGIRequestHandler)
     server.set_app(wsgi_app)
 
-    logging.info("WSGI server listening on http://%s:%s", host, port)
+    logging.info("WSGI server listening on http://%s:%s (Multi-threaded)", host, port)
     logging.info("Press Ctrl+C to stop")
 
     # Test that the server actually responds
@@ -140,6 +151,7 @@ def _serve_wsgi(wsgi_app, host: str, port: int):
 
 
 def main():
+    log_file = None
     try:
         base_dir = _get_base_dir()
         data_dir = _get_data_dir()
@@ -147,6 +159,16 @@ def main():
         # Setup logging BEFORE anything else
         log_file = _setup_logging(data_dir, base_dir)
         _install_excepthook(log_file)
+
+        # Verificar que el puerto 8000 esté disponible
+        HOST, PORT = '127.0.0.1', 8000
+        if not _check_port_available(HOST, PORT):
+            logging.critical(
+                "FATAL: Puerto %s en uso. Otro proceso ya está usando el puerto. "
+                "Cierre la aplicación anterior o verifique con: netstat -ano | findstr :%s",
+                PORT, PORT
+            )
+            sys.exit(1)
 
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
         os.environ['FIADOAPP_DATA_DIR'] = str(data_dir)
@@ -177,15 +199,16 @@ def main():
         # Use direct WSGI server instead of runserver management command
         # This avoids threading issues in frozen PyInstaller environments
         wsgi_app = get_wsgi_application()
-        _serve_wsgi(wsgi_app, '127.0.0.1', 8000)
+        _serve_wsgi(wsgi_app, HOST, PORT)
 
     except Exception as e:
         logging.critical("FATAL: %s: %s", type(e).__name__, e)
-        with open(log_file, 'a', encoding='utf-8') as f:
-            f.write(f"\n{'='*60}\n")
-            f.write(f"FATAL ERROR: {type(e).__name__}: {e}\n")
-            traceback.print_exc(file=f)
-            f.write(f"{'='*60}\n")
+        if log_file is not None:
+            with open(log_file, 'a', encoding='utf-8') as f:
+                f.write(f"\n{'='*60}\n")
+                f.write(f"FATAL ERROR: {type(e).__name__}: {e}\n")
+                traceback.print_exc(file=f)
+                f.write(f"{'='*60}\n")
         raise
 
 

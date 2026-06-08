@@ -18,8 +18,9 @@ import api from './api/axios.config'
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 const HEALTH_CHECK_URL = 'http://127.0.0.1:8000/api/'
-const POLL_INTERVAL = 500
-const MAX_ATTEMPTS = 60
+const POLL_INTERVAL = 1000   // 1 segundo entre intentos
+const MAX_ATTEMPTS = 180     // 3 minutos máximo (PCs lentos necesitan más tiempo)
+const INITIAL_DELAY_MS = 2000 // 2 segundos antes del primer intento
 
 type BackendStatus = 'loading' | 'error' | 'ready' | 'retrying'
 
@@ -29,8 +30,13 @@ const App = () => {
   )
   const [attempt, setAttempt] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const delayRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const stopPolling = useCallback(() => {
+    if (delayRef.current !== null) {
+      clearTimeout(delayRef.current)
+      delayRef.current = null
+    }
     if (intervalRef.current !== null) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
@@ -42,31 +48,36 @@ const App = () => {
     setAttempt(0)
     stopPolling()
 
-    intervalRef.current = setInterval(async () => {
-      setAttempt((prev) => {
-        const next = prev + 1
+    // Retraso inicial: el proceso Python necesita tiempo para arrancar
+    delayRef.current = setTimeout(() => {
+      delayRef.current = null
 
-        if (next > MAX_ATTEMPTS) {
+      intervalRef.current = setInterval(async () => {
+        setAttempt((prev) => {
+          const next = prev + 1
+
+          if (next > MAX_ATTEMPTS) {
+            stopPolling()
+            setBackendStatus('error')
+            return prev
+          }
+
+          if (next > 1) {
+            setBackendStatus((s) => (s === 'loading' ? 'loading' : 'retrying'))
+          }
+
+          return next
+        })
+
+        try {
+          await api.get(HEALTH_CHECK_URL)
           stopPolling()
-          setBackendStatus('error')
-          return prev
+          setBackendStatus('ready')
+        } catch {
+          // keep polling
         }
-
-        if (next > 1) {
-          setBackendStatus((s) => (s === 'loading' ? 'loading' : 'retrying'))
-        }
-
-        return next
-      })
-
-      try {
-        await api.get(HEALTH_CHECK_URL)
-        stopPolling()
-        setBackendStatus('ready')
-      } catch {
-        // keep polling
-      }
-    }, POLL_INTERVAL)
+      }, POLL_INTERVAL)
+    }, INITIAL_DELAY_MS)
   }, [stopPolling])
 
   useEffect(() => {
