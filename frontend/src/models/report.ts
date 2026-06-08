@@ -33,6 +33,9 @@ export interface ReportStats {
   summary: WeekSummary;
   fiado_pending: FiadoPending;
   top_product: TopProduct;
+  profit: number;
+  profit_margin: number;
+  expenses_total: number;
 }
 
 export interface RecentActivity {

@@ -2,7 +2,7 @@ from collections import Counter
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment
+from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment, Expense
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -124,3 +124,10 @@ class FiadoPaymentSerializer(serializers.ModelSerializer):
         model = FiadoPayment
         fields = '__all__'
         read_only_fields = ('date',)
+
+
+class ExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = '__all__'
+        read_only_fields = ('created_at',)

@@ -10,11 +10,11 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from decimal import Decimal
 from itertools import chain
-from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment
+from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment, Expense
 from .serializers import (
     CategorySerializer, ProductSerializer, ClientSerializer,
     SaleSerializer, SaleItemSerializer, FiadoPaymentSerializer,
-    SaleCreateSerializer
+    SaleCreateSerializer, ExpenseSerializer
 )
 
 
@@ -144,6 +144,11 @@ class FiadoPaymentViewSet(viewsets.ModelViewSet):
         })
 
 
+class ExpenseViewSet(viewsets.ModelViewSet):
+    queryset = Expense.objects.all()
+    serializer_class = ExpenseSerializer
+
+
 class DashboardStatsView(APIView):
     def get(self, request):
         today = timezone.localdate()
@@ -154,10 +159,11 @@ class DashboardStatsView(APIView):
         yesterday_start = timezone.make_aware(datetime.combine(yesterday, datetime.min.time()))
         yesterday_end = yesterday_start + timedelta(days=1)
 
-        ventas_hoy = Sale.objects.filter(
+        ventas_hoy_qs = Sale.objects.filter(
             created_at__range=(today_start, today_end),
             status='COMPLETED'
-        ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
+        )
+        ventas_hoy = ventas_hoy_qs.aggregate(total=Sum('total'))['total'] or Decimal('0.00')
 
         ventas_ayer = Sale.objects.filter(
             created_at__range=(yesterday_start, yesterday_end),
@@ -170,6 +176,18 @@ class DashboardStatsView(APIView):
         else:
             cambio_vs_ayer = "0.0"
 
+        # ── Ganancia del día ──
+        ganancia_dia = Decimal('0.00')
+        for sale in ventas_hoy_qs.prefetch_related('items__product'):
+            for item in sale.items.all():
+                cost = item.product.cost if item.product.cost else Decimal('0')
+                ganancia_dia += (item.unit_price - cost) * item.quantity
+
+        # ── Gastos del día ──
+        gastos_hoy = Expense.objects.filter(
+            date=today
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
         fiado_total = Client.objects.aggregate(total=Sum('current_debt'))['total'] or Decimal('0.00')
         clientes_fiado = Client.objects.filter(current_debt__gt=0).count()
         productos_bajo = Product.objects.filter(stock__lt=F('min_stock')).count()
@@ -177,6 +195,9 @@ class DashboardStatsView(APIView):
         return Response({
             'ventas_dia': f"{ventas_hoy:.2f}",
             'cambio_vs_ayer': cambio_vs_ayer,
+            'ganancia_dia': f"{ganancia_dia:.2f}",
+            'gastos_hoy': f"{gastos_hoy:.2f}",
+            'margen_dia': float(ganancia_dia / ventas_hoy * 100) if ventas_hoy > 0 else 0,
             'fiado_pendiente_total': f"{fiado_total:.2f}",
             'clientes_fiado_pendiente': clientes_fiado,
             'productos_stock_bajo': productos_bajo,
@@ -302,6 +323,21 @@ class ReportStatsView(APIView):
         else:
             top_product_data = None
 
+        total_profit = Decimal('0.00')
+        for sale in week_sales:
+            items = SaleItem.objects.filter(sale=sale).select_related('product')
+            for item in items:
+                cost = item.product.cost if item.product.cost else Decimal('0')
+                profit = (item.unit_price - cost) * item.quantity
+                total_profit += profit
+
+        profit_margin = (total_profit / total_week * 100) if total_week > 0 else Decimal('0')
+
+        week_expenses = Expense.objects.filter(
+            date__range=(monday, monday + timedelta(days=7))
+        )
+        expenses_total = week_expenses.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
         return Response({
             'week_days': week_days,
             'summary': {
@@ -314,6 +350,9 @@ class ReportStatsView(APIView):
                 'client_count': fiado_client_count,
             },
             'top_product': top_product_data,
+            'profit': float(total_profit),
+            'profit_margin': float(profit_margin),
+            'expenses_total': float(expenses_total),
         })
 
 

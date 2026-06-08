@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { MdOutlinePayments, MdTrendingUp, MdTrendingDown, MdPendingActions, MdOutlineGroup } from "react-icons/md";
+import { MdOutlinePayments, MdTrendingUp, MdTrendingDown, MdPendingActions, MdOutlineGroup, MdOutlineAccountBalanceWallet } from "react-icons/md";
 import { FaRegStar } from "react-icons/fa";
 import { useReportStore } from "../../../stores/reportStore";
 import WeeklyChartCard from "./WeeklyChartCard";
+import { ProductImage } from "../../ui/ProductImage";
 
 const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("es-CO", {
@@ -99,8 +100,27 @@ const MetricsSection = () => {
                 {stats && <WeeklyChartCard />}
 
                 {stats && (
-                    <div className="mt-auto text-on-surface-variant">
+                    <div className="mt-auto text-on-surface-variant space-y-1">
                         <p className="text-sm">Promedio diario: {formatCurrency(stats.summary.avg_per_day)}</p>
+                    </div>
+                )}
+
+                {stats && stats.profit !== undefined && (
+                    <div className="border-t border-outline-variant mt-4 pt-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-outline tracking-wider uppercase">Utilidad Bruta</p>
+                                <h4 className="font-bold text-green-600 text-xl">
+                                    {formatCurrency(stats.profit)}
+                                </h4>
+                                <p className="text-xs text-on-surface-variant">
+                                    Margen: {stats.profit_margin.toFixed(1)}%
+                                </p>
+                            </div>
+                            <span className="bg-green-50 p-2 rounded-full text-green-600 text-xl">
+                                <MdOutlineAccountBalanceWallet />
+                            </span>
+                        </div>
                     </div>
                 )}
             </section>
@@ -132,8 +152,14 @@ const MetricsSection = () => {
                                             }
                                         }}
                                     />
-                                ) : null}
-                                <div className={`fallback-star flex items-center justify-center w-full h-full text-outline ${stats.top_product.image ? 'hidden' : ''}`}>
+                                ) : (
+                                    <ProductImage
+                                        src={null}
+                                        name={stats.top_product.name}
+                                        className="w-full h-full"
+                                    />
+                                )}
+                                <div className={`fallback-star flex items-center justify-center w-full h-full text-outline hidden`}>
                                     <FaRegStar className="text-3xl" />
                                 </div>
                             </div>

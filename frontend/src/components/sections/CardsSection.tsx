@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { MdOutlinePayments, MdOutlineAssignmentLate } from "react-icons/md";
+import { MdOutlinePayments, MdOutlineAssignmentLate, MdTrendingUp } from "react-icons/md";
 import { CiWarning } from "react-icons/ci";
 import { useDashboardStore } from "../../stores/dashboardStore";
 
@@ -36,7 +36,7 @@ const CardsSection = () => {
   const cambioSigno = cambio >= 0 ? "+" : "";
 
   return (
-    <section id="servicios" className="grid grid-cols-1 gap-6 md:grid-cols-3">
+    <section id="servicios" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       <article className="bg-white border border-outline-variant p-4 rounded-xl transition-shadow hover:shadow-md lg:p-6">
         <div className="flex items-center justify-between mb-4">
           <span className="bg-secondary-container p-2 rounded-lg text-secondary text-xl lg:text-2xl">
@@ -50,6 +50,23 @@ const CardsSection = () => {
         <h4 className="font-black mt-1 text-title text-2xl">
           {stats ? formatCurrency(stats.ventas_dia) : "$0"}
         </h4>
+      </article>
+      <article className="bg-white border border-outline-variant p-4 rounded-xl transition-shadow hover:shadow-md lg:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <span className="bg-primary-container p-2 rounded-lg text-primary text-xl lg:text-2xl">
+            <MdTrendingUp />
+          </span>
+          <span className={`font-medium text-xs lg:text-lg 2xl:text-xl ${stats && stats.margen_dia >= 0 ? 'text-green-600' : 'text-text-error'}`}>
+            {stats ? `${stats.margen_dia.toFixed(1)}% margen` : '—'}
+          </span>
+        </div>
+        <p className="font-medium text-on-surface-variant">Ganancia del Día</p>
+        <h4 className="font-black mt-1 text-title text-2xl">
+          {stats ? formatCurrency(stats.ganancia_dia) : "$0"}
+        </h4>
+        <p className="text-xs text-on-surface-variant mt-1">
+          Gastos: {stats ? formatCurrency(stats.gastos_hoy) : "$0"}
+        </p>
       </article>
       <article className="bg-white border border-outline-variant p-4 rounded-xl transition-shadow hover:shadow-md lg:p-6">
         <div className="flex items-center justify-between mb-4">
