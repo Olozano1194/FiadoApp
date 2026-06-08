@@ -4,6 +4,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
 import Table from '../components/layout/Table';
 import ActionButtons from '../components/sections/table/ActionButton';
+import { ProductImage } from '../components/ui/ProductImage';
 import { useProductStore } from '../stores/productStore';
 import type { Product } from '../models/product';
 import type { ProductFormData } from '../models/product';
@@ -49,7 +50,38 @@ const ProductsPage = () => {
   const handleSubmit = async (data: ProductFormData) => {
     try {
       if (editingProduct) {
-        await updateProduct(editingProduct.id, data);
+        // ── PATCH: solo mandamos los campos que cambiaron ──
+        const changedData: Partial<ProductFormData> = {};
+
+        const keysToCheck: (keyof ProductFormData)[] = [
+          'name', 'description', 'price', 'cost', 'stock',
+          'min_stock', 'category', 'barcode', 'image',
+        ];
+
+        for (const key of keysToCheck) {
+          const originalVal = (editingProduct as any)[key];
+          const newVal = data[key];
+
+          // Si el usuario seleccionó una imagen nueva, siempre mandarla
+          if (key === 'image' && newVal instanceof File) {
+            changedData.image = newVal;
+            continue;
+          }
+
+          // Convertir ambos a string para comparar (normaliza null / undefined)
+          const origStr = originalVal == null ? '' : String(originalVal);
+          const newStr = newVal == null ? '' : String(newVal);
+
+          if (origStr !== newStr) {
+            (changedData as any)[key] = newVal;
+          }
+        }
+
+        // Si hay cambios, mandamos el PATCH parcial
+        if (Object.keys(changedData).length > 0) {
+          await updateProduct(editingProduct.id, changedData);
+        }
+
         toast.success('Producto Actualizado', {
           duration: 3000,
           position: 'bottom-right',
@@ -65,10 +97,24 @@ const ProductsPage = () => {
       }
       closeModal();
     } catch (error: any) {
-      const detail = error?.response?.data?.detail
-        || Object.values(error?.response?.data || {}).flat().join(', ')
-        || error?.message
-        || 'Error al guardar';
+      // ── Mejor manejo de errores ──
+      let detail = 'Error al guardar';
+
+      if (error?.response?.data) {
+        const data = error.response.data;
+        if (typeof data === 'string') {
+          // Django devuelve HTML en errores 500 — mostramos algo legible
+          detail = data.includes('<!DOCTYPE')
+            ? `Error del servidor (${error.response.status || 500})`
+            : data;
+        } else {
+          detail = data.detail
+            || Object.values(data).flat().join(', ');
+        }
+      } else if (error?.message) {
+        detail = error.message;
+      }
+
       toast.error(detail);
     }
   };
@@ -98,19 +144,13 @@ const ProductsPage = () => {
       header: 'Nombre',
       cell: info => (
         <div className="flex items-center gap-3">
-          {info.row.original.image ? (
-            <img
-              src={info.row.original.image}
-              alt={info.getValue()}
-              className="w-10 h-10 rounded-lg object-cover shrink-0"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
-              <span className="text-xs text-on-surface-variant font-bold">
-                {info.getValue().charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
+          <ProductImage
+            src={info.row.original.image}
+            name={info.getValue()}
+            categoryName={info.row.original.category_name}
+            className="w-10 h-10 rounded-lg shrink-0"
+            imgClassName="w-10 h-10 rounded-lg object-cover shrink-0"
+          />
           <span className="truncate">{info.getValue()}</span>
         </div>
       ),

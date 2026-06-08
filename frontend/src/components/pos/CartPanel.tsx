@@ -1,4 +1,5 @@
 import { useSaleStore } from '../../stores/saleStore';
+import { ProductImage } from '../ui/ProductImage';
 // icons
 import { RiDeleteBin6Line } from "react-icons/ri";
 
@@ -53,15 +54,13 @@ const CartPanel = () => {
           <div key={item.product.id} className="bg-surface rounded-lg p-3 border border-surface-border flex gap-3">
             {/* Imagen del producto */}
             <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-surface-container">
-              {item.product.image ? (
-                <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/10 to-secondary/10">
-                  <svg className="w-6 h-6 text-on-surface-variant/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                </div>
-              )}
+              <ProductImage
+                src={item.product.image}
+                name={item.product.name}
+                categoryName={item.product.category_name}
+                className="w-full h-full"
+                imgClassName="w-full h-full object-cover"
+              />
             </div>
             {/* Info del producto */}
             <div className="flex-1 min-w-0">

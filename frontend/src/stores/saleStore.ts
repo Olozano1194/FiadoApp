@@ -14,6 +14,8 @@ interface SaleStore {
   isSubmitting: boolean;
   lastSale: Sale | null;
   error: string | null;
+  cashReceived: number;
+  change: number;
   fetchSales: () => Promise<void>;
   fetchRecentSales: (limit?: number) => Promise<void>;
   createSale: (data: Partial<Sale>) => Promise<void>;
@@ -23,6 +25,7 @@ interface SaleStore {
   clearCart: () => void;
   setPaymentMethod: (method: 'CASH' | 'CREDIT') => void;
   setSelectedClient: (client: Client | null) => void;
+  setCashReceived: (amount: number) => void;
   completeSale: () => Promise<void>;
   getCartTotal: () => number;
 }
@@ -37,6 +40,8 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   isSubmitting: false,
   lastSale: null,
   error: null,
+  cashReceived: 0,
+  change: 0,
   fetchSales: async () => {
     set({ loading: true });
     try {
@@ -92,13 +97,18 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     });
   },
   clearCart: () => {
-    set({ cart: [], selectedPaymentMethod: 'CASH', selectedClient: null, lastSale: null, error: null });
+    set({ cart: [], selectedPaymentMethod: 'CASH', selectedClient: null, lastSale: null, error: null, cashReceived: 0, change: 0 });
   },
   setPaymentMethod: (method) => {
-    set({ selectedPaymentMethod: method });
+    const reset = method === 'CREDIT' ? { cashReceived: 0, change: 0 } : {};
+    set({ selectedPaymentMethod: method, ...reset });
   },
   setSelectedClient: (client) => {
     set({ selectedClient: client });
+  },
+  setCashReceived: (amount) => {
+    const total = get().getCartTotal();
+    set({ cashReceived: amount, change: amount - total });
   },
   completeSale: async () => {
     const state = get();
@@ -115,9 +125,13 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
         client: state.selectedClient?.id ?? null,
         total: state.cart.reduce((sum, item) => sum + item.subtotal, 0),
         status: 'COMPLETED',
+        ...(state.selectedPaymentMethod === 'CASH' && {
+          cash_received: state.cashReceived,
+          change_given: state.change,
+        }),
       };
       const res = await salesApi.createSale(payload);
-      set({ lastSale: res.data, isSubmitting: false, cart: [], selectedClient: null, selectedPaymentMethod: 'CASH' });
+      set({ lastSale: res.data, isSubmitting: false, cart: [], selectedClient: null, selectedPaymentMethod: 'CASH', cashReceived: 0, change: 0 });
     } catch {
       set({ isSubmitting: false, error: 'Error al procesar la venta' });
     }

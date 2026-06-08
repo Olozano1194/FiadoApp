@@ -2,14 +2,7 @@ import { useEffect, useState } from "react";
 import { MdOutlineInventory } from "react-icons/md";
 import { useProductStore } from "../../../../stores/productStore";
 import StockOrderModal from "../../../ui/StockOrderModal";
-
-const placeholderColors = [
-  "bg-primary",
-  "bg-tertiary",
-  "bg-error-container",
-  "bg-secondary",
-  "bg-on-surface-variant",
-];
+import { ProductImage } from "../../../ui/ProductImage";
 
 const INITIAL_SHOWN = 5;
 
@@ -41,15 +34,15 @@ const LowStockSection = () => {
           <div className="text-center py-4 text-on-surface-variant">No hay productos con stock bajo</div>
         ) : (
           <>
-            {visibleProducts.map((product, index) => (
+            {visibleProducts.map((product) => (
               <article key={product.id} className="bg-white border border-outline-variant flex gap-4 group items-center p-4 rounded-xl transition-all hover:shadow-sm">
-                <div className={`${placeholderColors[index % placeholderColors.length]} flex h-12 items-center justify-center overflow-hidden rounded-lg shrink-0 w-12`}>
-                  {product.image ? (
-                    <img src={product.image} className="h-full object-cover w-full" alt={product.name} />
-                  ) : (
-                    <span className="text-white font-bold text-lg">{product.name.charAt(0).toUpperCase()}</span>
-                  )}
-                </div>
+                <ProductImage
+                  src={product.image}
+                  name={product.name}
+                  categoryName={product.category_name}
+                  className="w-12 h-12 rounded-lg shrink-0"
+                  imgClassName="w-full h-full object-cover"
+                />
                 <div className="flex-1">
                   <p className="font-semibold text-on-bg text-lg lg:text-xl">{product.name}</p>
                   <p className="font-mono text-on-surface-variant lg:text-lg">{product.category_name || 'Sin categoría'}</p>

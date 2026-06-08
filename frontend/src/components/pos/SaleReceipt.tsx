@@ -63,6 +63,19 @@ const SaleReceipt = () => {
           <span className="text-xl font-bold text-primary">{formatCurrency(lastSale.total)}</span>
         </div>
 
+        {lastSale.payment_method === 'CASH' && lastSale.cash_received && (
+          <>
+            <div className="flex justify-between text-sm text-on-surface-variant mb-2">
+              <span>Monto recibido</span>
+              <span className="font-medium text-text-primary">{formatCurrency(lastSale.cash_received)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-on-surface-variant mb-2">
+              <span>Cambio</span>
+              <span className="font-medium text-success">{formatCurrency(lastSale.change_given ?? 0)}</span>
+            </div>
+          </>
+        )}
+
         <div className="flex justify-between text-sm text-on-surface-variant mb-6">
           <span>Método de pago</span>
           <span className="font-medium text-text-primary">

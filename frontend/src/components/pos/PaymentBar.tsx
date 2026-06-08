@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useSaleStore } from '../../stores/saleStore';
 import ClientSelect from './ClientSelect';
 import { toast } from 'react-hot-toast';
@@ -12,20 +12,39 @@ const formatCurrency = (amount: number | string): string => {
   }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
 };
 
+const formatCashInput = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  return new Intl.NumberFormat('es-CO').format(parseInt(digits, 10));
+};
+
 const PaymentBar = () => {
   const [clientSelectOpen, setClientSelectOpen] = useState(false);
+  const [cashInput, setCashInput] = useState('');
   const cart = useSaleStore(s => s.cart);
   const selectedPaymentMethod = useSaleStore(s => s.selectedPaymentMethod);
   const selectedClient = useSaleStore(s => s.selectedClient);
   const isSubmitting = useSaleStore(s => s.isSubmitting);
+  const cashReceived = useSaleStore(s => s.cashReceived);
+  const change = useSaleStore(s => s.change);
   const getCartTotal = useSaleStore(s => s.getCartTotal);
   const setPaymentMethod = useSaleStore(s => s.setPaymentMethod);
+  const setCashReceived = useSaleStore(s => s.setCashReceived);
   const completeSale = useSaleStore(s => s.completeSale);
   const error = useSaleStore(s => s.error);
 
   const total = getCartTotal();
   const cartEmpty = cart.length === 0;
-  const canSubmit = !cartEmpty && !(selectedPaymentMethod === 'CREDIT' && !selectedClient);
+  const isCash = selectedPaymentMethod === 'CASH';
+  const cashInsufficient = isCash && (cashReceived < total || cashReceived === 0);
+  const canSubmit = !cartEmpty && !(selectedPaymentMethod === 'CREDIT' && !selectedClient) && !(isCash && cashInsufficient);
+
+  const handleCashChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    const numeric = raw ? parseInt(raw, 10) : 0;
+    setCashInput(formatCashInput(raw));
+    setCashReceived(numeric);
+  }, [setCashReceived]);
 
   const handleCompleteSale = async () => {
     await completeSale();
@@ -94,6 +113,27 @@ const PaymentBar = () => {
         <div className="flex-1 text-right">
           <span className="text-2xl font-bold text-primary">{formatCurrency(total)}</span>
         </div>
+
+        {isCash && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <span className="text-sm text-on-surface-variant">Monto recibido:</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={cashInput}
+                onChange={handleCashChange}
+                placeholder="$0"
+                className="w-28 bg-surface border border-surface-border rounded-lg px-3 py-2 text-sm text-right font-medium text-text-primary outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            {(cashReceived > 0 || total === 0) && (
+              <span className={`text-sm font-bold whitespace-nowrap ${change >= 0 ? 'text-primary' : 'text-text-error'}`}>
+                Cambio: {formatCurrency(change)}
+              </span>
+            )}
+          </div>
+        )}
 
         <button
           onClick={handleCompleteSale}

@@ -15,6 +15,8 @@ export interface SaleCreatePayload {
   client?: number | null;
   total: number;
   status?: 'COMPLETED';
+  cash_received?: number;
+  change_given?: number;
 }
 
 export interface Sale {
@@ -26,6 +28,8 @@ export interface Sale {
   payment_method: PaymentMethod;
   status: SaleStatus;
   notes?: string;
+  cash_received?: string;
+  change_given?: string;
   items: SaleItem[];
 }
 

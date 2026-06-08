@@ -10,7 +10,7 @@ interface ProductStore {
   fetchProducts: () => Promise<void>;
   fetchLowStock: () => Promise<void>;
   createProduct: (data: ProductFormData) => Promise<void>;
-  updateProduct: (id: number, data: ProductFormData) => Promise<void>;
+  updateProduct: (id: number, data: Partial<ProductFormData>) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
 }
 

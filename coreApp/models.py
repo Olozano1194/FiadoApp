@@ -67,6 +67,8 @@ class Sale(models.Model):
         max_length=10, choices=Status.choices, default=Status.COMPLETED
     )
     notes = models.TextField(blank=True, null=True)
+    cash_received = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    change_given = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return f"Venta #{self.id} - {self.created_at.strftime('%d/%m/%Y')}"
@@ -96,3 +98,27 @@ class FiadoPayment(models.Model):
 
     def __str__(self):
         return f"Pago ${self.amount} - {self.date.strftime('%d/%m/%Y')}"
+
+
+class Expense(models.Model):
+    class Category(models.TextChoices):
+        RENT = 'RENT', 'Alquiler'
+        SERVICES = 'SERVICES', 'Servicios'
+        INVENTORY = 'INVENTORY', 'Reposición de Inventario'
+        SALARY = 'SALARY', 'Sueldos'
+        TAXES = 'TAXES', 'Impuestos'
+        MARKETING = 'MARKETING', 'Marketing'
+        MAINTENANCE = 'MAINTENANCE', 'Mantenimiento'
+        OTHER = 'OTHER', 'Varios'
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=Category.choices)
+    date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.get_category_display()} - ${self.amount}"
