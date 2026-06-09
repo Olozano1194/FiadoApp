@@ -1,4 +1,3 @@
-from django.db import transaction
 from rest_framework import serializers, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -167,11 +166,7 @@ class CashClosureViewSet(viewsets.ModelViewSet):
         today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
         today_end = today_start + timedelta(days=1)
 
-        if CashClosure.objects.filter(date=today).exists():
-            return Response(
-                {'detail': 'Ya existe un cierre para hoy'},
-                status=status.HTTP_409_CONFLICT
-            )
+        existing_closure = CashClosure.objects.filter(date=today).first()
 
         cash_sales = Sale.objects.filter(
             created_at__range=(today_start, today_end),
@@ -213,7 +208,7 @@ class CashClosureViewSet(viewsets.ModelViewSet):
 
         expected_cash = cash_sales + fiado_payments - expenses
 
-        return Response({
+        result = {
             'date': today.isoformat(),
             'total_sales': f"{total_sales:.2f}",
             'cash_sales': f"{cash_sales:.2f}",
@@ -223,22 +218,20 @@ class CashClosureViewSet(viewsets.ModelViewSet):
             'expenses': f"{expenses:.2f}",
             'net_profit': f"{net_profit:.2f}",
             'expected_cash': f"{expected_cash:.2f}",
-        })
+        }
+
+        if existing_closure:
+            result['already_closed'] = True
+            result['last_closure'] = existing_closure.created_at.isoformat()
+            result['last_counted_cash'] = f"{existing_closure.counted_cash:.2f}"
+            result['last_discrepancy'] = f"{existing_closure.discrepancy:.2f}"
+
+        return Response(result)
 
     def create(self, request, *args, **kwargs):
-        today = timezone.localdate()
-
-        with transaction.atomic():
-            closure_qs = CashClosure.objects.select_for_update().filter(date=today)
-            if closure_qs.exists():
-                return Response(
-                    {'detail': 'Ya existe un cierre para hoy'},
-                    status=status.HTTP_409_CONFLICT
-                )
-
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
 
         output_serializer = CashClosureSerializer(instance=serializer.instance)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)

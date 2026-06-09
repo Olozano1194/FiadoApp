@@ -26,6 +26,10 @@ export interface CashClosurePreview {
   expenses: string;
   net_profit: string;
   expected_cash: string;
+  already_closed?: boolean;
+  last_closure?: string;
+  last_counted_cash?: string;
+  last_discrepancy?: string;
 }
 
 export interface CreateClosurePayload {

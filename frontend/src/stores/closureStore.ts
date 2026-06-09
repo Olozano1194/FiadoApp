@@ -7,13 +7,14 @@ interface ClosureStore {
   loading: boolean;
   creating: boolean;
   error: string | null;
+  isAlreadyClosed: boolean;
 
   fetchPreview: () => Promise<void>;
   createClosure: (countedCash: number, notes?: string) => Promise<void>;
   reset: () => void;
 }
 
-export const useClosureStore = create<ClosureStore>((set) => ({
+export const useClosureStore = create<ClosureStore>((set, get) => ({
   preview: null,
   loading: false,
   creating: false,
@@ -29,10 +30,6 @@ export const useClosureStore = create<ClosureStore>((set) => ({
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { detail?: string }; status?: number } };
         message = axiosErr.response?.data?.detail || message;
-        if (axiosErr.response?.status === 409) {
-          set({ loading: false });
-          throw err;
-        }
       }
       set({ loading: false, error: message });
     }
@@ -52,6 +49,10 @@ export const useClosureStore = create<ClosureStore>((set) => ({
       set({ creating: false, error: message });
       throw err;
     }
+  },
+
+  get isAlreadyClosed() {
+    return get().preview?.already_closed ?? false;
   },
 
   reset: () => {

@@ -15,7 +15,7 @@ const formatCurrency = (amount: string | number): string => {
 
 const CierrePage = () => {
   const navigate = useNavigate();
-  const { preview, loading, creating, error, fetchPreview, createClosure } =
+  const { preview, loading, creating, error, isAlreadyClosed, fetchPreview, createClosure } =
     useClosureStore();
 
   const [countedCash, setCountedCash] = useState<string>("");
@@ -39,37 +39,15 @@ const CierrePage = () => {
   const discrepancyIcon = discrepancy === 0 ? "✅" : "⚠️";
 
   useEffect(() => {
-    const loadPreview = async () => {
-      try {
-        await fetchPreview();
-      } catch (err: unknown) {
-        if (err && typeof err === 'object' && 'response' in err) {
-          const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
-          if (axiosErr.response?.status === 409) {
-            toast.error(axiosErr.response?.data?.detail || 'Ya existe un cierre para hoy');
-            navigate('/');
-            return;
-          }
-        }
-      }
-    };
-    loadPreview();
-  }, [fetchPreview, navigate]);
+    fetchPreview();
+  }, [fetchPreview]);
 
   const handleSubmit = async () => {
     try {
       await createClosure(countedValue);
-      toast.success("Cierre registrado exitosamente");
+      toast.success(isAlreadyClosed ? "Cierre actualizado exitosamente" : "Cierre registrado exitosamente");
       navigate("/");
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "response" in err) {
-        const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
-        if (axiosErr.response?.status === 409) {
-          toast.error(axiosErr.response?.data?.detail || "Ya existe un cierre para hoy");
-          navigate("/");
-          return;
-        }
-      }
+    } catch {
       toast.error("Error de conexión");
     }
   };
@@ -118,6 +96,17 @@ const CierrePage = () => {
             : ""}
         </p>
       </div>
+
+      {isAlreadyClosed && preview?.last_closure && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <span className="text-amber-600 text-lg mt-0.5">⚠️</span>
+          <div>
+            <p className="text-amber-800 font-semibold text-sm">
+              Ya hay un cierre registrado hoy a las {new Date(preview.last_closure).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}. Al cerrar de nuevo se actualizará.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Resumen del día */}
       <div className="bg-white border border-outline-variant rounded-xl p-6">
@@ -195,7 +184,7 @@ const CierrePage = () => {
         disabled={creating}
         className="w-full bg-primary text-on-surface py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
-        {creating ? "Cerrando caja..." : "Cerrar Caja"}
+        {creating ? "Cerrando caja..." : isAlreadyClosed ? "Actualizar Cierre" : "Cerrar Caja"}
       </button>
     </section>
   );

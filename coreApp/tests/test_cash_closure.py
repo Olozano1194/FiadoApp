@@ -141,16 +141,23 @@ class CashClosurePreviewTest(BaseClosureTest):
         response = self.client.get("/api/cash-closures/preview/")
         self.assertEqual(response.data["total_sales"], "0.00")
 
-    def test_preview_returns_409_if_closure_exists_today(self):
-        CashClosure.objects.create(
-            date=timezone.localdate(), counted_cash=Decimal("0")
+    def test_preview_returns_closure_info_if_exists_today(self):
+        closure = CashClosure.objects.create(
+            date=timezone.localdate(),
+            counted_cash=Decimal("500"),
+            discrepancy=Decimal("50"),
         )
 
         response = self.client.get("/api/cash-closures/preview/")
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["already_closed"])
         self.assertEqual(
-            response.data["detail"], "Ya existe un cierre para hoy"
+            response.data["last_closure"],
+            closure.created_at.isoformat(),
         )
+        self.assertEqual(response.data["last_counted_cash"], "500.00")
+        self.assertEqual(response.data["last_discrepancy"], "50.00")
+        self.assertEqual(response.data["total_sales"], "0.00")
 
     def test_preview_net_profit_calculation(self):
         self._create_sale("CASH", Decimal("1000"))
@@ -232,7 +239,7 @@ class CashClosureCreateTest(BaseClosureTest):
         self.assertEqual(closure.discrepancy, Decimal("50.00"))
         self.assertEqual(closure.created_by, self.user)
 
-    def test_duplicate_closure_returns_409(self):
+    def test_duplicate_closure_updates_existing(self):
         self._create_sale("CASH", Decimal("500"))
 
         r1 = self.client.post(
@@ -241,16 +248,21 @@ class CashClosureCreateTest(BaseClosureTest):
             format="json",
         )
         self.assertEqual(r1.status_code, 201)
+        self.assertEqual(r1.data["expected_cash"], "500.00")
+
+        self._create_sale("CASH", Decimal("300"))
 
         r2 = self.client.post(
             "/api/cash-closures/",
-            {"counted_cash": "500.00"},
+            {"counted_cash": "800.00"},
             format="json",
         )
-        self.assertEqual(r2.status_code, 409)
-        self.assertEqual(
-            r2.data["detail"], "Ya existe un cierre para hoy"
-        )
+        self.assertEqual(r2.status_code, 201)
+        self.assertEqual(r2.data["expected_cash"], "800.00")
+        self.assertEqual(r2.data["counted_cash"], "800.00")
+        self.assertEqual(r2.data["discrepancy"], "0.00")
+
+        self.assertEqual(CashClosure.objects.count(), 1)
 
     def test_discrepancy_zero_when_counted_equals_expected(self):
         self._create_sale("CASH", Decimal("1000"))

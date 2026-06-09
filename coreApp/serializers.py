@@ -195,18 +195,21 @@ class CashClosureCreateSerializer(serializers.Serializer):
         counted_cash = validated_data['counted_cash']
         discrepancy = counted_cash - expected_cash
 
-        return CashClosure.objects.create(
+        closure, _ = CashClosure.objects.update_or_create(
             date=today,
-            total_sales=total_sales,
-            cash_sales=cash_sales,
-            credit_sales=credit_sales,
-            sales_count=sales_count,
-            fiado_payments=fiado_payments,
-            expenses=expenses,
-            net_profit=net_profit,
-            expected_cash=expected_cash,
-            counted_cash=counted_cash,
-            discrepancy=discrepancy,
-            notes=validated_data.get('notes', ''),
-            created_by=validated_data.get('created_by'),
+            defaults={
+                'total_sales': total_sales,
+                'cash_sales': cash_sales,
+                'credit_sales': credit_sales,
+                'sales_count': sales_count,
+                'fiado_payments': fiado_payments,
+                'expenses': expenses,
+                'net_profit': net_profit,
+                'expected_cash': expected_cash,
+                'counted_cash': counted_cash,
+                'discrepancy': discrepancy,
+                'notes': validated_data.get('notes', ''),
+                'created_by': validated_data.get('created_by'),
+            },
         )
+        return closure
