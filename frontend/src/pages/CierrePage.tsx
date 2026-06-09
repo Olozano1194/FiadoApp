@@ -39,8 +39,22 @@ const CierrePage = () => {
   const discrepancyIcon = discrepancy === 0 ? "✅" : "⚠️";
 
   useEffect(() => {
-    fetchPreview();
-  }, [fetchPreview]);
+    const loadPreview = async () => {
+      try {
+        await fetchPreview();
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'response' in err) {
+          const axiosErr = err as { response?: { status?: number; data?: { detail?: string } } };
+          if (axiosErr.response?.status === 409) {
+            toast.error(axiosErr.response?.data?.detail || 'Ya existe un cierre para hoy');
+            navigate('/');
+            return;
+          }
+        }
+      }
+    };
+    loadPreview();
+  }, [fetchPreview, navigate]);
 
   const handleSubmit = async () => {
     try {

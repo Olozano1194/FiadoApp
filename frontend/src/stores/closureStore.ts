@@ -28,10 +28,10 @@ export const useClosureStore = create<ClosureStore>((set) => ({
       let message = 'Error al cargar previsualización';
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { detail?: string }; status?: number } };
+        message = axiosErr.response?.data?.detail || message;
         if (axiosErr.response?.status === 409) {
-          message = axiosErr.response?.data?.detail || message;
-        } else {
-          message = axiosErr.response?.data?.detail || message;
+          set({ loading: false });
+          throw err;
         }
       }
       set({ loading: false, error: message });
