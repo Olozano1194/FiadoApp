@@ -206,7 +206,7 @@ const CierrePage = () => {
       </button>
 
       {/* Cierres anteriores */}
-      <div className="space-y-3">
+      <div className="space-y-3 text-on-surface-variant">
         <button
           onClick={handleToggleHistory}
           className="w-full text-center py-3 rounded-xl font-semibold text-sm border border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer"
