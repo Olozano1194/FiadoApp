@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,11 +11,12 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from decimal import Decimal
 from itertools import chain
-from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment, Expense
+from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment, Expense, CashClosure
 from .serializers import (
     CategorySerializer, ProductSerializer, ClientSerializer,
     SaleSerializer, SaleItemSerializer, FiadoPaymentSerializer,
-    SaleCreateSerializer, ExpenseSerializer
+    SaleCreateSerializer, ExpenseSerializer,
+    CashClosureSerializer, CashClosureCreateSerializer
 )
 
 
@@ -147,6 +149,102 @@ class FiadoPaymentViewSet(viewsets.ModelViewSet):
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
+
+
+class CashClosureViewSet(viewsets.ModelViewSet):
+    queryset = CashClosure.objects.all()
+    serializer_class = CashClosureSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CashClosureCreateSerializer
+        return CashClosureSerializer
+
+    @action(detail=False, methods=['get'])
+    def preview(self, request):
+        today = timezone.localdate()
+        today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+        today_end = today_start + timedelta(days=1)
+
+        if CashClosure.objects.filter(date=today).exists():
+            return Response(
+                {'detail': 'Ya existe un cierre para hoy'},
+                status=status.HTTP_409_CONFLICT
+            )
+
+        cash_sales = Sale.objects.filter(
+            created_at__range=(today_start, today_end),
+            status='COMPLETED',
+            payment_method='CASH'
+        ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
+
+        credit_sales = Sale.objects.filter(
+            created_at__range=(today_start, today_end),
+            status='COMPLETED',
+            payment_method='CREDIT'
+        ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
+
+        total_sales = cash_sales + credit_sales
+
+        sales_count = Sale.objects.filter(
+            created_at__range=(today_start, today_end),
+            status='COMPLETED'
+        ).count()
+
+        fiado_payments = FiadoPayment.objects.filter(
+            date__range=(today_start, today_end)
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+        expenses = Expense.objects.filter(
+            date=today
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+        today_sales = Sale.objects.filter(
+            created_at__range=(today_start, today_end),
+            status='COMPLETED'
+        ).prefetch_related('items__product')
+
+        net_profit = Decimal('0.00')
+        for sale in today_sales:
+            for item in sale.items.all():
+                cost = item.product.cost or Decimal('0')
+                net_profit += (item.unit_price - cost) * item.quantity
+
+        expected_cash = cash_sales + fiado_payments - expenses
+
+        return Response({
+            'date': today.isoformat(),
+            'total_sales': f"{total_sales:.2f}",
+            'cash_sales': f"{cash_sales:.2f}",
+            'credit_sales': f"{credit_sales:.2f}",
+            'sales_count': sales_count,
+            'fiado_payments': f"{fiado_payments:.2f}",
+            'expenses': f"{expenses:.2f}",
+            'net_profit': f"{net_profit:.2f}",
+            'expected_cash': f"{expected_cash:.2f}",
+        })
+
+    def create(self, request, *args, **kwargs):
+        today = timezone.localdate()
+
+        with transaction.atomic():
+            closure_qs = CashClosure.objects.select_for_update().filter(date=today)
+            if closure_qs.exists():
+                return Response(
+                    {'detail': 'Ya existe un cierre para hoy'},
+                    status=status.HTTP_409_CONFLICT
+                )
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+
+        output_serializer = CashClosureSerializer(instance=serializer.instance)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class DashboardStatsView(APIView):

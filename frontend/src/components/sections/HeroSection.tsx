@@ -12,13 +12,13 @@ const HeroSection = () => {
             <div className="flex flex-wrap gap-4">
                 <button
                     onClick={() => navigate('/clientes')}
-                    className="bg-secondary-container flex font-mono gap-2 items-center px-6 py-3 rounded-xl text-secondary transition-all hover:bg-opacity-90 active:scale-95"
+                    className="bg-secondary-container cursor-pointer flex font-mono gap-2 items-center px-6 py-3 rounded-xl text-secondary transition-all hover:bg-opacity-90 active:scale-95"
                 >
                     <span><MdPersonAddAlt /></span>Agregar Cliente
                 </button>
                 <button
                     onClick={() => navigate('/ventas')}
-                    className="bg-primary flex font-mono gap-2 items-center px-6 py-3 rounded-xl shadow-sm text-on-surface transition-all hover:bg-opacity-90 active:scale-95"
+                    className="bg-primary cursor-pointer flex font-mono gap-2 items-center px-6 py-3 rounded-xl shadow-sm text-on-surface transition-all hover:bg-opacity-90 active:scale-95"
                 >
                     <span><MdAddShoppingCart /></span>Nueva Venta
                 </button>

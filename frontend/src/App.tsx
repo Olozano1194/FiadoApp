@@ -13,6 +13,7 @@ import PosPage from './pages/PosPage'
 import SalesHistoryPage from './pages/SalesHistoryPage'
 import ReportPage from './pages/ReportPage'
 import SettingsPage from './pages/SettingsPage'
+import CierrePage from './pages/CierrePage'
 import api from './api/axios.config'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
@@ -113,6 +114,7 @@ const App = () => {
           <Route path="clientes" element={<ClientsPage />} />
           <Route path="ventas/historial" element={<SalesHistoryPage />} />
           <Route path="ventas" element={<PosPage />} />
+          <Route path="cierre" element={<CierrePage />} />
           <Route path="reportes" element={<ReportPage />} />
           <Route path="ajustes" element={<SettingsPage />} />
         </Route>

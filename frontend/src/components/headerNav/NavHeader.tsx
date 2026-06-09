@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useDeferredValue } from "react";
 import { useNavigate } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
+import { RiLogoutCircleLine } from "react-icons/ri";
 import { Menu } from '@headlessui/react';
 import NotificationMenu from "../../components/headerNav/NotificationMenu";
 import logo from "../../assets/logo.png";
+import { useAuthStore } from "../../stores/authStore";
 import { searchAll } from "../../api/search.api";
 import type { SearchResult } from "../../api/search.api";
 
@@ -47,6 +49,11 @@ const NavHeader = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    useAuthStore.getState().logout();
+    navigate("/login");
+  };
 
   const handleSelect = (type: "products" | "clients", id: number) => {
     setShowDropdown(false);
@@ -129,6 +136,13 @@ const NavHeader = () => {
         <Menu>
           <NotificationMenu />
         </Menu>
+        <button
+          onClick={handleLogout}
+          className="p-2 rounded-lg hover:bg-surface-container-low text-outline transition-colors cursor-pointer"
+          title="Cerrar sesión"
+        >
+          <RiLogoutCircleLine className="size-5" />
+        </button>
       </div>
     </nav>
   );

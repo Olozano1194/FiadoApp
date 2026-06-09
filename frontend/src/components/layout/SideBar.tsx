@@ -1,7 +1,6 @@
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
+import { Link, useLocation } from "react-router-dom";
 // icons
-import { RiLogoutCircleLine, RiGroupLine } from "react-icons/ri";
+import { RiGroupLine, RiLogoutCircleLine } from "react-icons/ri";
 import { IoHomeOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdOutlineAnalytics } from "react-icons/md";
 import { CiSettings } from "react-icons/ci";
@@ -18,24 +17,9 @@ export interface SubMenuState {
 }
 
 const SideBar = () => {
-    const navigate = useNavigate();
     const location = useLocation();
 
     const isActive = (path: string) => location.pathname === path;
-
-    // const [toggleMenu, setToggleMenu] = useState(false);      
-
- 
-
-    // Esta función nos sirve para cerrar la sesión
-    const handleLogOut = () => {
-        useAuthStore.getState().logout();
-        navigate("/login");
-    };
-
-    //función para capitalizar
-    // const formatRole = (role: string): string =>
-    //     role.charAt(0).toUpperCase() + role.slice(1);
 
     return (
         <>
@@ -87,6 +71,12 @@ const SideBar = () => {
                             </span>                            
                             Reportes
                         </Link>
+                        <Link to="/cierre" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/cierre') ? ' bg-surface-container-high' : ''}`}>
+                            <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/cierre') ? ' text-text-primary' : ''}`}>
+                                <RiLogoutCircleLine />
+                            </span>                            
+                            Cerrar Turno
+                        </Link>
                         <Link to="/ajustes" className={`flex group items-center px-4 py-3 rounded-lg text-on-surface-variant transition-all hover:bg-surface-container-high${isActive('/ajustes') ? ' bg-surface-container-high' : ''}`}>
                             <span className={`font-black group-hover:text-text-primary mr-3 text-outline text-lg${isActive('/ajustes') ? ' text-text-primary' : ''}`}>
                                 <CiSettings />
@@ -95,20 +85,7 @@ const SideBar = () => {
                         </Link>                          
                     </nav>
                 </div>
-                {/* Cerrar Turno */}
-                <nav className="px-2">
-                    <ul className="border-t border-nav/30 flex flex-col gap-4">
-                        <li>
-                            <button
-                                onClick={handleLogOut}
-                                className="cursor-pointer w-full flex items-center gap-3 py-2 px-4 rounded-b-lg hover:bg-surface-container-high text-outline font-semibold transition-colors"
-                            >
-                                <RiLogoutCircleLine className="text-primary" />
-                                Cerrar Turno
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
+
             </aside>
             {/* <button
                 onClick={() => setToggleMenu(!toggleMenu)}

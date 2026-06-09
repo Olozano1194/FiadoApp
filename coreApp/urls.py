@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from coreApp.serializers import CustomTokenObtainPairSerializer
 from coreApp.views import (
     HealthCheckView, CategoryViewSet, ProductViewSet, ClientViewSet,
-    SaleViewSet, FiadoPaymentViewSet, ExpenseViewSet,
+    SaleViewSet, FiadoPaymentViewSet, ExpenseViewSet, CashClosureViewSet,
     DashboardStatsView, SearchView,
     ReportStatsView, RecentActivityView,
     ChangePasswordView, ExportClientsView,
@@ -22,6 +22,7 @@ router.register(r'clients', ClientViewSet)
 router.register(r'sales', SaleViewSet)
 router.register(r'fiado-payments', FiadoPaymentViewSet)
 router.register(r'expenses', ExpenseViewSet)
+router.register(r'cash-closures', CashClosureViewSet)
 
 token_obtain_view = TokenObtainPairView.as_view(serializer_class=CustomTokenObtainPairSerializer)
 token_obtain_view.permission_classes = [AllowAny]

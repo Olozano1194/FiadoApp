@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment
+from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment, CashClosure
 
 
 @admin.register(Category)
@@ -35,4 +35,11 @@ class SaleItemAdmin(admin.ModelAdmin):
 @admin.register(FiadoPayment)
 class FiadoPaymentAdmin(admin.ModelAdmin):
     list_display = ['client', 'amount', 'date']
+    list_filter = ['date']
+
+
+@admin.register(CashClosure)
+class CashClosureAdmin(admin.ModelAdmin):
+    list_display = ['date', 'total_sales', 'expected_cash', 'counted_cash', 'discrepancy', 'created_by', 'created_at']
+    search_fields = ['date']
     list_filter = ['date']

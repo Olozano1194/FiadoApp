@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Category(models.Model):
@@ -122,3 +124,30 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.get_category_display()} - ${self.amount}"
+
+
+class CashClosure(models.Model):
+    date = models.DateField(unique=True, default=timezone.localdate)
+    total_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cash_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    credit_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sales_count = models.IntegerField(default=0)
+    fiado_payments = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    net_profit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expected_cash = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    counted_cash = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discrepancy = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Cierre de Caja"
+        verbose_name_plural = "Cierres de Caja"
+
+    def __str__(self):
+        return f"Cierre {self.date} — Efectivo: ${self.counted_cash}"
