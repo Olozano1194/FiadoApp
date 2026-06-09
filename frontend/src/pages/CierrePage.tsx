@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useClosureStore } from "../stores/closureStore";
 import { MdOutlineInfo } from "react-icons/md";
+import { listClosures } from "../api/cash-closure.api";
+import type { CashClosure } from "../models/cash-closure";
 
 const formatCurrency = (amount: string | number): string => {
   return new Intl.NumberFormat("es-CO", {
@@ -19,6 +21,9 @@ const CierrePage = () => {
     useClosureStore();
 
   const [countedCash, setCountedCash] = useState<string>("");
+  const [showHistory, setShowHistory] = useState(false);
+  const [closures, setClosures] = useState<CashClosure[]>([]);
+  const [closuresLoaded, setClosuresLoaded] = useState(false);
 
   const expectedCash = useMemo(
     () => Math.round(Number(preview?.expected_cash ?? 0)),
@@ -50,6 +55,19 @@ const CierrePage = () => {
     } catch {
       toast.error("Error de conexión");
     }
+  };
+
+  const handleToggleHistory = async () => {
+    if (!closuresLoaded) {
+      try {
+        const data = await listClosures();
+        setClosures(data);
+      } catch {
+        toast.error("Error al cargar cierres anteriores");
+      }
+      setClosuresLoaded(true);
+    }
+    setShowHistory((prev) => !prev);
   };
 
   if (loading) {
@@ -186,6 +204,47 @@ const CierrePage = () => {
       >
         {creating ? "Cerrando caja..." : isAlreadyClosed ? "Actualizar Cierre" : "Cerrar Caja"}
       </button>
+
+      {/* Cierres anteriores */}
+      <div className="space-y-3">
+        <button
+          onClick={handleToggleHistory}
+          className="w-full text-center py-3 rounded-xl font-semibold text-sm border border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+        >
+          {showHistory ? "Ocultar cierres anteriores" : "📋 Ver cierres anteriores"}
+        </button>
+
+        {showHistory && (
+          <div className="bg-white border border-outline-variant rounded-xl divide-y divide-outline-variant overflow-hidden">
+            {closures.length === 0 ? (
+              <p className="p-4 text-sm text-on-surface-variant text-center">
+                No hay cierres anteriores registrados.
+              </p>
+            ) : (
+              closures.map((c) => {
+                const disc = Number(c.discrepancy);
+                const isZero = disc === 0;
+                return (
+                  <div key={c.id} className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm font-medium text-on-bg">
+                      {new Date(c.date + "T00:00:00").toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                      })}
+                    </span>
+                    <span className="text-sm font-bold text-on-bg">
+                      {formatCurrency(c.counted_cash)}
+                    </span>
+                    <span className={`text-sm font-bold ${isZero ? "text-green-600" : "text-red-600"}`}>
+                      {isZero ? "✅ 0" : `⚠️ ${formatCurrency(Math.abs(disc))}`}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 };
