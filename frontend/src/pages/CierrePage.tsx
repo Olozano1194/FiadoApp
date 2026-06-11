@@ -260,5 +260,4 @@ const SummaryRow = ({ label, value }: SummaryRowProps) => (
     <span className="text-sm font-bold text-on-bg">{value}</span>
   </div>
 );
-
 export default CierrePage;

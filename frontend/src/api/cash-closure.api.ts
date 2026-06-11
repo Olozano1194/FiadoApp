@@ -8,4 +8,4 @@ export const createClosure = (data: CreateClosurePayload) =>
   api.post<CashClosure>('/cash-closures/', data).then((r) => r.data);
 
 export const listClosures = (params?: { page?: number }) =>
-  api.get<{ results: CashClosure[] }>('/cash-closures/', { params }).then((r) => r.data);
+  api.get<CashClosure[]>('/cash-closures/', { params }).then((r) => r.data);
