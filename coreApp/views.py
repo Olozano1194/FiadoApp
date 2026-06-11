@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 from itertools import chain
+from collections import defaultdict
 
 from django.db.models import F, Q, Sum, Count
 from django.http import HttpResponse
@@ -183,30 +184,58 @@ class ClientViewSet(viewsets.ModelViewSet):
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all().order_by("-created_at")
     serializer_class = SaleSerializer
+    pagination_class = StandardPagination
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
             return SaleCreateSerializer
         return SaleSerializer
 
-    @action(detail=True)
-    def recent(self, request, pk=None):
-        """Alias for retrieve — kept for backwards compat."""
-        return self.retrieve(request, pk)
+    @action(detail=False, methods=['get'], url_path='recent')
+    def recent(self, request):
+        """Return recent completed sales."""
+        limit = int(request.query_params.get("limit", 10))
+        qs = (
+            Sale.objects.filter(status="COMPLETED")
+            .order_by("-created_at")
+            .select_related("client")[:limit]
+        )
+        data = [
+            {
+                "id": sale.id,
+                "cliente": sale.client.name if sale.client else "—",
+                "hora": sale.created_at.strftime("%H:%M"),
+                "estado": sale.get_status_display(),
+                "total": str(sale.total),
+            }
+            for sale in qs
+        ]
+        return Response(data)
 
     @action(detail=False)
     def history(self, request):
-        """Return sales for a client, filtered by ?client_id=N."""
+        """Return sales. If ?client_id=N, filter by client + COMPLETED. Otherwise ALL sales."""
         client_id = request.query_params.get("client_id")
-        if not client_id:
-            return Response({"detail": "client_id is required"}, status=400)
-        qs = Sale.objects.filter(client_id=client_id, status="COMPLETED").order_by("-created_at")
+        if client_id:
+            qs = Sale.objects.filter(client_id=client_id, status="COMPLETED").order_by("-created_at")
+        else:
+            qs = Sale.objects.all().order_by("-created_at").select_related("client")
         page = self.paginate_queryset(qs)
         if page is not None:
-            serializer = SaleSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = SaleSerializer(qs, many=True)
-        return Response(serializer.data)
+            results = [
+                {
+                    "id": sale.id,
+                    "cliente": sale.client.name if sale.client else "—",
+                    "fecha": sale.created_at.strftime("%Y-%m-%d"),
+                    "hora": sale.created_at.strftime("%H:%M"),
+                    "metodo_pago": sale.get_payment_method_display(),
+                    "estado": sale.get_status_display(),
+                    "total": str(sale.total),
+                }
+                for sale in page
+            ]
+            return self.get_paginated_response(results)
+        return Response({"detail": "No page?"}, status=400)
 
 
 # ---------------------------------------------------------------------------
@@ -227,14 +256,15 @@ class FiadoPaymentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def today(self, request):
-        """Return today's payments."""
+        """Return today's payment summary (total and count)."""
         today_start = timezone.make_aware(
             datetime.combine(timezone.localdate(), datetime.min.time())
         )
         today_end = today_start + timedelta(days=1)
-        qs = FiadoPayment.objects.filter(date__range=(today_start, today_end)).order_by("-date")
-        serializer = FiadoPaymentSerializer(qs, many=True)
-        return Response(serializer.data)
+        qs = FiadoPayment.objects.filter(date__range=(today_start, today_end))
+        total = qs.aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+        count = qs.count()
+        return Response({"total": str(total), "count": count})
 
 
 # ---------------------------------------------------------------------------
@@ -369,27 +399,6 @@ class DashboardStatsView(APIView):
             created_at__range=(today_start, today_end), status="COMPLETED"
         )
         today_total = today_sales_qs.aggregate(total=Sum("total"))["total"] or Decimal("0.00")
-        today_count = today_sales_qs.count()
-
-        # Today's cash sales
-        today_cash = (
-            today_sales_qs.filter(payment_method="CASH").aggregate(total=Sum("total"))["total"]
-            or Decimal("0.00")
-        )
-
-        # Today's credit sales
-        today_credit = (
-            today_sales_qs.filter(payment_method="CREDIT").aggregate(total=Sum("total"))["total"]
-            or Decimal("0.00")
-        )
-
-        # Today's fiado payments
-        today_fiado_payments = (
-            FiadoPayment.objects.filter(date__range=(today_start, today_end)).aggregate(
-                total=Sum("amount")
-            )["total"]
-            or Decimal("0.00")
-        )
 
         # Today's expenses
         today_expenses = (
@@ -397,12 +406,40 @@ class DashboardStatsView(APIView):
             or Decimal("0.00")
         )
 
+        # Yesterday's sales for comparison
+        yesterday_start = today_start - timedelta(days=1)
+        yesterday_end = today_start
+        yesterday_total = (
+            Sale.objects.filter(
+                created_at__range=(yesterday_start, yesterday_end), status="COMPLETED"
+            ).aggregate(total=Sum("total"))["total"]
+            or Decimal("0.00")
+        )
+
+        # cambio_vs_ayer
+        if yesterday_total > 0:
+            cambio_pct = float(((today_total - yesterday_total) / yesterday_total) * 100)
+            cambio_vs_ayer = f"{cambio_pct:+.1f}"
+        elif today_total > 0:
+            cambio_vs_ayer = "+100.0"
+        else:
+            cambio_vs_ayer = "0.0"
+
         # Total clients with debt
         clients_with_debt = Client.objects.filter(current_debt__gt=0).count()
         total_debt = Client.objects.aggregate(total=Sum("current_debt"))["total"] or Decimal("0.00")
 
         # Low stock count
         low_stock_count = Product.objects.filter(stock__lt=F("min_stock")).count()
+
+        # Net today / ganancia_dia
+        net_today = today_total - today_expenses
+
+        # margen_dia
+        if today_total > 0:
+            margen_dia = round(float((net_today / today_total) * 100), 1)
+        else:
+            margen_dia = None
 
         # Weekly sales trend (last 7 days)
         week_ago = today_start - timedelta(days=7)
@@ -420,16 +457,14 @@ class DashboardStatsView(APIView):
 
         return Response(
             {
-                "today_sales": str(today_total),
-                "today_count": today_count,
-                "today_cash": str(today_cash),
-                "today_credit": str(today_credit),
-                "today_fiado_payments": str(today_fiado_payments),
-                "today_expenses": str(today_expenses),
-                "net_today": str(today_total - today_expenses),
-                "clients_with_debt": clients_with_debt,
-                "total_debt": str(total_debt),
-                "low_stock_count": low_stock_count,
+                "ventas_dia": str(today_total),
+                "gastos_hoy": str(today_expenses),
+                "cambio_vs_ayer": cambio_vs_ayer,
+                "ganancia_dia": str(net_today),
+                "margen_dia": margen_dia,
+                "fiado_pendiente_total": str(total_debt),
+                "clientes_fiado_pendiente": clients_with_debt,
+                "productos_stock_bajo": low_stock_count,
                 "weekly_sales": weekly_sales,
             }
         )
@@ -501,39 +536,24 @@ class ReportStatsView(APIView):
         sales_qs = Sale.objects.filter(
             created_at__range=(range_start, range_end), status="COMPLETED"
         )
-
         total_sales = sales_qs.aggregate(total=Sum("total"))["total"] or Decimal("0.00")
         sales_count = sales_qs.count()
-        cash_sales = (
-            sales_qs.filter(payment_method="CASH").aggregate(total=Sum("total"))["total"]
-            or Decimal("0.00")
-        )
-        credit_sales = (
-            sales_qs.filter(payment_method="CREDIT").aggregate(total=Sum("total"))["total"]
-            or Decimal("0.00")
-        )
 
-        # Profit calculation
+        # Profit calculation and day grouping
         sales_with_items = sales_qs.prefetch_related("items__product")
         gross_profit = Decimal("0.00")
+        day_groups = defaultdict(list)
         for sale in sales_with_items:
             for item in sale.items.all():
                 cost = item.product.cost or Decimal("0")
                 gross_profit += (item.unit_price - cost) * item.quantity
+            day_groups[sale.created_at.date()].append(sale)
 
         # Expenses in range
         expenses = (
             Expense.objects.filter(date__gte=report_start, date__lte=report_end).aggregate(
                 total=Sum("amount")
             )["total"]
-            or Decimal("0.00")
-        )
-
-        # Fiado payments in range
-        fiado_payments = (
-            FiadoPayment.objects.filter(
-                date__range=(range_start, range_end)
-            ).aggregate(total=Sum("amount"))["total"]
             or Decimal("0.00")
         )
 
@@ -545,21 +565,96 @@ class ReportStatsView(APIView):
             .order_by("-total_revenue")[:10]
         )
 
-        return Response(
-            {
-                "date_from": report_start.isoformat(),
-                "date_to": report_end.isoformat(),
-                "total_sales": str(total_sales),
-                "sales_count": sales_count,
-                "cash_sales": str(cash_sales),
-                "credit_sales": str(credit_sales),
-                "gross_profit": str(gross_profit),
-                "expenses": str(expenses),
-                "fiado_payments": str(fiado_payments),
-                "net_profit": str(gross_profit - expenses),
-                "top_products": list(top_products),
-            }
+        # Build week_days
+        num_days = (report_end - report_start).days + 1
+        day_names_es = ["lunes", "martes", "mi\u00e9rcoles", "jueves", "viernes", "s\u00e1bado", "domingo"]
+
+        week_days = []
+        for i in range(num_days):
+            day = report_start + timedelta(days=i)
+            day_sales = day_groups.get(day, [])
+            day_total = sum(s.total for s in day_sales) if day_sales else Decimal("0.00")
+            day_count = len(day_sales)
+
+            # Top product for this day
+            product_qty = defaultdict(int)
+            for sale in day_sales:
+                for item in sale.items.all():
+                    product_qty[item.product.name] += item.quantity
+
+            top_product_name = None
+            if product_qty:
+                top_product_name = max(product_qty, key=product_qty.get)
+
+            week_days.append({
+                "date": day.isoformat(),
+                "day_name": day_names_es[day.weekday()],
+                "total": float(day_total),
+                "count": day_count,
+                "top_product": top_product_name,
+            })
+
+        # Summary
+        total_week = sum(d["total"] for d in week_days)
+        num_days = len(week_days) or 1
+
+        # Compare with previous same-length period
+        period_length = (report_end - report_start).days + 1
+        prev_start = report_start - timedelta(days=period_length)
+        prev_end = report_start
+        prev_range_start = timezone.make_aware(datetime.combine(prev_start, datetime.min.time()))
+        prev_range_end = timezone.make_aware(datetime.combine(prev_end, datetime.min.time()))
+        prev_total = (
+            Sale.objects.filter(
+                created_at__range=(prev_range_start, prev_range_end), status="COMPLETED"
+            ).aggregate(total=Sum("total"))["total"]
+            or Decimal("0.00")
         )
+        if prev_total > 0:
+            change_vs_last_week = round(float(((total_sales - prev_total) / prev_total) * 100), 1)
+        elif total_sales > 0:
+            change_vs_last_week = 100.0
+        else:
+            change_vs_last_week = 0.0
+
+        # Fiado pending
+        fiado_total = Client.objects.aggregate(total=Sum("current_debt"))["total"] or Decimal("0.00")
+        fiado_client_count = Client.objects.filter(current_debt__gt=0).count()
+
+        # Top product overall
+        top_product_data = list(top_products[:1])
+        top_product = None
+        if top_product_data:
+            tp = top_product_data[0]
+            product_obj = Product.objects.filter(name=tp["product__name"]).first()
+            top_product = {
+                "name": tp["product__name"],
+                "units_sold": tp["total_qty"],
+                "revenue": float(tp["total_revenue"]),
+                "image": product_obj.image.url if product_obj and product_obj.image else None,
+            }
+
+        profit = float(gross_profit - expenses)
+        total_sales_float = float(total_sales)
+        profit_margin = round((profit / total_sales_float * 100), 1) if total_sales_float > 0 else 0.0
+        avg_per_day = round(total_week / num_days, 2)
+
+        return Response({
+            "week_days": week_days,
+            "summary": {
+                "total_week": float(total_sales),
+                "change_vs_last_week": change_vs_last_week,
+                "avg_per_day": avg_per_day,
+            },
+            "fiado_pending": {
+                "total": float(fiado_total),
+                "client_count": fiado_client_count,
+            },
+            "top_product": top_product,
+            "profit": profit,
+            "profit_margin": profit_margin,
+            "expenses_total": float(expenses),
+        })
 
 
 class RecentActivityView(APIView):
@@ -580,30 +675,32 @@ class RecentActivityView(APIView):
         for sale in recent_sales:
             activities.append(
                 {
-                    "type": "sale",
                     "id": sale.id,
-                    "description": f"Venta #{sale.id} — ${sale.total}",
-                    "client": sale.client.name if sale.client else "—",
-                    "amount": str(sale.total),
-                    "payment_method": sale.payment_method,
-                    "created_at": sale.created_at.isoformat(),
+                    "concept": "Venta",
+                    "client_name": sale.client.name if sale.client else "—",
+                    "type": "sale",
+                    "amount": float(sale.total),
+                    "status": "Completado",
+                    "date": sale.created_at.strftime("%Y-%m-%d"),
+                    "time": sale.created_at.strftime("%H:%M"),
                 }
             )
 
         for payment in recent_payments:
             activities.append(
                 {
-                    "type": "payment",
                     "id": payment.id,
-                    "description": f"Pago ${payment.amount}",
-                    "client": payment.client.name if payment.client else "—",
-                    "amount": str(payment.amount),
-                    "payment_method": "CASH",
-                    "created_at": payment.date.isoformat(),
+                    "concept": "Pago",
+                    "client_name": payment.client.name if payment.client else "—",
+                    "type": "payment",
+                    "amount": float(payment.amount),
+                    "status": "Registrado",
+                    "date": payment.date.strftime("%Y-%m-%d"),
+                    "time": "12:00",
                 }
             )
 
-        activities.sort(key=lambda a: a["created_at"], reverse=True)
+        activities.sort(key=lambda a: a["date"] + " " + a["time"], reverse=True)
 
         return Response(activities[:limit])
 
