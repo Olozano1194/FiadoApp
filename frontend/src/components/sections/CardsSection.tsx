@@ -31,7 +31,7 @@ const CardsSection = () => {
     );
   }
 
-  const cambio = stats ? parseFloat(stats.cambio_vs_ayer) : 0;
+  const cambio = stats?.cambio_vs_ayer ? parseFloat(stats.cambio_vs_ayer) : 0;
   const cambioColor = cambio >= 0 ? "text-green-600" : "text-text-error";
   const cambioSigno = cambio >= 0 ? "+" : "";
 
@@ -57,7 +57,7 @@ const CardsSection = () => {
             <MdTrendingUp />
           </span>
           <span className={`font-medium text-xs lg:text-lg 2xl:text-xl ${stats && stats.margen_dia >= 0 ? 'text-green-600' : 'text-text-error'}`}>
-            {stats ? `${stats.margen_dia.toFixed(1)}% margen` : '—'}
+            {stats?.margen_dia != null && stats.margen_dia >= 0 ? `${stats.margen_dia.toFixed(1)}% margen` : '—'}
           </span>
         </div>
         <p className="font-medium text-on-surface-variant">Ganancia del Día</p>

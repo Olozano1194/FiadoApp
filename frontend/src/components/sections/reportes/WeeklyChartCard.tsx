@@ -110,7 +110,7 @@ const WeeklyChartCard = () => {
         </button>
       </div>
 
-      <div className="flex gap-2 h-48 justify-between mb-4">
+      <div className="flex gap-1 sm:gap-2 h-48 justify-between mb-4">
         {weekDays.map((day) => {
           const isSelected = selectedDay?.date === day.date;
           const height = day.total > 0
@@ -152,7 +152,7 @@ const WeeklyChartCard = () => {
               </p>
               {selectedDay.top_product ? (
                 <p className="text-on-surface-variant">
-                  🏆 Más vendido: {selectedDay.top_product.name} ({selectedDay.top_product.units} unid. - {formatCurrency(selectedDay.top_product.revenue)})
+                  🏆 Más vendido: <span className="truncate max-w-full inline-block align-bottom">{selectedDay.top_product.name}</span> ({selectedDay.top_product.units} unid. - {formatCurrency(selectedDay.top_product.revenue)})
                 </p>
               ) : (
                 <p className="text-outline italic">Sin ventas</p>

@@ -21,7 +21,7 @@ const MetricsSection = () => {
     if (loading && !stats) {
         return (
             <section className="grid grid-cols-1 gap-6 md:grid-cols-12 animate-pulse">
-                <section className="bg-white border border-outline-variant flex flex-col p-6 rounded-xl md:col-span-7">
+            <section className="bg-white border border-outline-variant flex flex-col p-6 rounded-xl md:col-span-7 overflow-hidden min-w-0">
                     <div className="h-5 bg-surface-container-low rounded w-40 mb-4" />
                     <div className="h-10 bg-surface-container-low rounded w-64 mb-4" />
                     <div className="h-5 bg-surface-container-low rounded w-56" />
