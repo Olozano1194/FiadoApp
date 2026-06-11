@@ -90,7 +90,11 @@ if (Test-Path $tauriReleaseDir) {
 Write-Host "[5/5] Building Tauri MSI installer..." -ForegroundColor Yellow
 Push-Location $FrontendDir
 try {
-    & cargo tauri build
+    # Limitar hilos de compilación de Cargo para evitar sobrecalentamiento de la CPU.
+    # Por defecto usamos 2 hilos, pero si defines $env:CARGO_BUILD_JOBS se usará ese valor.
+    $jobs = if ($env:CARGO_BUILD_JOBS) { $env:CARGO_BUILD_JOBS } else { 2 }
+    Write-Host "  Limitando compilación a $jobs hilos (evita uso al 100% de CPU)..." -ForegroundColor Gray
+    & cargo tauri build -- --jobs $jobs
     if ($LASTEXITCODE -ne 0) { throw "Tauri build failed" }
 } finally {
     Pop-Location

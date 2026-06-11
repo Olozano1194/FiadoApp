@@ -8,12 +8,16 @@ const isTauriBuild = process.env.TAURI_BUILD === 'true'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  cacheDir: 'node_modules/.vite_cache',
 
   clearScreen: false,
 
   server: {
     port: 5173,
     strictPort: true,
+    watch: {
+      ignored: ['**/src-tauri/**'],
+    },
     hmr: isTauriDev
       ? {
           protocol: 'ws',
