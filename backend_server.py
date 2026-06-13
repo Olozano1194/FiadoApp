@@ -7,6 +7,7 @@ All output is logged to APPDATA/FiadoApp/backend.log for diagnostics.
 import logging
 import os
 import sys
+import threading
 import traceback
 from pathlib import Path
 
@@ -113,6 +114,58 @@ def _check_port_available(host: str, port: int) -> bool:
         return False
 
 
+class BackupScheduler:
+    """Background scheduler for automatic DB backups using threading.Timer."""
+
+    def __init__(self):
+        self._timer = None
+        self._running = False
+        self.logger = logging.getLogger('fiadoapp.backup')
+
+    def start(self):
+        """Start the scheduler loop."""
+        self._running = True
+        self._schedule_next()
+        logging.info("BackupScheduler started")
+
+    def stop(self):
+        """Stop the scheduler."""
+        self._running = False
+        if self._timer:
+            self._timer.cancel()
+            self._timer = None
+        logging.info("BackupScheduler stopped")
+
+    def _schedule_next(self):
+        """Read config and schedule the next backup."""
+        if not self._running:
+            return
+        try:
+            from coreApp.models import BackupConfig
+            config = BackupConfig.get_singleton()
+            interval = config.frequency_hours * 3600  # hours → seconds
+            self._timer = threading.Timer(interval, self._run_backup)
+            self._timer.daemon = True
+            self._timer.start()
+            logging.info("BackupScheduler: next backup in %d hours", config.frequency_hours)
+        except Exception as e:
+            logging.error("BackupScheduler: error scheduling next backup: %s", e)
+            # Reschedule anyway to avoid total deadlock
+            self._timer = threading.Timer(3600, self._run_backup)  # retry in 1h
+            self._timer.daemon = True
+            self._timer.start()
+
+    def _run_backup(self):
+        """Execute the backup and reschedule."""
+        try:
+            from django.core.management import call_command
+            call_command('auto_backup', verbosity=0)
+        except Exception as e:
+            logging.error("BackupScheduler: backup failed: %s", e)
+        finally:
+            self._schedule_next()
+
+
 def _serve_wsgi(wsgi_app, host: str, port: int):
     """
     Serve the WSGI application directly using a multi-threaded WSGIServer.
@@ -195,6 +248,10 @@ def main():
         logging.info("Loading initial data...")
         call_command('load_initial_data', verbosity=0)
         logging.info("Initial data loaded")
+
+        # Start auto-backup scheduler
+        scheduler = BackupScheduler()
+        scheduler.start()
 
         # Use direct WSGI server instead of runserver management command
         # This avoids threading issues in frozen PyInstaller environments
