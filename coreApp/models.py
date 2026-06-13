@@ -126,6 +126,32 @@ class Expense(models.Model):
         return f"{self.get_category_display()} - ${self.amount}"
 
 
+class BackupConfig(models.Model):
+    enabled = models.BooleanField(default=True)
+    frequency_hours = models.IntegerField(default=24)
+    max_backups = models.IntegerField(default=10)
+    last_backup = models.DateTimeField(null=True, blank=True)
+    backup_folder = models.CharField(max_length=512, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Configuración de Backup"
+        verbose_name_plural = "Configuración de Backup"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_singleton(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return f"BackupConfig (enabled={self.enabled})"
+
+
 class CashClosure(models.Model):
     date = models.DateField(unique=True, default=timezone.localdate)
     total_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)

@@ -163,6 +163,11 @@ if _media_root:
 else:
     MEDIA_ROOT = os.path.join(str(BASE_DIR), 'media')
 
+# Backup directory for DB snapshots
+BACKUP_ROOT = os.path.join(str(BASE_DIR), 'backups')
+
+# Allow large DB imports (100 MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104_857_600  # 100 MB
 
 # CORS Configuration actualizada para cookies
 CORS_ALLOW_CREDENTIALS = True

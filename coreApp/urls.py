@@ -11,7 +11,8 @@ from coreApp.views import (
     DashboardStatsView, SearchView,
     ReportStatsView, RecentActivityView,
     ChangePasswordView, ExportClientsView,
-    ExportProductsView, ExportSalesView
+    ExportProductsView, ExportSalesView,
+    ExportDbView, ImportDbView, BackupConfigView
 )
 
 #api versioning
@@ -48,4 +49,7 @@ urlpatterns = [
     path('api/export/clients/', ExportClientsView.as_view(), name='export-clients'),
     path('api/export/products/', ExportProductsView.as_view(), name='export-products'),
     path('api/export/sales/', ExportSalesView.as_view(), name='export-sales'),
+    path('api/backup/export/', ExportDbView.as_view(), name='backup-export'),
+    path('api/backup/import/', ImportDbView.as_view(), name='backup-import'),
+    path('api/backup/config/', BackupConfigView.as_view(), name='backup-config'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
