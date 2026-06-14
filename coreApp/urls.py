@@ -4,7 +4,9 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework.throttling import UserRateThrottle
 from coreApp.serializers import CustomTokenObtainPairSerializer
+from coreApp.throttles import AuthLoginRateThrottle, AuthChangePasswordRateThrottle
 from coreApp.views import (
     HealthCheckView, CategoryViewSet, ProductViewSet, ClientViewSet,
     SaleViewSet, FiadoPaymentViewSet, ExpenseViewSet, CashClosureViewSet,
@@ -25,14 +27,22 @@ router.register(r'fiado-payments', FiadoPaymentViewSet)
 router.register(r'expenses', ExpenseViewSet)
 router.register(r'cash-closures', CashClosureViewSet)
 
-token_obtain_view = TokenObtainPairView.as_view(serializer_class=CustomTokenObtainPairSerializer)
+auth_throttles = [AuthLoginRateThrottle]
+auth_user_throttles = [UserRateThrottle, AuthLoginRateThrottle]
+
+token_obtain_view = TokenObtainPairView.as_view(
+    serializer_class=CustomTokenObtainPairSerializer,
+)
 token_obtain_view.permission_classes = [AllowAny]
+token_obtain_view.throttle_classes = auth_throttles
 
 token_refresh_view = TokenRefreshView.as_view()
 token_refresh_view.permission_classes = [AllowAny]
+token_refresh_view.throttle_classes = auth_throttles
 
 token_verify_view = TokenVerifyView.as_view()
 token_verify_view.permission_classes = [AllowAny]
+token_verify_view.throttle_classes = auth_throttles
 
 urlpatterns = [
     # Public health-check root — MUST go BEFORE router include so /api/ matches first
@@ -45,7 +55,9 @@ urlpatterns = [
     path('api/search/', SearchView.as_view(), name='search'),
     path('api/reports/stats/', ReportStatsView.as_view(), name='reports-stats'),
     path('api/reports/recent-activity/', RecentActivityView.as_view(), name='reports-recent-activity'),
-    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('api/change-password/', ChangePasswordView.as_view(
+        throttle_classes=auth_user_throttles,
+    ), name='change-password'),
     path('api/export/clients/', ExportClientsView.as_view(), name='export-clients'),
     path('api/export/products/', ExportProductsView.as_view(), name='export-products'),
     path('api/export/sales/', ExportSalesView.as_view(), name='export-sales'),
