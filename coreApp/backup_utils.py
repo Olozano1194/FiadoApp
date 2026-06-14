@@ -115,6 +115,7 @@ def validate_backup_file(file_path):
     try:
         with gzip.open(file_path, 'rb') as f:
             header = f.read(16)
+            page_size_bytes = f.read(2)
     except gzip.BadGzipFile:
         return False, "El archivo no es un archivo gzip válido"
     except Exception as e:
@@ -123,8 +124,22 @@ def validate_backup_file(file_path):
     engine = detect_engine()
 
     if engine == 'sqlite':
-        if header[:6] != b'SQLite':
+        # SQLite header magic: "SQLite format 3\0" (16 bytes)
+        sqlite_magic = b'SQLite format 3\0'
+        if header != sqlite_magic:
             return False, "El archivo no es una base de datos SQLite válida"
+
+        # Validate page size (bytes 16-17, big-endian)
+        # Valid page sizes: 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
+        if len(page_size_bytes) == 2:
+            page_size = int.from_bytes(page_size_bytes, 'big')
+            valid_sizes = {512, 1024, 2048, 4096, 8192, 16384, 32768, 65536}
+            if page_size not in valid_sizes:
+                return False, (
+                    "El archivo SQLite tiene un tamaño de página no válido"
+                    f" ({page_size}). El archivo puede estar corrupto."
+                )
+
         return True, ""
 
     elif engine == 'mysql':

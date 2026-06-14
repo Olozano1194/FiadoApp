@@ -1,5 +1,5 @@
 import json
-import secrets
+import os
 import sys
 from pathlib import Path
 
@@ -242,24 +242,22 @@ class Command(BaseCommand):
             )
             return
 
-        import logging
-        password = secrets.token_urlsafe(12)
+        password = os.getenv('DJANGO_ADMIN_PASSWORD')
+        if not password:
+            self.stdout.write(self.style.ERROR(
+                "  [ERROR] DJANGO_ADMIN_PASSWORD no está definida.\n"
+                "  Creá un archivo .env en la raíz del proyecto con:\n"
+                "  DJANGO_ADMIN_PASSWORD=la_contraseña_que_quieras"
+            ))
+            return
         User.objects.create_superuser(
             username="admin",
             email="",
             password=password,
         )
-        logging.getLogger('fiadoapp.init').info(
-            "Admin password: %s", password
-        )
         self.stdout.write(self.style.SUCCESS(
             f'  [OK] Usuario creado: "admin" / "{password}"'
         ))
-        self.stdout.write(
-            self.style.WARNING(
-                "  ⚠️  GUARDÁ ESTA CONTRASEÑA. No se puede recuperar."
-            )
-        )
         self.stdout.write(
             self.style.WARNING(
                 "  ⚠️  CAMBIALAapenas inicies sesión en Ajustes -> Perfil"
