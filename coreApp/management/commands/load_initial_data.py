@@ -1,4 +1,5 @@
 import json
+import secrets
 import sys
 from pathlib import Path
 
@@ -241,14 +242,26 @@ class Command(BaseCommand):
             )
             return
 
+        import logging
+        password = secrets.token_urlsafe(12)
         User.objects.create_superuser(
             username="admin",
             email="",
-            password="admin123",
+            password=password,
+        )
+        logging.getLogger('fiadoapp.init').info(
+            "Admin password: %s", password
         )
         self.stdout.write(self.style.SUCCESS(
-            '  [OK] Usuario creado: "admin" / "admin123"'
+            f'  [OK] Usuario creado: "admin" / "{password}"'
         ))
         self.stdout.write(
-            "  [INFO] CAMBIÁ LA CONTRASEÑA en Ajustes -> Perfil"
+            self.style.WARNING(
+                "  ⚠️  GUARDÁ ESTA CONTRASEÑA. No se puede recuperar."
+            )
+        )
+        self.stdout.write(
+            self.style.WARNING(
+                "  ⚠️  CAMBIALAapenas inicies sesión en Ajustes -> Perfil"
+            )
         )
