@@ -181,6 +181,9 @@ ehthumbs_vista.db
 # Dump file
 *.stackdump
 
+# Gentle-AI
+
+
 # Folder config file
 [Dd]esktop.ini
 
@@ -203,5 +206,8 @@ frontend/src-tauri/target/
 frontend/src-tauri/gen/
 frontend/src-tauri/binaries/fiadoapp-backend-*
 frontend/src-tauri/binaries/_internal/
+
+# Gentle AI working directory
+.atl/
 
 # End of https://www.toptal.com/developers/gitignore/api/django,windows
