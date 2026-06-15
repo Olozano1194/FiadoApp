@@ -42,7 +42,7 @@ const ProductsPage = () => {
 
   useEffect(() => {
     fetchProducts();
-    categoriesApi.getCategories().then(res => setCategories(res.data));
+    categoriesApi.getCategories().then(res => setCategories(res.data)).catch(() => {});
   }, [fetchProducts]);
 
   const closeModal = () => setSearchParams({});

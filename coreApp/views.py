@@ -221,7 +221,7 @@ class SaleViewSet(viewsets.ModelViewSet):
         """Return sales. If ?client_id=N, filter by client + COMPLETED. Otherwise ALL sales."""
         client_id = request.query_params.get("client_id")
         if client_id:
-            qs = Sale.objects.filter(client_id=client_id, status="COMPLETED").order_by("-created_at")
+            qs = Sale.objects.filter(client_id=client_id, status="COMPLETED").select_related("client").order_by("-created_at")
         else:
             qs = Sale.objects.all().order_by("-created_at").select_related("client")
         page = self.paginate_queryset(qs)
@@ -491,7 +491,7 @@ class SearchView(APIView):
         clients = Client.objects.filter(name__icontains=q)[:10]
         sales = Sale.objects.filter(
             Q(client__name__icontains=q) | Q(id__icontains=q)
-        )[:10]
+        ).select_related("client").prefetch_related("items__product")[:10]
 
         return Response(
             {
@@ -518,7 +518,7 @@ class ReportStatsView(APIView):
             week_start, week_end = get_week_range(week_str)
             range_start, range_end = week_start, week_end
             report_start = week_start.date()
-            report_end = week_end.date()
+            report_end = (week_end - timedelta(days=1)).date()
         elif date_from and date_to:
             range_end = timezone.make_aware(
                 datetime.combine(datetime.strptime(date_to, "%Y-%m-%d").date(), datetime.max.time())
@@ -582,20 +582,27 @@ class ReportStatsView(APIView):
 
             # Top product for this day
             product_qty = defaultdict(int)
+            product_revenue = defaultdict(Decimal)
             for sale in day_sales:
                 for item in sale.items.all():
                     product_qty[item.product.name] += item.quantity
+                    product_revenue[item.product.name] += item.subtotal
 
-            top_product_name = None
+            top_product = None
             if product_qty:
-                top_product_name = max(product_qty, key=product_qty.get)
+                best_name = max(product_qty, key=product_qty.get)
+                top_product = {
+                    "name": best_name,
+                    "units": product_qty[best_name],
+                    "revenue": float(product_revenue[best_name]),
+                }
 
             week_days.append({
                 "date": day.isoformat(),
                 "day_name": day_names_es[day.weekday()],
                 "total": float(day_total),
                 "count": day_count,
-                "top_product": top_product_name,
+                "top_product": top_product,
             })
 
         # Summary
@@ -788,6 +795,13 @@ class ImportDbView(APIView):
             )
 
         uploaded_file = request.FILES['file']
+
+        if uploaded_file.size > settings.DATA_UPLOAD_MAX_MEMORY_SIZE:
+            return Response(
+                {"error": f"El archivo excede el límite de "
+                          f"{settings.DATA_UPLOAD_MAX_MEMORY_SIZE // 1024 // 1024} MB"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         with tempfile.NamedTemporaryFile(suffix='.db.gz', delete=False) as tmp:
             for chunk in uploaded_file.chunks():

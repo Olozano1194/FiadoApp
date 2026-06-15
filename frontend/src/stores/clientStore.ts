@@ -35,18 +35,30 @@ export const useClientStore = create<ClientStore>((set) => ({
     } catch { /* silent */ }
   },
   createClient: async (data) => {
-    await clientsApi.createClient(data);
-    const res = await clientsApi.getClients();
-    set({ clients: res.data });
+    try {
+      await clientsApi.createClient(data);
+      const res = await clientsApi.getClients();
+      set({ clients: res.data });
+    } catch {
+      // error handled by interceptor
+    }
   },
   updateClient: async (id, data) => {
-    await clientsApi.updateClient(id, data);
-    const res = await clientsApi.getClients();
-    set({ clients: res.data });
+    try {
+      await clientsApi.updateClient(id, data);
+      const res = await clientsApi.getClients();
+      set({ clients: res.data });
+    } catch {
+      // error handled by interceptor
+    }
   },
   deleteClient: async (id) => {
-    await clientsApi.deleteClient(id);
-    const res = await clientsApi.getClients();
-    set({ clients: res.data });
+    try {
+      await clientsApi.deleteClient(id);
+      const res = await clientsApi.getClients();
+      set({ clients: res.data });
+    } catch {
+      // error handled by interceptor
+    }
   },
 }));

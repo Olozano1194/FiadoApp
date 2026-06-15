@@ -110,14 +110,14 @@ const MetricsSection = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-outline tracking-wider uppercase">Utilidad Bruta</p>
-                                <h4 className="font-bold text-green-600 text-xl">
+                                <h4 className={`font-bold text-xl ${stats.profit >= 0 ? 'text-green-600' : 'text-text-error'}`}>
                                     {formatCurrency(stats.profit)}
                                 </h4>
                                 <p className="text-xs text-on-surface-variant">
                                     Margen: {stats.profit_margin.toFixed(1)}%
                                 </p>
                             </div>
-                            <span className="bg-green-50 p-2 rounded-full text-green-600 text-xl">
+                            <span className={`p-2 rounded-full text-xl ${stats.profit >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-text-error'}`}>
                                 <MdOutlineAccountBalanceWallet />
                             </span>
                         </div>

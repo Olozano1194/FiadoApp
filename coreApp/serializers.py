@@ -108,8 +108,8 @@ class SaleCreateSerializer(serializers.ModelSerializer):
                 product.stock -= item['quantity']
                 product.save(update_fields=['stock'])
 
-            if sale.payment_method == 'CREDIT' and sale.client:
-                client = sale.client
+            if sale.payment_method == 'CREDIT' and sale.client_id:
+                client = Client.objects.select_for_update().get(pk=sale.client_id)
                 if client.current_debt + sale.total > client.credit_limit:
                     raise serializers.ValidationError(
                         f"El cliente ha excedido su límite de crédito. "
