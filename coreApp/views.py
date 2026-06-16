@@ -10,8 +10,9 @@ from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from .pagination import StandardPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -105,17 +106,6 @@ def _build_xlsx_response(workbook, filename: str) -> HttpResponse:
 
 
 # ---------------------------------------------------------------------------
-# Standard  Pagination
-# ---------------------------------------------------------------------------
-
-
-class StandardPagination(PageNumberPagination):
-    page_size = 25
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
-
-# ---------------------------------------------------------------------------
 # Health Check
 # ---------------------------------------------------------------------------
 
@@ -147,6 +137,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by("name")
     serializer_class = ProductSerializer
+    pagination_class = StandardPagination
 
     @action(detail=False, url_path="low-stock")
     def low_stock(self, request):
@@ -168,6 +159,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all().order_by("name")
     serializer_class = ClientSerializer
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         qs = Client.objects.all().order_by("name")
@@ -250,6 +242,7 @@ class SaleViewSet(viewsets.ModelViewSet):
 class FiadoPaymentViewSet(viewsets.ModelViewSet):
     queryset = FiadoPayment.objects.all().order_by("-date")
     serializer_class = FiadoPaymentSerializer
+    pagination_class = StandardPagination
 
     def perform_create(self, serializer):
         payment = serializer.save()
@@ -279,7 +272,7 @@ class FiadoPaymentViewSet(viewsets.ModelViewSet):
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all().order_by("-date", "-created_at")
     serializer_class = ExpenseSerializer
-    pagination_class = None
+    pagination_class = StandardPagination
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +284,7 @@ class CashClosureViewSet(viewsets.ModelViewSet):
     queryset = CashClosure.objects.all().order_by("-date")
     serializer_class = CashClosureSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
 
     def get_serializer_class(self):
         if self.action == "create":

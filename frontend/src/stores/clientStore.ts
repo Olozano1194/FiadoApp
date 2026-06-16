@@ -2,11 +2,15 @@ import { create } from 'zustand';
 import type { Client } from '../models/client';
 import * as clientsApi from '../api/clients.api';
 
+const extractResults = <T>(data: T[] | { results?: T[] }): T[] =>
+  Array.isArray(data) ? data : (data as { results: T[] }).results ?? [];
+
 interface ClientStore {
   clients: Client[];
   debtors: Client[];
   selected: Client | null;
   loading: boolean;
+  error: string | null;
   fetchClients: () => Promise<void>;
   fetchDebtors: () => Promise<void>;
   createClient: (data: Partial<Client>) => Promise<void>;
@@ -19,26 +23,27 @@ export const useClientStore = create<ClientStore>((set) => ({
   debtors: [],
   selected: null,
   loading: false,
+  error: null,
   fetchClients: async () => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const res = await clientsApi.getClients();
-      set({ clients: res.data, loading: false });
+      set({ clients: extractResults(res.data), loading: false });
     } catch {
-      set({ loading: false });
+      set({ loading: false, error: 'Error al cargar clientes' });
     }
   },
   fetchDebtors: async () => {
     try {
       const res = await clientsApi.getClients(true);
-      set({ debtors: res.data });
+      set({ debtors: extractResults(res.data) });
     } catch { /* silent */ }
   },
   createClient: async (data) => {
     try {
       await clientsApi.createClient(data);
       const res = await clientsApi.getClients();
-      set({ clients: res.data });
+      set({ clients: extractResults(res.data) });
     } catch {
       // error handled by interceptor
     }
@@ -47,7 +52,7 @@ export const useClientStore = create<ClientStore>((set) => ({
     try {
       await clientsApi.updateClient(id, data);
       const res = await clientsApi.getClients();
-      set({ clients: res.data });
+      set({ clients: extractResults(res.data) });
     } catch {
       // error handled by interceptor
     }
@@ -56,7 +61,7 @@ export const useClientStore = create<ClientStore>((set) => ({
     try {
       await clientsApi.deleteClient(id);
       const res = await clientsApi.getClients();
-      set({ clients: res.data });
+      set({ clients: extractResults(res.data) });
     } catch {
       // error handled by interceptor
     }

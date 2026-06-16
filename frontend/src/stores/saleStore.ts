@@ -46,7 +46,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     set({ loading: true });
     try {
       const res = await salesApi.getSales();
-      set({ sales: res.data, loading: false });
+      set({ sales: res.data?.results ?? res.data, loading: false });
     } catch {
       set({ loading: false });
     }

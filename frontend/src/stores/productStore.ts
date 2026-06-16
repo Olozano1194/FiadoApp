@@ -2,11 +2,15 @@ import { create } from 'zustand';
 import type { Product, ProductFormData } from '../models/product';
 import * as productsApi from '../api/products.api';
 
+const extractResults = <T>(data: T[] | { results?: T[] }): T[] =>
+  Array.isArray(data) ? data : (data as { results: T[] }).results ?? [];
+
 interface ProductStore {
   products: Product[];
   lowStockProducts: Product[];
   selected: Product | null;
   loading: boolean;
+  error: string | null;
   fetchProducts: () => Promise<void>;
   fetchLowStock: () => Promise<void>;
   createProduct: (data: ProductFormData) => Promise<void>;
@@ -19,13 +23,14 @@ export const useProductStore = create<ProductStore>((set) => ({
   lowStockProducts: [],
   selected: null,
   loading: false,
+  error: null,
   fetchProducts: async () => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const res = await productsApi.getProducts();
-      set({ products: res.data, loading: false });
+      set({ products: extractResults(res.data), loading: false });
     } catch {
-      set({ loading: false });
+      set({ loading: false, error: 'Error al cargar productos' });
     }
   },
   fetchLowStock: async () => {
@@ -40,7 +45,7 @@ export const useProductStore = create<ProductStore>((set) => ({
     try {
       await productsApi.createProduct(data);
       const res = await productsApi.getProducts();
-      set({ products: res.data });
+      set({ products: extractResults(res.data) });
     } catch {
       // error handled by interceptor
     }
@@ -49,7 +54,7 @@ export const useProductStore = create<ProductStore>((set) => ({
     try {
       await productsApi.updateProduct(id, data);
       const res = await productsApi.getProducts();
-      set({ products: res.data });
+      set({ products: extractResults(res.data) });
     } catch {
       // error handled by interceptor
     }

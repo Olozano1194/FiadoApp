@@ -38,7 +38,7 @@ const ReportPage = () => {
   const fetchExpenses = useCallback(async () => {
     try {
       const res = await expensesApi.getExpenses();
-      setExpenses(res.data);
+      setExpenses(res.data?.results ?? res.data);
     } catch {
       toast.error("Error al cargar gastos");
     } finally {
