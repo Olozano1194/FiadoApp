@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from rest_framework.throttling import UserRateThrottle
 from coreApp.serializers import CustomTokenObtainPairSerializer
-from coreApp.throttles import AuthLoginRateThrottle, AuthChangePasswordRateThrottle
+from coreApp.throttles import AuthLoginRateThrottle
 from coreApp.views import (
     HealthCheckView, CategoryViewSet, ProductViewSet, ClientViewSet,
     SaleViewSet, FiadoPaymentViewSet, ExpenseViewSet, CashClosureViewSet,

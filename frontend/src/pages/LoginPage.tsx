@@ -35,13 +35,11 @@ const LoginPage = () => {
         username: data.username,
         password: data.password,
       });
-      //console.log('Login successful, result:', response);
 
       toast.success('Login exitoso');
       // Redirect to the dashboard
       navigate("/");
     } catch {
-      // console.error("Error logging in:", error);
       toast.error("Error al iniciar sesión");
     }
   });

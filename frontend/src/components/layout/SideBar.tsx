@@ -87,12 +87,6 @@ const SideBar = () => {
                 </div>
 
             </aside>
-            {/* <button
-                onClick={() => setToggleMenu(!toggleMenu)}
-                className="cursor-pointer xl:hidden fixed bottom-4 right-4 bg-pulse-gradient text-white transition-transform p-3 rounded-full shadow-2xl z-50 hover:scale-110"
-            >
-                {toggleMenu ? <RiCloseLine /> : <RiMenu3Line />}
-            </button> */}
         </>
     );
 };

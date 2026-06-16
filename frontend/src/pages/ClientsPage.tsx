@@ -28,7 +28,6 @@ const defaultForm: ClientFormData = {
 const ClientsPage = () => {
   const { clients, loading, fetchClients, createClient, updateClient, deleteClient } = useClientStore();
   const [searchParams, setSearchParams] = useSearchParams();
-  // const [formData, ] = useState({ ...defaultForm });
 
   const editId = searchParams.get('edit');
   const isCreate = searchParams.has('create');

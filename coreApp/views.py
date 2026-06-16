@@ -1,14 +1,13 @@
 import os
 from datetime import datetime, timedelta
 from decimal import Decimal
-from itertools import chain
 from collections import defaultdict
 
 from django.conf import settings
-from django.db.models import F, Q, Sum, Count
+from django.db.models import F, Q, Sum
 from django.http import HttpResponse
 from django.utils import timezone
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
