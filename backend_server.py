@@ -213,8 +213,9 @@ def main():
         log_file = _setup_logging(data_dir, base_dir)
         _install_excepthook(log_file)
 
-        # Verificar que el puerto 8000 esté disponible
-        HOST, PORT = '127.0.0.1', 8000
+        # Verificar que el puerto esté disponible
+        HOST = os.environ.get('FIADOAPP_HOST', '127.0.0.1')
+        PORT = int(os.environ.get('FIADOAPP_PORT', 8000))
         if not _check_port_available(HOST, PORT):
             logging.critical(
                 "FATAL: Puerto %s en uso. Otro proceso ya está usando el puerto. "

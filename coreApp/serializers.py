@@ -141,7 +141,13 @@ class CashClosureSerializer(serializers.ModelSerializer):
     class Meta:
         model = CashClosure
         fields = '__all__'
-        read_only_fields = [f.name for f in CashClosure._meta.get_fields()]
+        read_only_fields = (
+            'id', 'date',
+            'total_sales', 'cash_sales', 'credit_sales', 'sales_count',
+            'fiado_payments', 'expenses', 'net_profit',
+            'expected_cash', 'discrepancy',
+            'created_by', 'created_at',
+        )
 
 
 class CashClosureCreateSerializer(serializers.Serializer):

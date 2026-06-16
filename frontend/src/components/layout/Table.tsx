@@ -20,7 +20,6 @@ interface TableProps<T> {
 
 
 const Table = <T,>({ data, columns, totalRow }: TableProps<T>) => {
-    "use no memo";
     const [sorting, setSorting] = useState<SortingState>([]);
 
     const table = useReactTable({

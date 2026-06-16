@@ -451,7 +451,7 @@ const SettingsPage = () => {
             <div className="text-center">
               <p className="font-medium text-nav">Clientes</p>
               <p className="text-sm text-on-surface-variant">
-                {exporting === "clientes" ? "Descargando..." : "CSV"}
+                {exporting === "clientes" ? "Descargando..." : "XLSX"}
               </p>
             </div>
           </button>
@@ -467,7 +467,7 @@ const SettingsPage = () => {
             <div className="text-center">
               <p className="font-medium text-nav">Productos</p>
               <p className="text-sm text-on-surface-variant">
-                {exporting === "productos" ? "Descargando..." : "CSV"}
+                {exporting === "productos" ? "Descargando..." : "XLSX"}
               </p>
             </div>
           </button>
@@ -483,7 +483,7 @@ const SettingsPage = () => {
             <div className="text-center">
               <p className="font-medium text-nav">Ventas</p>
               <p className="text-sm text-on-surface-variant">
-                {exporting === "ventas" ? "Descargando..." : "CSV"}
+                {exporting === "ventas" ? "Descargando..." : "XLSX"}
               </p>
             </div>
           </button>
