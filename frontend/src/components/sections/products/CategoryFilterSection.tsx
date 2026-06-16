@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import type { Category } from '../../../models/category';
 import { getCategories } from '../../../api/categories.api';
 // Components
@@ -22,7 +23,7 @@ const CategoryFilterSection = ({ query }: CategoryFilterSectionProps) => {
   useEffect(() => {
     getCategories()
       .then(res => setCategories(res.data))
-      .catch(() => {});
+      .catch(() => toast.error('Error al cargar categorías'));
   }, []);
 
   const visibleCategories = !showAll

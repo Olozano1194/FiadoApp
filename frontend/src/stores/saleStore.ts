@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'react-hot-toast';
 import type { RecentSale, Sale, CartItem, SaleCreatePayload } from '../models/sale';
 import type { Client } from '../models/client';
 import type { Product } from '../models/product';
@@ -43,12 +44,13 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   cashReceived: 0,
   change: 0,
   fetchSales: async () => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const res = await salesApi.getSales();
       set({ sales: res.data?.results ?? res.data, loading: false });
     } catch {
-      set({ loading: false });
+      set({ loading: false, error: 'Error al cargar ventas' });
+      toast.error('Error al cargar ventas');
     }
   },
   fetchRecentSales: async (limit = 10) => {

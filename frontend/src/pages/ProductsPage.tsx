@@ -8,6 +8,7 @@ import { ProductImage } from '../components/ui/ProductImage';
 import { useProductStore } from '../stores/productStore';
 import type { Product } from '../models/product';
 import type { ProductFormData } from '../models/product';
+import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import * as categoriesApi from '../api/categories.api';
 import type { Category } from '../models/category';
@@ -97,11 +98,11 @@ const ProductsPage = () => {
         });
       }
       closeModal();
-    } catch (error: any) {
+    } catch (error) {
       // ── Mejor manejo de errores ──
       let detail = 'Error al guardar';
 
-      if (error?.response?.data) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         const data = error.response.data;
         if (typeof data === 'string') {
           // Django devuelve HTML en errores 500 — mostramos algo legible
@@ -112,7 +113,7 @@ const ProductsPage = () => {
           detail = data.detail
             || Object.values(data).flat().join(', ');
         }
-      } else if (error?.message) {
+      } else if (error instanceof Error) {
         detail = error.message;
       }
 

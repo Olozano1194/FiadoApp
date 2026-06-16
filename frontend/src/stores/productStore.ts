@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'react-hot-toast';
 import type { Product, ProductFormData } from '../models/product';
 import * as productsApi from '../api/products.api';
 
@@ -36,36 +37,40 @@ export const useProductStore = create<ProductStore>((set) => ({
   fetchLowStock: async () => {
     try {
       const res = await productsApi.getLowStockProducts();
-      set({ lowStockProducts: res.data });
+      set({ lowStockProducts: res.data, error: null });
     } catch {
-      // silently fail — data stays as empty array
+      set({ error: 'Error al cargar productos con bajo stock' });
+      toast.error('Error al cargar productos con bajo stock');
     }
   },
   createProduct: async (data) => {
     try {
       await productsApi.createProduct(data);
       const res = await productsApi.getProducts();
-      set({ products: extractResults(res.data) });
+      set({ products: extractResults(res.data), error: null });
     } catch {
-      // error handled by interceptor
+      set({ error: 'Error al crear producto' });
+      toast.error('Error al crear producto');
     }
   },
   updateProduct: async (id, data) => {
     try {
       await productsApi.updateProduct(id, data);
       const res = await productsApi.getProducts();
-      set({ products: extractResults(res.data) });
+      set({ products: extractResults(res.data), error: null });
     } catch {
-      // error handled by interceptor
+      set({ error: 'Error al actualizar producto' });
+      toast.error('Error al actualizar producto');
     }
   },
   deleteProduct: async (id) => {
     try {
       await productsApi.deleteProduct(id);
       const res = await productsApi.getProducts();
-      set({ products: res.data });
+      set({ products: extractResults(res.data), error: null });
     } catch {
-      // error handled by interceptor
+      set({ error: 'Error al eliminar producto' });
+      toast.error('Error al eliminar producto');
     }
   },
 }));

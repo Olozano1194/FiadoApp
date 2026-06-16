@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'react-hot-toast';
 import type { Client } from '../models/client';
 import * as clientsApi from '../api/clients.api';
 
@@ -36,34 +37,40 @@ export const useClientStore = create<ClientStore>((set) => ({
   fetchDebtors: async () => {
     try {
       const res = await clientsApi.getClients(true);
-      set({ debtors: extractResults(res.data) });
-    } catch { /* silent */ }
+      set({ debtors: extractResults(res.data), error: null });
+    } catch {
+      set({ error: 'Error al cargar deudores' });
+      toast.error('Error al cargar deudores');
+    }
   },
   createClient: async (data) => {
     try {
       await clientsApi.createClient(data);
       const res = await clientsApi.getClients();
-      set({ clients: extractResults(res.data) });
+      set({ clients: extractResults(res.data), error: null });
     } catch {
-      // error handled by interceptor
+      set({ error: 'Error al crear cliente' });
+      toast.error('Error al crear cliente');
     }
   },
   updateClient: async (id, data) => {
     try {
       await clientsApi.updateClient(id, data);
       const res = await clientsApi.getClients();
-      set({ clients: extractResults(res.data) });
+      set({ clients: extractResults(res.data), error: null });
     } catch {
-      // error handled by interceptor
+      set({ error: 'Error al actualizar cliente' });
+      toast.error('Error al actualizar cliente');
     }
   },
   deleteClient: async (id) => {
     try {
       await clientsApi.deleteClient(id);
       const res = await clientsApi.getClients();
-      set({ clients: extractResults(res.data) });
+      set({ clients: extractResults(res.data), error: null });
     } catch {
-      // error handled by interceptor
+      set({ error: 'Error al eliminar cliente' });
+      toast.error('Error al eliminar cliente');
     }
   },
 }));
