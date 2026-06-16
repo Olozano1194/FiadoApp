@@ -42,6 +42,16 @@ const SalesHistoryPage = () => {
     };
   }, [page]);
 
+  const estadoBadge = (status: string) => {
+    const isComplete = status === 'Completado' || status === 'Registrado';
+    const isPending = status === 'Pendiente';
+    const isCancelled = status === 'Anulado' || status === 'Cancelado';
+    const base = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+    if (isComplete) return <span className={`${base} bg-green-100 text-green-800`}>{status}</span>;
+    if (isPending) return <span className={`${base} bg-yellow-100 text-yellow-800`}>{status}</span>;
+    if (isCancelled) return <span className={`${base} bg-red-100 text-red-800`}>{status}</span>;
+    return <span className={`${base} bg-gray-100 text-gray-800`}>{status}</span>;
+  };
 
   return (
     <div className="space-y-6">
