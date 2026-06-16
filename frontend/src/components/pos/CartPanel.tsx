@@ -2,15 +2,8 @@ import { useSaleStore } from '../../stores/saleStore';
 import { ProductImage } from '../ui/ProductImage';
 // icons
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { formatCurrency } from '../../utils/format';
 
-const formatCurrency = (amount: number | string): string => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
-};
 
 const CartPanel = () => {
   const cart = useSaleStore(s => s.cart);

@@ -16,6 +16,7 @@ import PaymentModal from '../components/ui/PaymentModal';
 import type { ClientFormData } from '../models/client';
 // components
 import SumaryBentoSection from '../components/sections/clients/SumaryBentoSection';
+import { formatCurrency } from '../utils/format';
 
 const defaultForm: ClientFormData = {
   name: '',
@@ -85,14 +86,6 @@ const ClientsPage = () => {
     await deleteClient(id);
   };
 
-  const formatCurrency = (amount: number | string): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
-  };
 
   const columnHelper = createColumnHelper<Client>();
 

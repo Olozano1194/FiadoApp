@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import Table from '../../../layout/Table';
 import type { RecentSale } from '../../../../models/sale';
 import { useSaleStore } from '../../../../stores/saleStore';
+import { formatCurrency } from '../../../../utils/format';
 
 interface TotalRow {
   id: string;
@@ -23,14 +24,6 @@ const TablePage = () => {
 
   const columnHelper = createColumnHelper<RecentSale | TotalRow>();
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const totalAmount = recentSales.reduce((sum, sale) => sum + (parseFloat(sale.total) || 0), 0);
 

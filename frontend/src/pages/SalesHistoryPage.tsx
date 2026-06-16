@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getSalesHistory } from '../api/sales.api';
 import type { SaleHistoryItem } from '../models/sale';
 import { PaginationSection } from '../components/sections/table/section/PaginationSection';
+import { formatCurrency } from '../utils/format';
 
 const PAGE_SIZE = 15;
 
@@ -41,26 +42,6 @@ const SalesHistoryPage = () => {
     };
   }, [page]);
 
-  const formatCurrency = (amount: number): string =>
-    new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-
-  const estadoBadge = (estado: string) => {
-    const styles: Record<string, string> = {
-      Completada: 'bg-green-100 text-green-800',
-      Pendiente: 'bg-yellow-100 text-yellow-800',
-      Cancelada: 'bg-red-100 text-red-800',
-    };
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${styles[estado] || 'bg-gray-100 text-gray-800'}`}>
-        {estado}
-      </span>
-    );
-  };
 
   return (
     <div className="space-y-6">

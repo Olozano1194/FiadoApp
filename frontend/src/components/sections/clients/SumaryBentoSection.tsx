@@ -3,15 +3,8 @@ import { IoIosTrendingUp } from "react-icons/io";
 import { GoCheckCircle } from "react-icons/go";
 import { useClientStore } from "../../../stores/clientStore";
 import { getTodayPayments } from "../../../api/fiado-payments.api";
+import { formatCurrency } from '../../../utils/format';
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const SkeletonCard = () => (
   <article className="bg-white border border-outline-variant flex flex-col justify-between p-6 rounded-xl shadow-sm animate-pulse">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Client } from "../../models/client";
 import * as paymentsApi from "../../api/fiado-payments.api";
+import { formatCurrency } from "../../utils/format";
 
 interface PaymentModalProps {
     client: Client;
@@ -8,13 +9,6 @@ interface PaymentModalProps {
     onSuccess: () => void;
 }
 
-const formatCurrency = (amount: number | string): string => {
-    return new Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(typeof amount === "string" ? parseFloat(amount) : amount);
 };
 
 const PaymentModal = ({ client, onClose, onSuccess }: PaymentModalProps) => {

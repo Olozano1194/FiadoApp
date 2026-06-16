@@ -8,15 +8,8 @@ import type { Expense, ExpenseFormData, ExpenseCategory } from "../models/expens
 import { EXPENSE_CATEGORIES } from "../models/expense";
 import * as expensesApi from "../api/expenses.api";
 import { MdEdit, MdDelete, MdAdd } from "react-icons/md";
+import { formatCurrency } from "../utils/format";
 
-const formatCurrency = (amount: string | number): string => {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(Number(amount));
-};
 
 const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   RENT: "bg-blue-100 text-blue-700",

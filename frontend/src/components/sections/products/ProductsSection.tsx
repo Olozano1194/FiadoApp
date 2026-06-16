@@ -2,15 +2,8 @@ import { useEffect, useDeferredValue } from 'react';
 import { useProductStore } from "../../../stores/productStore";
 import { useSaleStore } from '../../../stores/saleStore';
 import { ProductImage } from '../../ui/ProductImage';
+import { formatCurrency } from '../../../utils/format';
 
-const formatCurrency = (amount: number | string): string => {
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
-};
 
 interface ProductsSectionProps {
     query: string;

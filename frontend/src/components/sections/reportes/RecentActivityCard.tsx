@@ -6,6 +6,7 @@ import { MdOutlineShoppingCart, MdOutlinePayments } from 'react-icons/md';
 import Table from '../../layout/Table';
 import type { RecentActivity } from '../../../models/report';
 import { useReportStore } from '../../../stores/reportStore';
+import { formatCurrency } from '../../../utils/format';
 
 const TablePage = () => {
   const { recentActivity, loading, error, fetchRecentActivity } = useReportStore();
@@ -16,14 +17,6 @@ const TablePage = () => {
 
   const columnHelper = createColumnHelper<RecentActivity>();
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const statusBadge = (status: string) => {
     const isComplete = status === 'Completado' || status === 'Registrado';

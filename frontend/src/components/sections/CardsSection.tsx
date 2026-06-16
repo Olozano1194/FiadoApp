@@ -2,15 +2,8 @@ import { useEffect } from "react";
 import { MdOutlinePayments, MdOutlineAssignmentLate, MdTrendingUp } from "react-icons/md";
 import { CiWarning } from "react-icons/ci";
 import { useDashboardStore } from "../../stores/dashboardStore";
+import { formatCurrency } from '../../utils/format';
 
-const formatCurrency = (amount: number | string): string => {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(typeof amount === "string" ? parseFloat(amount) : amount);
-};
 
 const CardsSection = () => {
   const { stats, loading, fetchStats } = useDashboardStore();

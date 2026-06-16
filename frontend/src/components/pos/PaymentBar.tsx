@@ -2,15 +2,8 @@ import { useState, useCallback } from 'react';
 import { useSaleStore } from '../../stores/saleStore';
 import ClientSelect from './ClientSelect';
 import { toast } from 'react-hot-toast';
+import { formatCurrency } from '../../utils/format';
 
-const formatCurrency = (amount: number | string): string => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
-};
 
 const formatCashInput = (value: string): string => {
   const digits = value.replace(/\D/g, '');

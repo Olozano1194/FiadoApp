@@ -13,6 +13,7 @@ import * as categoriesApi from '../api/categories.api';
 import type { Category } from '../models/category';
 // Modal
 import ProductModal from '../components/ui/ProductModal';
+import { formatCurrency } from '../utils/format';
 
 const emptyForm: ProductFormData = {
   name: '',
@@ -121,15 +122,6 @@ const ProductsPage = () => {
 
   const handleDelete = async (id: number) => {
     await deleteProduct(id);
-  };
-
-  const formatCurrency = (amount: number | string): string => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
   };
 
   const columnHelper = createColumnHelper<Product>();

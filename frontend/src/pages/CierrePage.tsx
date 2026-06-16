@@ -5,15 +5,8 @@ import { useClosureStore } from "../stores/closureStore";
 import { MdOutlineInfo } from "react-icons/md";
 import { listClosures } from "../api/cash-closure.api";
 import type { CashClosure } from "../models/cash-closure";
+import { formatCurrency } from "../utils/format";
 
-const formatCurrency = (amount: string | number): string => {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(Number(amount));
-};
 
 const CierrePage = () => {
   const navigate = useNavigate();

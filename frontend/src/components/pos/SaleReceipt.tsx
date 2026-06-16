@@ -1,13 +1,5 @@
 import { useSaleStore } from '../../stores/saleStore';
-
-const formatCurrency = (amount: number | string): string => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(typeof amount === 'string' ? parseFloat(amount) : amount);
-};
+import { formatCurrency } from '../../utils/format';
 
 const formatDate = (dateStr: string): string => {
   const d = new Date(dateStr);
