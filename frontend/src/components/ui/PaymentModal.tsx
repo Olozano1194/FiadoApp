@@ -9,8 +9,6 @@ interface PaymentModalProps {
     onSuccess: () => void;
 }
 
-};
-
 const PaymentModal = ({ client, onClose, onSuccess }: PaymentModalProps) => {
     const debt = parseFloat(client.current_debt) || 0;
     const [amount, setAmount] = useState(debt.toString());

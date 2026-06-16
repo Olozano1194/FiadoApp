@@ -66,7 +66,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     try {
       await salesApi.createSale(data as unknown as SaleCreatePayload);
       const res = await salesApi.getSales();
-      set({ sales: res.data, error: null });
+      set({ sales: res.data?.results ?? res.data, error: null });
     } catch {
       set({ error: 'Error al crear la venta' });
     }

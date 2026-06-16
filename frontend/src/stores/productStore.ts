@@ -37,7 +37,7 @@ export const useProductStore = create<ProductStore>((set) => ({
   fetchLowStock: async () => {
     try {
       const res = await productsApi.getLowStockProducts();
-      set({ lowStockProducts: res.data, error: null });
+      set({ lowStockProducts: extractResults(res.data), error: null });
     } catch {
       set({ error: 'Error al cargar productos con bajo stock' });
       toast.error('Error al cargar productos con bajo stock');
