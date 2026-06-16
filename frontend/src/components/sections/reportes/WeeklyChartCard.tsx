@@ -134,12 +134,12 @@ const WeeklyChartCard = () => {
       <div className="border-t border-outline-variant pt-4 mt-2">
         {selectedDay ? (
           <div>
-            <p className="font-semibold text-on-surface mb-2">
+            <p className="font-semibold text-on-surface-variant mb-2">
               📅 {formatFullDate(selectedDay.date)}
             </p>
             <div className="space-y-1 text-sm">
               <p className="text-on-surface-variant">
-                💰 Total: <span className="font-bold text-on-surface">{formatCurrency(selectedDay.total)}</span>
+                💰 Total: <span className="font-bold text-on-surface-variant">{formatCurrency(selectedDay.total)}</span>
               </p>
               <p className="text-on-surface-variant">
                 📦 {selectedDay.count} {selectedDay.count === 1 ? "venta" : "ventas"}
@@ -162,5 +162,4 @@ const WeeklyChartCard = () => {
     </>
   );
 };
-
 export default WeeklyChartCard;

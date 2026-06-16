@@ -76,7 +76,7 @@ const MetricsSection = () => {
     return (
         <section className="grid grid-cols-1 gap-6 md:grid-cols-12">
             {/* Left - Ventas */}
-            <section className="bg-white border border-outline-variant flex flex-col p-6 rounded-xl md:col-span-7">
+            <section className="bg-white border border-outline-variant flex flex-col p-6 rounded-xl md:col-span-8">
                 <div className="flex items-start justify-between mb-6">
                     <div>
                         <p className="mb-1 text-lg text-outline tracking-wider uppercase">Ventas de la semana</p>
@@ -117,18 +117,17 @@ const MetricsSection = () => {
                     </div>
                 )}
             </section>
-
             {/* Right Column */}
-            <section className="flex flex-col gap-6 md:col-span-5">
+            <section className="flex flex-col gap-6 md:col-span-4">
                 {/* Producto estrella */}
-                <div className="bg-white border border-outline-variant rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <p className="font-semibold text-lg text-outline tracking-wider uppercase">Tu Producto estrella</p>
-                        <span className="text-tertiary-container text-2xl"><FaRegStar /></span>
+                <div className="bg-white border border-outline-variant rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-4 lg:p-6">
+                        <p className="font-semibold text-outline tracking-wider uppercase lg:text-lg">Tu Producto estrella</p>
+                        <span className="text-tertiary-container text-xl lg:text-2xl"><FaRegStar /></span>
                     </div>
                     {stats?.top_product ? (
                         <div className="flex gap-4 items-center">
-                            <div className="bg-surface-container h-20 overflow-hidden rounded-lg relative w-20 flex-shrink-0">
+                            <div className="bg-surface-container h-12 overflow-hidden rounded-lg relative w-12 shrink-0 lg:h-20 lg:w-20">
                                 {stats.top_product.image ? (
                                     <img
                                         src={stats.top_product.image}
@@ -152,12 +151,12 @@ const MetricsSection = () => {
                                         className="w-full h-full"
                                     />
                                 )}
-                                <div className={`fallback-star flex items-center justify-center w-full h-full text-outline hidden`}>
+                                <div className={`fallback-star flex items-center justify-center w-full h-full text-outline `}>
                                     <FaRegStar className="text-3xl" />
                                 </div>
                             </div>
                             <div>
-                                <h5 className="font-bold text-lg text-on-bg md:text-xl">{stats.top_product.name}</h5>
+                                <h5 className="font-bold text-on-bg md:text-xl">{stats.top_product.name}</h5>
                                 <p className="font-semibold text-on-surface-variant">{stats.top_product.units_sold} unidades vendidas</p>
                                 <p className="font-semibold mt-1 text-secondary">Generó {formatCurrency(stats.top_product.revenue)} esta semana</p>
                             </div>
