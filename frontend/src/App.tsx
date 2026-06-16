@@ -14,11 +14,10 @@ import SalesHistoryPage from './pages/SalesHistoryPage'
 import ReportPage from './pages/ReportPage'
 import SettingsPage from './pages/SettingsPage'
 import CierrePage from './pages/CierrePage'
-import api from './api/axios.config'
+import api, { API_BASE_URL } from './api/axios.config'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
-const HEALTH_CHECK_URL = 'http://127.0.0.1:8000/api/'
 const POLL_INTERVAL = 1000   // 1 segundo entre intentos
 const MAX_ATTEMPTS = 180     // 3 minutos máximo (PCs lentos necesitan más tiempo)
 const INITIAL_DELAY_MS = 2000 // 2 segundos antes del primer intento
@@ -71,7 +70,7 @@ const App = () => {
         })
 
         try {
-          await api.get(HEALTH_CHECK_URL)
+          await api.get(API_BASE_URL)
           stopPolling()
           setBackendStatus('ready')
         } catch {

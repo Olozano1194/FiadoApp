@@ -1,10 +1,13 @@
 import gzip
 import json
+import logging
 import os
 import shutil
 import sqlite3
 import tempfile
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.core import serializers
@@ -163,7 +166,7 @@ def validate_backup_file(file_path):
 def restore_db(backup_file, create_safety_backup=True):
     if create_safety_backup:
         safety_path = backup_db()
-        print(f"[backup] Safety backup created at: {safety_path}")
+        logger.info("Safety backup created at: %s", safety_path)
 
     is_valid, error = validate_backup_file(backup_file)
     if not is_valid:

@@ -60,7 +60,7 @@ const ProductsPage = () => {
         ];
 
         for (const key of keysToCheck) {
-          const originalVal = (editingProduct as any)[key];
+          const originalVal = (editingProduct as Record<string, unknown>)[key];
           const newVal = data[key];
 
           // Si el usuario seleccionó una imagen nueva, siempre mandarla
@@ -74,7 +74,7 @@ const ProductsPage = () => {
           const newStr = newVal == null ? '' : String(newVal);
 
           if (origStr !== newStr) {
-            (changedData as any)[key] = newVal;
+            (changedData as Record<string, unknown>)[key] = newVal;
           }
         }
 
