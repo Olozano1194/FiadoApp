@@ -29,3 +29,5 @@ export const updateProduct = (id: number, data: Partial<ProductFormData>) =>
   });
 export const deleteProduct = (id: number) => api.delete(`/products/${id}/`);
 export const getLowStockProducts = () => api.get<Product[]>('/products/low-stock/');
+export const lookupByBarcode = (barcode: string) =>
+  api.get<Product>(`/products/lookup-barcode/?barcode=${encodeURIComponent(barcode)}`);
