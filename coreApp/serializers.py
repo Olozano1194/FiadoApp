@@ -1,12 +1,11 @@
 from collections import Counter
-from datetime import datetime, timedelta
-from decimal import Decimal
 from django.db import transaction
-from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Category, Product, Client, Sale, SaleItem, FiadoPayment, Expense, CashClosure
+# calculate_closure_data is imported lazily inside CashClosureCreateSerializer.create()
+# to avoid circular imports (serializers -> views.helpers -> views.__init__ -> views.categories -> serializers)
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -155,63 +154,25 @@ class CashClosureCreateSerializer(serializers.Serializer):
     notes = serializers.CharField(required=False, allow_blank=True)
 
     def create(self, validated_data):
+        from .views.helpers import calculate_closure_data
+
         today = timezone.localdate()
-        today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
-        today_end = today_start + timedelta(days=1)
+        calcs = calculate_closure_data(today)
 
-        cash_sales = Sale.objects.filter(
-            created_at__range=(today_start, today_end),
-            status='COMPLETED',
-            payment_method='CASH'
-        ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
-
-        credit_sales = Sale.objects.filter(
-            created_at__range=(today_start, today_end),
-            status='COMPLETED',
-            payment_method='CREDIT'
-        ).aggregate(total=Sum('total'))['total'] or Decimal('0.00')
-
-        total_sales = cash_sales + credit_sales
-
-        sales_count = Sale.objects.filter(
-            created_at__range=(today_start, today_end),
-            status='COMPLETED'
-        ).count()
-
-        fiado_payments = FiadoPayment.objects.filter(
-            date__range=(today_start, today_end)
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-
-        expenses = Expense.objects.filter(
-            date=today
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-
-        today_sales = Sale.objects.filter(
-            created_at__range=(today_start, today_end),
-            status='COMPLETED'
-        ).prefetch_related('items__product')
-
-        net_profit = Decimal('0.00')
-        for sale in today_sales:
-            for item in sale.items.all():
-                cost = item.product.cost or Decimal('0')
-                net_profit += (item.unit_price - cost) * item.quantity
-
-        expected_cash = cash_sales + fiado_payments - expenses
         counted_cash = validated_data['counted_cash']
-        discrepancy = counted_cash - expected_cash
+        discrepancy = counted_cash - calcs['expected_cash']
 
         closure, _ = CashClosure.objects.update_or_create(
             date=today,
             defaults={
-                'total_sales': total_sales,
-                'cash_sales': cash_sales,
-                'credit_sales': credit_sales,
-                'sales_count': sales_count,
-                'fiado_payments': fiado_payments,
-                'expenses': expenses,
-                'net_profit': net_profit,
-                'expected_cash': expected_cash,
+                'total_sales': calcs['total_sales'],
+                'cash_sales': calcs['cash_sales'],
+                'credit_sales': calcs['credit_sales'],
+                'sales_count': calcs['sales_count'],
+                'fiado_payments': calcs['fiado_payments'],
+                'expenses': calcs['expenses'],
+                'net_profit': calcs['net_profit'],
+                'expected_cash': calcs['expected_cash'],
                 'counted_cash': counted_cash,
                 'discrepancy': discrepancy,
                 'notes': validated_data.get('notes', ''),
