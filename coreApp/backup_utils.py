@@ -228,7 +228,7 @@ def _restore_mysql(backup_file):
         if records:
             json_str = json.dumps(records, ensure_ascii=False)
             for obj in serializers.deserialize('json', json_str):
-                obj.save(raw=True)
+                obj.save()
 
 
 def get_db_file_size():
