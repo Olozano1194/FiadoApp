@@ -51,7 +51,7 @@ const BarcodeInput = () => {
             }}
             placeholder="Escanear código de barras..."
             disabled={loading}
-            className="w-full bg-surface-container text-on-surface border border-outline-variant rounded-lg pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none placeholder:text-on-surface-variant/60 disabled:opacity-50"
+            className="w-full bg-surface-container text-on-surface-variant border border-outline-variant rounded-lg pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none placeholder:text-on-surface-variant/60 disabled:opacity-50"
           />
         </div>
         {loading && (
