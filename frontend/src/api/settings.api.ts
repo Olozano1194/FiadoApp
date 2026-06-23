@@ -66,3 +66,19 @@ export const updateBackupConfig = async (data: Partial<BackupConfig>): Promise<{
   const response = await api.put('backup/config/', data);
   return response.data;
 };
+
+// Cloud / Supabase Backup
+export const uploadCloudBackup = async (): Promise<{ success: boolean; remote_path: string }> => {
+  const response = await api.post('backup/cloud/upload/');
+  return response.data;
+};
+
+export const listCloudBackups = async (): Promise<{ backups: Array<{ name: string; size: number; updated_at: string }> }> => {
+  const response = await api.get('backup/cloud/list/');
+  return response.data;
+};
+
+export const restoreCloudBackup = async (filename: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post(`backup/cloud/restore/${encodeURIComponent(filename)}/`);
+  return response.data;
+};

@@ -11,3 +11,4 @@ djangorestframework-simplejwt==5.5.0
 openpyxl==3.1.5
 Pillow>=11.0.0
 pyinstaller>=6.0.0
+storage3>=0.7.0

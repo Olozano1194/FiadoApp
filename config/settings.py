@@ -182,6 +182,11 @@ else:
 # Backup directory for DB snapshots
 BACKUP_ROOT = os.path.join(str(BASE_DIR), 'backups')
 
+# Supabase / Cloud Backup
+SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', '')
+SUPABASE_BUCKET = os.getenv('SUPABASE_BUCKET', 'fiadoapp-backups')
+
 # Allow large DB imports (100 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104_857_600  # 100 MB
 

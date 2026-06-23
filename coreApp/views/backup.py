@@ -7,8 +7,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..backup_utils import backup_db, detect_engine, get_db_file_size, restore_db
+from ..backup_utils import backup_db, detect_engine, get_db_file_size, get_latest_backup, restore_db
 from ..models import BackupConfig
+from ..supabase_utils import (
+    ensure_installation_uuid,
+    list_remote_backups,
+    download_remote_backup,
+    upload_backup,
+    enforce_retention,
+)
 
 
 class ExportDbView(APIView):
@@ -103,15 +110,73 @@ class BackupConfigView(APIView):
             'backup_folder': config.backup_folder or settings.BACKUP_ROOT,
             'db_file_size': get_db_file_size(),
             'db_engine': detect_engine(),
+            'supabase_enabled': config.supabase_enabled,
+            'supabase_bucket': config.supabase_bucket,
+            'installation_uuid': config.installation_uuid,
+            'max_remote_backups': config.max_remote_backups,
         })
 
     def put(self, request):
         """Update backup configuration."""
         config = BackupConfig.get_singleton()
 
-        for field in ['enabled', 'frequency_hours', 'max_backups', 'backup_folder']:
+        for field in ['enabled', 'frequency_hours', 'max_backups', 'backup_folder',
+                       'supabase_enabled', 'supabase_bucket', 'max_remote_backups']:
             if field in request.data:
                 setattr(config, field, request.data[field])
 
         config.save()
         return Response({'success': True})
+
+
+class CloudBackupUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Upload latest local backup to Supabase."""
+        config = BackupConfig.get_singleton()
+        if not config.supabase_enabled:
+            return Response({"error": "Cloud backup is disabled"}, status=400)
+
+        uuid = ensure_installation_uuid(config)
+        latest = get_latest_backup()
+        if not latest:
+            return Response({"error": "No local backup found"}, status=400)
+
+        try:
+            remote_path = upload_backup(latest, uuid)
+            enforce_retention(uuid, config.max_remote_backups)
+            return Response({"success": True, "remote_path": remote_path})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+class CloudBackupListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        config = BackupConfig.get_singleton()
+        if not config.supabase_enabled or not config.installation_uuid:
+            return Response({"backups": []})
+        try:
+            backups = list_remote_backups(config.installation_uuid)
+            return Response({"backups": backups})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+class CloudBackupRestoreView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, filename):
+        config = BackupConfig.get_singleton()
+        if not config.supabase_enabled or not config.installation_uuid:
+            return Response({"error": "Cloud backup is disabled"}, status=400)
+
+        remote_path = f"backups/{config.installation_uuid}/{filename}"
+        try:
+            local_path = download_remote_backup(remote_path)
+            restore_db(local_path, create_safety_backup=True)
+            return Response({"success": True, "message": "Database restored from cloud backup"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

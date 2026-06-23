@@ -231,6 +231,16 @@ def _restore_mysql(backup_file):
                 obj.save()
 
 
+def get_latest_backup():
+    """Return path to the most recent backup file."""
+    import glob
+    backup_dir = settings.BACKUP_ROOT
+    files = glob.glob(os.path.join(backup_dir, '*.db.gz'))
+    if not files:
+        return None
+    return max(files, key=os.path.getmtime)
+
+
 def get_db_file_size():
     engine = detect_engine()
     if engine == 'sqlite':

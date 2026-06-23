@@ -132,6 +132,10 @@ class BackupConfig(models.Model):
     max_backups = models.IntegerField(default=10)
     last_backup = models.DateTimeField(null=True, blank=True)
     backup_folder = models.CharField(max_length=512, default="")
+    supabase_enabled = models.BooleanField(default=False)
+    supabase_bucket = models.CharField(max_length=128, default='fiadoapp-backups')
+    installation_uuid = models.CharField(max_length=36, unique=True, blank=True, default='')
+    max_remote_backups = models.PositiveIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

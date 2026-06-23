@@ -6,7 +6,12 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from coreApp.models import BackupConfig
-from coreApp.backup_utils import backup_db
+from coreApp.backup_utils import backup_db, get_latest_backup
+from coreApp.supabase_utils import (
+    ensure_installation_uuid,
+    upload_backup,
+    enforce_retention,
+)
 
 logger = logging.getLogger('fiadoapp.backup')
 
@@ -38,6 +43,18 @@ class Command(BaseCommand):
         except Exception as e:
             logger.error(f"Error al actualizar last_backup: {e}")
             return
+
+        # Upload to Supabase if enabled
+        if config.supabase_enabled:
+            try:
+                uuid = ensure_installation_uuid(config)
+                latest = get_latest_backup()
+                if latest:
+                    upload_backup(latest, uuid)
+                    enforce_retention(uuid, config.max_remote_backups)
+                    self.stdout.write("Backup uploaded to Supabase")
+            except Exception as e:
+                logger.error("Supabase upload failed (local backup OK): %s", e)
 
         try:
             backup_dir = settings.BACKUP_ROOT

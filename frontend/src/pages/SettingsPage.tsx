@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form"
 import { MdOutlineLock, MdOutlineFileDownload, MdOutlinePerson, MdOutlineStorage } from "react-icons/md";
 import { RiGroupLine, RiShoppingBasketLine, RiMoneyDollarCircleLine } from "react-icons/ri";
 import { useAuthStore } from "../stores/authStore";
-import { changePassword, exportClients, exportDb, exportProducts, exportSales, getBackupConfig, importDb, triggerDownload, updateBackupConfig } from "../api/settings.api";
-import type { BackupConfig } from "../types/backup";
+import { changePassword, exportClients, exportDb, exportProducts, exportSales, getBackupConfig, importDb, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
+import type { BackupConfig, CloudBackupEntry } from "../types/backup";
 //Mensajes
 import { toast } from "react-hot-toast";
 
@@ -37,11 +37,25 @@ const SettingsPage = () => {
   const [savingConfig, setSavingConfig] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cloud Backup
+  const [uploadingCloud, setUploadingCloud] = useState(false);
+  const [cloudBackups, setCloudBackups] = useState<CloudBackupEntry[]>([]);
+  const [loadingCloudList, setLoadingCloudList] = useState(false);
+  const [restoringCloud, setRestoringCloud] = useState<string | null>(null);
+
   useEffect(() => {
     const load = async () => {
       try {
         const config = await getBackupConfig();
         setBackupConfig(config);
+        if (config.supabase_enabled) {
+          try {
+            const result = await listCloudBackups();
+            setCloudBackups(result.backups || []);
+          } catch {
+            // Cloud list not available yet, that's ok
+          }
+        }
       } catch {
         toast.error("Error al cargar configuración de backup");
       }
@@ -99,12 +113,61 @@ const SettingsPage = () => {
         enabled: backupConfig.enabled,
         frequency_hours: backupConfig.frequency_hours,
         max_backups: backupConfig.max_backups,
+        supabase_enabled: backupConfig.supabase_enabled,
+        max_remote_backups: backupConfig.max_remote_backups,
       });
       toast.success("Configuración de auto-backup guardada");
     } catch {
       toast.error("Error al guardar la configuración");
     } finally {
       setSavingConfig(false);
+    }
+  };
+
+  const handleUploadCloud = async () => {
+    setUploadingCloud(true);
+    try {
+      const result = await uploadCloudBackup();
+      if (result.success) {
+        toast.success("Backup subido a la nube correctamente");
+        await loadCloudBackups();
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const msg = axiosErr?.response?.data?.error || "Error al subir a la nube";
+      toast.error(msg);
+    } finally {
+      setUploadingCloud(false);
+    }
+  };
+
+  const loadCloudBackups = async () => {
+    if (!backupConfig?.supabase_enabled) return;
+    setLoadingCloudList(true);
+    try {
+      const result = await listCloudBackups();
+      setCloudBackups(result.backups || []);
+    } catch {
+      toast.error("Error al listar backups en la nube");
+    } finally {
+      setLoadingCloudList(false);
+    }
+  };
+
+  const handleRestoreCloud = async (filename: string) => {
+    setRestoringCloud(filename);
+    try {
+      const result = await restoreCloudBackup(filename);
+      if (result.success) {
+        toast.success(result.message);
+        await loadCloudBackups();
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const msg = axiosErr?.response?.data?.error || "Error al restaurar desde la nube";
+      toast.error(msg);
+    } finally {
+      setRestoringCloud(null);
     }
   };
 
@@ -425,6 +488,123 @@ const SettingsPage = () => {
               >
                 {savingConfig ? "Guardando..." : "Guardar configuración"}
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* Cloud Backup (Supabase) */}
+        <div className="mt-8 pt-6 border-t border-outline-variant">
+          <h3 className="text-lg font-semibold text-on-surface-variant mb-4">
+            Backup en la Nube
+          </h3>
+
+          {backupConfig && (
+            <div className="space-y-4">
+              {/* Toggle */}
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-on-surface-variant">
+                  Subida automática a la nube
+                </label>
+                <button
+                  onClick={() => {
+                    const newEnabled = !backupConfig.supabase_enabled;
+                    setBackupConfig({ ...backupConfig, supabase_enabled: newEnabled });
+                    if (!newEnabled) setCloudBackups([]);
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    backupConfig.supabase_enabled ? 'bg-primary' : 'bg-outline-variant'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      backupConfig.supabase_enabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Remote backups count */}
+              <div>
+                <label className="block text-sm font-medium text-on-surface-variant mb-1">
+                  Máximo de backups remotos
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={backupConfig.max_remote_backups}
+                  onChange={(e) =>
+                    setBackupConfig({
+                      ...backupConfig,
+                      max_remote_backups: parseInt(e.target.value) || 10,
+                    })
+                  }
+                  className="w-full max-w-[200px] px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              {backupConfig.supabase_enabled && (
+                <>
+                  {/* Upload button */}
+                  <button
+                    onClick={handleUploadCloud}
+                    disabled={uploadingCloud}
+                    className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {uploadingCloud ? "Subiendo..." : "Subir a la nube"}
+                  </button>
+
+                  {/* Cloud backups list */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-on-surface-variant">
+                        Backups remotos
+                      </span>
+                      <button
+                        onClick={loadCloudBackups}
+                        disabled={loadingCloudList}
+                        className="text-sm text-primary hover:underline disabled:opacity-50"
+                      >
+                        {loadingCloudList ? "Cargando..." : "Actualizar"}
+                      </button>
+                    </div>
+
+                    {cloudBackups.length === 0 ? (
+                      <p className="text-sm text-on-surface-variant">
+                        {loadingCloudList ? "Cargando..." : "No hay backups remotos"}
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {cloudBackups.map((bk) => (
+                          <div
+                            key={bk.name}
+                            className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant"
+                          >
+                            <div className="min-w-0 flex-1 mr-2">
+                              <p className="text-sm font-medium text-outline truncate">
+                                {bk.name}
+                              </p>
+                              <p className="text-xs text-on-surface-variant">
+                                {formatBytes(bk.size)} —{" "}
+                                {bk.updated_at
+                                  ? new Date(bk.updated_at).toLocaleString("es-AR")
+                                  : "—"}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => handleRestoreCloud(bk.name)}
+                              disabled={restoringCloud === bk.name}
+                              className="px-3 py-1.5 text-xs rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {restoringCloud === bk.name ? "Restaurando..." : "Restaurar"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
