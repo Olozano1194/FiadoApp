@@ -98,19 +98,19 @@ const MetricsSection = () => {
                     </div>
                 )}
 
-                {stats && stats.profit !== undefined && (
+                {stats && stats.summary?.total_profit_week !== undefined && (
                     <div className="border-t border-outline-variant mt-4 pt-4">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-outline tracking-wider uppercase">Utilidad Bruta</p>
-                                <h4 className={`font-bold text-xl ${stats.profit >= 0 ? 'text-green-600' : 'text-text-error'}`}>
-                                    {formatCurrency(stats.profit)}
+                                <h4 className={`font-bold text-xl ${stats.summary.total_profit_week >= 0 ? 'text-green-600' : 'text-text-error'}`}>
+                                    {formatCurrency(stats.summary.total_profit_week)}
                                 </h4>
                                 <p className="text-xs text-on-surface-variant">
-                                    Margen: {stats.profit_margin.toFixed(1)}%
+                                    Margen: {stats.summary.profit_margin.toFixed(1)}%
                                 </p>
                             </div>
-                            <span className={`p-2 rounded-full text-xl ${stats.profit >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-text-error'}`}>
+                            <span className={`p-2 rounded-full text-xl ${stats.summary.total_profit_week >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-text-error'}`}>
                                 <MdOutlineAccountBalanceWallet />
                             </span>
                         </div>
@@ -158,7 +158,8 @@ const MetricsSection = () => {
                             <div>
                                 <h5 className="font-bold text-on-bg md:text-xl">{stats.top_product.name}</h5>
                                 <p className="font-semibold text-on-surface-variant">{stats.top_product.units_sold} unidades vendidas</p>
-                                <p className="font-semibold mt-1 text-secondary">Generó {formatCurrency(stats.top_product.revenue)} esta semana</p>
+                                <p className="font-semibold mt-1 text-secondary">Ingresos: {formatCurrency(stats.top_product.revenue)}</p>
+                                <p className="font-semibold text-green-600 mt-1">Utilidad: {formatCurrency(stats.top_product.profit)}</p>
                             </div>
                         </div>
                     ) : (
