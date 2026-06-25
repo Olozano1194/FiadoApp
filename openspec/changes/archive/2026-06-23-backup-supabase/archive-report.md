@@ -1,8 +1,8 @@
 # Archive Report: backup-supabase
 
 **Status:** ARCHIVED  
-**Date:** 2026-06-23  
-**Verification:** PASS
+**Date:** 2026-06-24  
+**Verification:** PASS (Phase 5 tests ejecutados y verificados)
 
 ---
 
@@ -41,7 +41,15 @@ Backup a la nube usando Supabase Storage como destino de respaldo remoto.
 
 - Ninguno. W1 (idempotent upload) corregido con `upsert: 'true'`.
 
-## Próximos pasos sugeridos
+## Verificación (Phase 5) — 2026-06-24
 
-- Commit del cambio a Git
-- Agregar tests de integración para los endpoints cloud backup
+| Test | Resultado |
+|------|-----------|
+| 5.1 Auto backup + upload | ✅ (probado desde UI) |
+| 5.2 Upload manual `POST /api/backup/cloud/upload/` | ✅ 200 OK |
+| 5.3 Listar remotos `GET /api/backup/cloud/list/` | ✅ Retorna lista |
+| 5.4 Restaurar `POST /api/backup/cloud/restore/{file}/` | ✅ "Database restored" |
+| 5.5 Retención (`max_remote_backups=2`) | ✅ Solo 2 archivos después de 3 uploads |
+| 5.6 Toggle off (`supabase_enabled=false`) | ✅ Upload rechazado con 400 |
+
+**Veredicto final:** PASS completo
