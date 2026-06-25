@@ -2,7 +2,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import F, Sum
+from django.db.models import ExpressionWrapper, F, Sum, DecimalField
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -51,11 +52,16 @@ class ReportStatsView(APIView):
         sales_with_items = sales_qs.prefetch_related("items__product")
         gross_profit = Decimal("0.00")
         day_groups = defaultdict(list)
+        day_profits = defaultdict(Decimal)
         for sale in sales_with_items:
+            day_profit = Decimal("0.00")
             for item in sale.items.all():
                 cost = item.product.cost or Decimal("0")
-                gross_profit += (item.unit_price - cost) * item.quantity
+                item_profit = (item.unit_price - cost) * item.quantity
+                day_profit += item_profit
+            gross_profit += day_profit
             day_groups[sale.created_at.date()].append(sale)
+            day_profits[sale.created_at.date()] += day_profit
 
         # Expenses in range
         expenses = (
@@ -65,12 +71,20 @@ class ReportStatsView(APIView):
             or Decimal("0.00")
         )
 
-        # Top products
+        # Top products sorted by profit
+        profit_expr = ExpressionWrapper(
+            (F("unit_price") - Coalesce(F("product__cost"), Decimal("0.00"))) * F("quantity"),
+            output_field=DecimalField(max_digits=10, decimal_places=2),
+        )
         top_products = (
             SaleItem.objects.filter(sale__in=sales_qs)
             .values("product__name")
-            .annotate(total_qty=Sum("quantity"), total_revenue=Sum(F("unit_price") * F("quantity")))
-            .order_by("-total_revenue")[:10]
+            .annotate(
+                total_qty=Sum("quantity"),
+                total_revenue=Sum(F("unit_price") * F("quantity")),
+                total_profit=Sum(profit_expr),
+            )
+            .order_by("-total_profit")[:10]
         )
 
         # Build week_days
@@ -106,6 +120,7 @@ class ReportStatsView(APIView):
                 "day_name": day_names_es[day.weekday()],
                 "total": float(day_total),
                 "count": day_count,
+                "profit": float(day_profits.get(day, Decimal("0.00"))),
                 "top_product": top_product,
             })
 
@@ -146,13 +161,15 @@ class ReportStatsView(APIView):
                 "name": tp["product__name"],
                 "units_sold": tp["total_qty"],
                 "revenue": float(tp["total_revenue"]),
+                "profit": float(tp["total_profit"]),
                 "image": product_obj.image.url if product_obj and product_obj.image else None,
             }
 
-        profit = float(gross_profit - expenses)
         total_sales_float = float(total_sales)
-        profit_margin = round((profit / total_sales_float * 100), 1) if total_sales_float > 0 else 0.0
         avg_per_day = round(total_week / num_days, 2)
+
+        net_profit_week = gross_profit - expenses
+        profit_margin = round((float(net_profit_week) / total_sales_float * 100), 1) if total_sales_float > 0 else 0.0
 
         return Response({
             "week_days": week_days,
@@ -160,15 +177,15 @@ class ReportStatsView(APIView):
                 "total_week": float(total_sales),
                 "change_vs_last_week": change_vs_last_week,
                 "avg_per_day": avg_per_day,
+                "total_profit_week": float(net_profit_week),
+                "profit_margin": profit_margin,
+                "total_expenses_week": float(expenses),
             },
             "fiado_pending": {
                 "total": float(fiado_total),
                 "client_count": fiado_client_count,
             },
             "top_product": top_product,
-            "profit": profit,
-            "profit_margin": profit_margin,
-            "expenses_total": float(expenses),
         })
 
 
