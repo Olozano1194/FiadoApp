@@ -10,7 +10,7 @@ from .dashboard import DashboardStatsView
 from .search import SearchView
 from .reports import ReportStatsView, RecentActivityView
 from .auth import ChangePasswordView
-from .exports import ExportClientsView, ExportProductsView, ExportSalesView
+from .exports import ExportClientsView, ExportExpensesView, ExportProductsView, ExportSalesView
 from .backup import ExportDbView, ImportDbView, BackupConfigView, CloudBackupUploadView, CloudBackupListView, CloudBackupRestoreView
 
 __all__ = [
@@ -28,6 +28,7 @@ __all__ = [
     "RecentActivityView",
     "ChangePasswordView",
     "ExportClientsView",
+    "ExportExpensesView",
     "ExportProductsView",
     "ExportSalesView",
     "ExportDbView",

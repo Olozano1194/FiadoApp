@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from ..models import Client, Product, Sale
+from ..models import Client, Expense, Product, Sale
 from .helpers import _build_xlsx_response
 
 
@@ -114,3 +114,37 @@ class ExportSalesView(APIView):
             )
 
         return _build_xlsx_response(wb, "ventas.xlsx")
+
+
+class ExportExpensesView(APIView):
+    def get(self, request):
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Gastos"
+
+        headers = ["ID", "Fecha", "Categoría", "Descripción", "Monto", "Creado"]
+        ws.append(headers)
+
+        qs = Expense.objects.all().order_by("-date", "-created_at")
+        date_from = request.query_params.get("date_from")
+        date_to = request.query_params.get("date_to")
+        if date_from:
+            qs = qs.filter(date__gte=date_from)
+        if date_to:
+            qs = qs.filter(date__lte=date_to)
+
+        for expense in qs:
+            ws.append(
+                [
+                    expense.id,
+                    expense.date.strftime("%Y-%m-%d"),
+                    expense.get_category_display(),
+                    expense.description,
+                    str(expense.amount),
+                    expense.created_at.strftime("%Y-%m-%d %H:%M"),
+                ]
+            )
+
+        return _build_xlsx_response(wb, "gastos.xlsx")
