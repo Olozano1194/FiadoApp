@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form"
 import { MdOutlineLock, MdOutlineFileDownload, MdOutlinePerson, MdOutlineStorage } from "react-icons/md";
-import { RiGroupLine, RiShoppingBasketLine, RiMoneyDollarCircleLine } from "react-icons/ri";
+import { RiGroupLine, RiShoppingBasketLine, RiMoneyDollarCircleLine, RiMoneyDollarBoxLine } from "react-icons/ri";
 import { useAuthStore } from "../stores/authStore";
-import { changePassword, exportClients, exportDb, exportProducts, exportSales, getBackupConfig, importDb, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
+import { changePassword, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
 import type { BackupConfig, CloudBackupEntry } from "../types/backup";
 //Mensajes
 import { toast } from "react-hot-toast";
@@ -619,7 +619,7 @@ const SettingsPage = () => {
           <h2 className="text-xl font-semibold text-on-surface-variant">Exportar Datos</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <button
             onClick={() => handleExport("clientes", exportClients)}
             disabled={exporting !== null}
@@ -664,6 +664,22 @@ const SettingsPage = () => {
               <p className="font-medium text-nav">Ventas</p>
               <p className="text-sm text-on-surface-variant">
                 {exporting === "ventas" ? "Descargando..." : "XLSX"}
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleExport("gastos", exportExpenses)}
+            disabled={exporting !== null}
+            className="flex flex-col items-center gap-3 p-6 rounded-xl bg-surface-container-high border border-outline-variant hover:bg-primary/10 hover:border-primary/30 transition-all disabled:opacity-50"
+          >
+            <span className="text-2xl text-text-primary">
+              <RiMoneyDollarBoxLine />
+            </span>
+            <div className="text-center">
+              <p className="font-medium text-nav">Gastos</p>
+              <p className="text-sm text-on-surface-variant">
+                {exporting === "gastos" ? "Descargando..." : "XLSX"}
               </p>
             </div>
           </button>

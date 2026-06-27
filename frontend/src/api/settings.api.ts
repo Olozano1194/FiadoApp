@@ -41,6 +41,11 @@ export const exportSales = async () => {
   triggerDownload(response.data, 'ventas.xlsx');
 };
 
+export const exportExpenses = async () => {
+  const response = await api.get('/export/expenses/', { responseType: 'blob' });
+  triggerDownload(response.data, 'gastos.xlsx');
+};
+
 export const exportDb = async (): Promise<Blob> => {
   const response = await api.get('backup/export/', {
     responseType: 'blob',
