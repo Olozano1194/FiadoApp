@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useStoreConfig } from '../stores/storeConfigStore';
 import { useForm } from "react-hook-form";
 //Mensajes
 import { toast } from "react-hot-toast";
@@ -11,6 +12,8 @@ import { MdOutlineVisibility, MdOutlineVisibilityOff } from "react-icons/md";
 
 const LoginPage = () => {
   const { login, isLoading, error, isAuthenticated, setError } = useAuthStore();
+  const { config, fetchConfig } = useStoreConfig();
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
   const {
     register,
     handleSubmit,
@@ -53,7 +56,7 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-surface-container-low px-4">
       <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-lg p-8 space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-3xl font-bold text-text-primary">La Tiendita</h1>
+          <h1 className="text-3xl font-bold text-text-primary">{config?.store_name || "La Tiendita"}</h1>
           <p className="text-on-surface-variant text-sm">FiadoApp — Iniciá sesión para continuar</p>
         </div>
 

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form"
-import { MdOutlineLock, MdOutlineFileDownload, MdOutlinePerson, MdOutlineStorage } from "react-icons/md";
+import { MdOutlineLock, MdOutlineFileDownload, MdOutlinePerson, MdOutlineStorage, MdStorefront } from "react-icons/md";
 import { RiGroupLine, RiShoppingBasketLine, RiMoneyDollarCircleLine, RiMoneyDollarBoxLine } from "react-icons/ri";
 import { useAuthStore } from "../stores/authStore";
+import { useStoreConfig } from "../stores/storeConfigStore";
 import { changePassword, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
 import type { BackupConfig, CloudBackupEntry } from "../types/backup";
 //Mensajes
@@ -27,6 +28,10 @@ const SettingsPage = () => {
 
   // Export
   const [exporting, setExporting] = useState<string | null>(null);
+
+  // Store name
+  const { config: storeConfig, fetchConfig, updateName, loading: savingStore } = useStoreConfig();
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
   // Backup
   const [backupConfig, setBackupConfig] = useState<BackupConfig | null>(null);
@@ -314,6 +319,45 @@ const SettingsPage = () => {
           </button>
         </form>
       </div>
+      {/* Nombre de la Tienda */}
+      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-xl text-text-primary">
+            <MdStorefront />
+          </span>
+          <h2 className="text-xl font-semibold text-on-surface-variant">Nombre de la Tienda</h2>
+        </div>
+        <div className="flex items-end gap-4 max-w-md">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-on-surface-variant mb-1">
+              Nombre
+            </label>
+            <input
+              type="text"
+              defaultValue={storeConfig?.store_name || "La Tiendita"}
+              id="store-name-input"
+              maxLength={200}
+              className="w-full px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <button
+            onClick={() => {
+              const input = document.getElementById("store-name-input") as HTMLInputElement;
+              const name = input.value.trim();
+              if (!name) { toast.error("El nombre no puede estar vacío"); return; }
+              updateName(name).then(() => {
+                toast.success("Nombre actualizado correctamente");
+              }).catch(() => {
+                toast.error("Error al actualizar nombre");
+              });
+            }}
+            disabled={savingStore}
+            className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {savingStore ? "Guardando..." : "Guardar"}
+          </button>
+        </div>
+      </div>
 
       {/* Backup de Base de Datos */}
       <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
@@ -454,7 +498,6 @@ const SettingsPage = () => {
                   className="w-full max-w-[200px] px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-
               {/* Max Backups */}
               <div>
                 <label className="block text-sm font-medium text-on-surface-variant mb-1">
@@ -474,12 +517,10 @@ const SettingsPage = () => {
                   className="w-full max-w-[200px] px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-
               {/* Info text */}
               <p className="text-sm text-on-surface-variant">
                 Los backups se guardan en: <code className="bg-surface-container-high px-1 rounded">{backupConfig.backup_folder}</code>
               </p>
-
               {/* Save button */}
               <button
                 onClick={handleSaveAutoBackup}
@@ -491,7 +532,6 @@ const SettingsPage = () => {
             </div>
           )}
         </div>
-
         {/* Cloud Backup (Supabase) */}
         <div className="mt-8 pt-6 border-t border-outline-variant">
           <h3 className="text-lg font-semibold text-on-surface-variant mb-4">
@@ -522,7 +562,6 @@ const SettingsPage = () => {
                   />
                 </button>
               </div>
-
               {/* Remote backups count */}
               <div>
                 <label className="block text-sm font-medium text-on-surface-variant mb-1">
@@ -609,7 +648,6 @@ const SettingsPage = () => {
           )}
         </div>
       </div>
-
       {/* Exportar Datos */}
       <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
         <div className="flex items-center gap-3 mb-6">

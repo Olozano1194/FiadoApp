@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 // icons
 import { RiGroupLine, RiLogoutCircleLine } from "react-icons/ri";
 import { IoHomeOutline } from "react-icons/io5";
 import { MdOutlineInventory2, MdOutlinePointOfSale, MdOutlineAnalytics } from "react-icons/md";
 import { CiSettings } from "react-icons/ci";
-
+import { useStoreConfig } from "../../stores/storeConfigStore";
 
 
 
@@ -18,6 +19,9 @@ export interface SubMenuState {
 
 const SideBar = () => {
     const location = useLocation();
+    const { config, fetchConfig } = useStoreConfig();
+
+    useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -32,7 +36,7 @@ const SideBar = () => {
                     <section className="px-6 py-8">
                         {/* <FormHeader logo={Logo} title="ControlFit" highlight="Colombia" /> */}
                         <h1 className="leading-9 text-4xl font-bold text-text-primary">
-                            La Tiendita                            
+                            {config?.store_name || "La Tiendita"}                            
                         </h1>
                         <span className="font-semibold leading-6 text-[16px] text-surface-variant">Gestión de Negocio</span>
                     </section>

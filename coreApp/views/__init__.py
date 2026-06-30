@@ -12,6 +12,7 @@ from .reports import ReportStatsView, RecentActivityView
 from .auth import ChangePasswordView
 from .exports import ExportClientsView, ExportExpensesView, ExportProductsView, ExportSalesView
 from .backup import ExportDbView, ImportDbView, BackupConfigView, CloudBackupUploadView, CloudBackupListView, CloudBackupRestoreView
+from .store_config import StoreConfigView
 
 __all__ = [
     "HealthCheckView",
@@ -37,4 +38,5 @@ __all__ = [
     "CloudBackupUploadView",
     "CloudBackupListView",
     "CloudBackupRestoreView",
+    "StoreConfigView",
 ]

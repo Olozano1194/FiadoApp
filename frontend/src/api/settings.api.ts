@@ -87,3 +87,17 @@ export const restoreCloudBackup = async (filename: string): Promise<{ success: b
   const response = await api.post(`backup/cloud/restore/${encodeURIComponent(filename)}/`);
   return response.data;
 };
+
+export interface StoreConfig {
+  store_name: string;
+}
+
+export const getStoreConfig = async (): Promise<StoreConfig> => {
+  const response = await api.get('store-config/');
+  return response.data;
+};
+
+export const updateStoreConfig = async (data: StoreConfig): Promise<StoreConfig> => {
+  const response = await api.patch('store-config/', data);
+  return response.data;
+};

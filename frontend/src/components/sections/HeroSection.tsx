@@ -1,13 +1,17 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdPersonAddAlt, MdAddShoppingCart } from "react-icons/md";
+import { useStoreConfig } from "../../stores/storeConfigStore";
 
 const HeroSection = () => {
     const navigate = useNavigate();
+    const { config, fetchConfig } = useStoreConfig();
+    useEffect(() => { fetchConfig(); }, [fetchConfig]);
     return (
         <section className="flex flex-col gap-6 justify-between py-5 px-3.5 md:flex-row md:items-end md:px-5 lg:px-16">
             <div>
                 <h3 className="font-bold text-primary text-2xl">¡Hola de nuevo!</h3>
-                <p className="font-semibold mt-1 text-on-surface-variant text-lg">Hoy es un buen día para vender en <span className="text-primary text-xl">La Tiendita</span>.</p>
+                <p className="font-semibold mt-1 text-on-surface-variant text-lg">Hoy es un buen día para vender en <span className="text-primary text-xl">{config?.store_name || "La Tiendita"}</span>.</p>
             </div>
             <div className="flex flex-wrap gap-4">
                 <button
