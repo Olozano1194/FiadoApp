@@ -1,7 +1,10 @@
+import json
 import os
+import sys
 import tempfile
 from collections import defaultdict
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 
 from django.db import IntegrityError
 from openpyxl import load_workbook
@@ -196,7 +199,8 @@ def _detect_duplicate_barcodes(rows, col_map):
 # ---------------------------------------------------------------------------
 
 class ImportProductsTemplateView(APIView):
-    """Download a headers‑only XLSX template for bulk product import."""
+    """Download an XLSX template with **default products** from the fixture
+    so the user can edit prices, costs, stock, etc. before uploading."""
 
     permission_classes = [IsAuthenticated]
 
@@ -219,6 +223,47 @@ class ImportProductsTemplateView(APIView):
             "Descripción",
         ]
         ws.append(headers)
+
+        # ── Load fixture products ──────────────────────────────────────
+        # Resolve fixture path (same logic as load_initial_data command)
+        if getattr(sys, 'frozen', False):
+            fixture_path = Path(sys._MEIPASS) / "coreApp" / "fixtures" / "initial_data.json"
+        else:
+            # imports.py → coreApp/views/ → coreApp/ → coreApp/fixtures/initial_data.json
+            fixture_path = (
+                Path(__file__).parent.parent
+                / "fixtures"
+                / "initial_data.json"
+            )
+
+        if fixture_path.exists():
+            with open(fixture_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            # Build category PK → name lookup
+            fixture_cats = {
+                item["pk"]: item["fields"]["name"]
+                for item in data
+                if item["model"] == "coreApp.category"
+            }
+
+            # Append each fixture product as a row
+            for item in data:
+                if item["model"] != "coreApp.product":
+                    continue
+                fields = item["fields"]
+                cat_name = fixture_cats.get(fields["category"], "")
+                ws.append([
+                    "",                              # ID (vacío — se creará nuevo)
+                    fields["name"],
+                    cat_name,
+                    fields["price"],
+                    fields.get("cost", "0.00"),
+                    fields.get("stock", 0),
+                    fields.get("min_stock", 10),
+                    fields.get("barcode", ""),
+                    fields.get("description", ""),
+                ])
 
         return _build_xlsx_response(wb, "plantilla-productos.xlsx")
 
