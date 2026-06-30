@@ -5,12 +5,25 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { formatCurrency } from '../../utils/format';
 
 
+function calcItemProfit(subtotal: number, cost: string | undefined, qty: number): number {
+  return subtotal - (parseFloat(cost || '0') * qty);
+}
+
+function calcTotalProfit(cart: { product: { cost?: string }; quantity: number; subtotal: number }[]): number {
+  return cart.reduce((sum, item) => sum + calcItemProfit(item.subtotal, item.product.cost, item.quantity), 0);
+}
+
+
 const CartPanel = () => {
   const cart = useSaleStore(s => s.cart);
   const removeFromCart = useSaleStore(s => s.removeFromCart);
   const updateQuantity = useSaleStore(s => s.updateQuantity);
   const clearCart = useSaleStore(s => s.clearCart);
   const getCartTotal = useSaleStore(s => s.getCartTotal);
+
+  const cartTotal = getCartTotal();
+  const totalProfit = calcTotalProfit(cart);
+  const totalMargin = cartTotal > 0 ? (totalProfit / cartTotal) * 100 : 0;
 
   if (cart.length === 0) {
     return (
@@ -87,17 +100,41 @@ const CartPanel = () => {
                 <div className="text-right">
                   <p className="text-xs text-on-surface-variant">{formatCurrency(item.product.price)} c/u</p>
                   <p className="font-bold text-text-primary text-sm">{formatCurrency(item.subtotal)}</p>
+                  {(() => {
+                    const profit = calcItemProfit(item.subtotal, item.product.cost, item.quantity);
+                    const margin = item.subtotal > 0 ? (profit / item.subtotal) * 100 : 0;
+                    const isPositive = profit >= 0;
+                    return (
+                      <p className={`text-xs mt-0.5 ${isPositive ? 'text-green-600' : 'text-text-error'}`}>
+                        {isPositive ? '💰 ' : '📉 '}{formatCurrency(profit)} <span className="opacity-70">({margin.toFixed(1)}%)</span>
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
           </div>
         ))}
       </div>
-      <div className="mt-4 pt-3 border-t border-surface-border">
+      <div className="mt-4 pt-3 border-t border-surface-border space-y-2">
         <div className="flex justify-between items-center text-lg">
-          <span className="font-semibold text-text-primary">Total</span>
-          <span className="font-bold text-primary">{formatCurrency(getCartTotal())}</span>
+          <span className="font-semibold text-text-primary">Total Venta</span>
+          <span className="font-bold text-primary">{formatCurrency(cartTotal)}</span>
         </div>
+        <div className="flex justify-between items-center text-base">
+          <span className="text-on-surface-variant">Ganancia Total</span>
+          <span className={`font-semibold ${totalProfit >= 0 ? 'text-green-600' : 'text-text-error'}`}>
+            {formatCurrency(totalProfit)}
+          </span>
+        </div>
+        {cartTotal > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-on-surface-variant">Margen</span>
+            <span className={`font-medium ${totalProfit >= 0 ? 'text-green-600' : 'text-text-error'}`}>
+              {totalMargin.toFixed(1)}%
+            </span>
+          </div>
+        )}
       </div>
     </aside>
   );
