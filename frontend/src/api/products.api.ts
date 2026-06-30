@@ -17,7 +17,8 @@ const toFormData = (data: ProductFormData | Partial<ProductFormData>): FormData 
   return fd;
 };
 
-export const getProducts = () => api.get<Product[]>('/products/');
+export const getProducts = (pageSize = 100) =>
+  api.get<{ results: Product[] }>(`/products/?page_size=${pageSize}`);
 export const getProduct = (id: number) => api.get<Product>(`/products/${id}/`);
 export const createProduct = (data: ProductFormData) =>
   api.post<Product>('/products/', toFormData(data), {
