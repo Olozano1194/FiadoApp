@@ -88,6 +88,31 @@ export const restoreCloudBackup = async (filename: string): Promise<{ success: b
   return response.data;
 };
 
+export interface ImportError {
+  row: number;
+  message: string;
+}
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  errors: ImportError[];
+}
+
+export const importProducts = async (file: File): Promise<ImportResult> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post('import/products/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const downloadImportTemplate = async () => {
+  const response = await api.get('import/products/template/', { responseType: 'blob' });
+  triggerDownload(response.data, 'plantilla-productos.xlsx');
+};
+
 export interface StoreConfig {
   store_name: string;
 }

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form"
-import { MdOutlineLock, MdOutlineFileDownload, MdOutlinePerson, MdOutlineStorage, MdStorefront } from "react-icons/md";
+import { MdOutlineLock, MdOutlineFileDownload, MdOutlineFileUpload, MdOutlinePerson, MdOutlineStorage, MdStorefront } from "react-icons/md";
 import { RiGroupLine, RiShoppingBasketLine, RiMoneyDollarCircleLine, RiMoneyDollarBoxLine } from "react-icons/ri";
 import { useAuthStore } from "../stores/authStore";
 import { useStoreConfig } from "../stores/storeConfigStore";
-import { changePassword, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
+import { changePassword, downloadImportTemplate, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, importProducts, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
 import type { BackupConfig, CloudBackupEntry } from "../types/backup";
+import type { ImportError, ImportResult } from "../api/settings.api";
 //Mensajes
 import { toast } from "react-hot-toast";
 
@@ -47,6 +48,14 @@ const SettingsPage = () => {
   const [cloudBackups, setCloudBackups] = useState<CloudBackupEntry[]>([]);
   const [loadingCloudList, setLoadingCloudList] = useState(false);
   const [restoringCloud, setRestoringCloud] = useState<string | null>(null);
+
+  // Import Products
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importingProducts, setImportingProducts] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -173,6 +182,45 @@ const SettingsPage = () => {
       toast.error(msg);
     } finally {
       setRestoringCloud(null);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    setDownloadingTemplate(true);
+    try {
+      await downloadImportTemplate();
+      toast.success("Plantilla descargada correctamente");
+    } catch {
+      toast.error("Error al descargar la plantilla");
+    } finally {
+      setDownloadingTemplate(false);
+    }
+  };
+
+  const handleImportFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImportFile(file);
+      setShowImportModal(true);
+    }
+  };
+
+  const handleImportConfirm = async () => {
+    if (!importFile) return;
+    setImportingProducts(true);
+    setShowImportModal(false);
+    try {
+      const result = await importProducts(importFile);
+      setImportResult(result);
+      toast.success(`Creados: ${result.created} | Actualizados: ${result.updated} | Errores: ${result.errors.length}`);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      const msg = axiosErr?.response?.data?.detail || "Error al importar productos";
+      toast.error(`Error al importar: ${msg}`);
+    } finally {
+      setImportingProducts(false);
+      setImportFile(null);
+      if (importFileInputRef.current) importFileInputRef.current.value = '';
     }
   };
 
@@ -722,6 +770,86 @@ const SettingsPage = () => {
             </div>
           </button>
         </div>
+      </div>
+      {/* Importar Productos */}
+      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-xl text-text-primary">
+            <MdOutlineFileUpload />
+          </span>
+          <h2 className="text-xl font-semibold text-on-surface-variant">Importar Productos</h2>
+        </div>
+
+        <div className="flex gap-4 mb-4">
+          <button
+            onClick={handleDownloadTemplate}
+            disabled={downloadingTemplate}
+            className="px-6 py-2.5 bg-surface-container-high text-outline border border-outline-variant rounded-xl font-medium hover:bg-primary/10 hover:border-primary/30 transition-colors disabled:opacity-50"
+          >
+            {downloadingTemplate ? "Descargando..." : "Descargar Plantilla"}
+          </button>
+          <input
+            ref={importFileInputRef}
+            type="file"
+            accept=".xlsx"
+            onChange={handleImportFileSelect}
+            className="hidden"
+          />
+          <button
+            onClick={() => importFileInputRef.current?.click()}
+            disabled={importingProducts}
+            className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {importingProducts ? "Importando..." : "Importar Productos (XLSX)"}
+          </button>
+        </div>
+
+        {/* Import error detail */}
+        {importResult && importResult.errors.length > 0 && (
+          <div className="mt-4 p-4 bg-surface-container-high rounded-xl">
+            <details>
+              <summary className="text-sm font-medium text-red-500 cursor-pointer select-none">
+                {importResult.errors.length} error(es) — Ver detalle
+              </summary>
+              <div className="mt-2 space-y-1">
+                {importResult.errors.map((err, idx) => (
+                  <p key={idx} className="text-sm text-on-surface-variant">
+                    Fila {err.row}: {err.message}
+                  </p>
+                ))}
+              </div>
+            </details>
+          </div>
+        )}
+
+        {showImportModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-on-surface-variant mb-4">Importar Productos</h3>
+              <p className="text-on-surface-variant mb-6">
+                ¿Importar <strong>{importFile?.name}</strong>?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowImportModal(false);
+                    setImportFile(null);
+                    if (importFileInputRef.current) importFileInputRef.current.value = '';
+                  }}
+                  className="px-4 py-2 rounded-xl border border-outline-variant text-on-surface-variant hover:bg-surface-container-high"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleImportConfirm}
+                  className="px-4 py-2 rounded-xl bg-primary text-on-primary font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Importar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
