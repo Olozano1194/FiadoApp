@@ -16,6 +16,7 @@ from coreApp.views import (
     ExportExpensesView, ExportProductsView, ExportSalesView,
     ExportDbView, ImportDbView, BackupConfigView,
     CloudBackupUploadView, CloudBackupListView, CloudBackupRestoreView,
+    ImportProductsView, ImportProductsTemplateView,
     StoreConfigView,
 )
 
@@ -64,6 +65,8 @@ urlpatterns = [
     path('api/export/products/', ExportProductsView.as_view(), name='export-products'),
     path('api/export/sales/', ExportSalesView.as_view(), name='export-sales'),
     path('api/export/expenses/', ExportExpensesView.as_view(), name='export-expenses'),
+    path('api/import/products/', ImportProductsView.as_view(), name='import-products'),
+    path('api/import/products/template/', ImportProductsTemplateView.as_view(), name='import-products-template'),
     path('api/backup/export/', ExportDbView.as_view(), name='backup-export'),
     path('api/backup/import/', ImportDbView.as_view(), name='backup-import'),
     path('api/backup/config/', BackupConfigView.as_view(), name='backup-config'),
