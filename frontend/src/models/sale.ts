@@ -41,6 +41,7 @@ export interface SaleItem {
   quantity: number;
   unit_price: string;
   subtotal: string;
+  cost_at_sale?: string;
 }
 
 export interface RecentSale {

@@ -49,14 +49,14 @@ class ReportStatsView(APIView):
         sales_count = sales_qs.count()
 
         # Profit calculation and day grouping
-        sales_with_items = sales_qs.prefetch_related("items__product")
+        sales_with_items = sales_qs.prefetch_related("items")
         gross_profit = Decimal("0.00")
         day_groups = defaultdict(list)
         day_profits = defaultdict(Decimal)
         for sale in sales_with_items:
             day_profit = Decimal("0.00")
             for item in sale.items.all():
-                cost = item.product.cost or Decimal("0")
+                cost = item.cost_at_sale or Decimal("0")
                 item_profit = (item.unit_price - cost) * item.quantity
                 day_profit += item_profit
             gross_profit += day_profit
@@ -73,7 +73,7 @@ class ReportStatsView(APIView):
 
         # Top products sorted by profit
         profit_expr = ExpressionWrapper(
-            (F("unit_price") - Coalesce(F("product__cost"), Decimal("0.00"))) * F("quantity"),
+            (F("unit_price") - Coalesce(F("cost_at_sale"), Decimal("0.00"))) * F("quantity"),
             output_field=DecimalField(max_digits=10, decimal_places=2),
         )
         top_products = (

@@ -81,7 +81,9 @@ class SaleCreateSerializer(serializers.ModelSerializer):
 
             # Validar stock contra cantidad TOTAL por producto
             # (evita bypass si el mismo producto se agrega 2 veces al carrito)
-            product_counts = Counter(item['product'].id for item in items_data)
+            product_counts: dict[int, int] = {}
+            for item in items_data:
+                product_counts[item['product'].id] = product_counts.get(item['product'].id, 0) + item['quantity']
             for product_id, total_qty in product_counts.items():
                 product = product_map.get(product_id)
                 if not product:
@@ -103,6 +105,7 @@ class SaleCreateSerializer(serializers.ModelSerializer):
                     quantity=item['quantity'],
                     unit_price=item['unit_price'],
                     subtotal=subtotal,
+                    cost_at_sale=product.cost,
                 )
                 product.stock -= item['quantity']
                 product.save(update_fields=['stock'])

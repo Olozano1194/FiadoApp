@@ -119,12 +119,12 @@ def calculate_closure_data(date):
 
     today_sales = Sale.objects.filter(
         created_at__range=(today_start, today_end), status="COMPLETED"
-    ).prefetch_related("items__product")
+    )
 
     net_profit = Decimal("0.00")
     for sale in today_sales:
         for item in sale.items.all():
-            cost = item.product.cost or Decimal("0")
+            cost = item.cost_at_sale or Decimal("0")
             net_profit += (item.unit_price - cost) * item.quantity
 
     expected_cash = cash_sales + fiado_payments - expenses

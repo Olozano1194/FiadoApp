@@ -71,6 +71,7 @@ class BaseClosureTest(TestCase):
             quantity=1,
             unit_price=total,
             subtotal=total,
+            cost_at_sale=self.product.cost,
         )
         return sale
 

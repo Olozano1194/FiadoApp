@@ -82,6 +82,7 @@ class SaleItem(models.Model):
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    cost_at_sale = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return f"{self.product.name} x{self.quantity}"
@@ -154,6 +155,26 @@ class BackupConfig(models.Model):
 
     def __str__(self):
         return f"BackupConfig (enabled={self.enabled})"
+
+
+class StoreConfig(models.Model):
+    store_name = models.CharField(max_length=200, default="La Tiendita")
+
+    class Meta:
+        verbose_name = "Configuración de Tienda"
+        verbose_name_plural = "Configuración de Tienda"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_singleton(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return f"StoreConfig: {self.store_name}"
 
 
 class CashClosure(models.Model):
