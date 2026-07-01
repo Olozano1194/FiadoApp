@@ -16,6 +16,13 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         return token
 
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        from .models import StoreConfig
+        config = StoreConfig.get_singleton()
+        data['store_name'] = config.store_name
+        return data
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
