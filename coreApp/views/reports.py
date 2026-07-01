@@ -1,9 +1,8 @@
-from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import ExpressionWrapper, F, Sum, DecimalField
-from django.db.models.functions import Coalesce
+from django.db.models import Count, ExpressionWrapper, F, Sum, DecimalField
+from django.db.models.functions import Coalesce, TruncDate
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -48,20 +47,16 @@ class ReportStatsView(APIView):
         total_sales = sales_qs.aggregate(total=Sum("total"))["total"] or Decimal("0.00")
         sales_count = sales_qs.count()
 
-        # Profit calculation and day grouping
-        sales_with_items = sales_qs.prefetch_related("items")
-        gross_profit = Decimal("0.00")
-        day_groups = defaultdict(list)
-        day_profits = defaultdict(Decimal)
-        for sale in sales_with_items:
-            day_profit = Decimal("0.00")
-            for item in sale.items.all():
-                cost = item.cost_at_sale or Decimal("0")
-                item_profit = (item.unit_price - cost) * item.quantity
-                day_profit += item_profit
-            gross_profit += day_profit
-            day_groups[sale.created_at.date()].append(sale)
-            day_profits[sale.created_at.date()] += day_profit
+        # Profit calculation — single SQL aggregation
+        profit_expr = ExpressionWrapper(
+            (F("unit_price") - Coalesce(F("cost_at_sale"), Decimal("0.00"))) * F("quantity"),
+            output_field=DecimalField(max_digits=10, decimal_places=2),
+        )
+        gross_profit = (
+            SaleItem.objects.filter(sale__in=sales_qs)
+            .aggregate(total=Sum(profit_expr))["total"]
+            or Decimal("0.00")
+        )
 
         # Expenses in range
         expenses = (
@@ -71,11 +66,7 @@ class ReportStatsView(APIView):
             or Decimal("0.00")
         )
 
-        # Top products sorted by profit
-        profit_expr = ExpressionWrapper(
-            (F("unit_price") - Coalesce(F("cost_at_sale"), Decimal("0.00"))) * F("quantity"),
-            output_field=DecimalField(max_digits=10, decimal_places=2),
-        )
+        # Top products sorted by profit (overall)
         top_products = (
             SaleItem.objects.filter(sale__in=sales_qs)
             .values("product__name")
@@ -87,41 +78,67 @@ class ReportStatsView(APIView):
             .order_by("-total_profit")[:10]
         )
 
-        # Build week_days
+        # ── Per-day profit via SaleItem (single query) ──────────────
+        day_profit_qs = (
+            SaleItem.objects.filter(sale__in=sales_qs)
+            .annotate(day=TruncDate("sale__created_at"))
+            .values("day")
+            .annotate(profit=Sum(profit_expr))
+        )
+        day_profits: dict[str, Decimal] = {
+            str(row["day"]): row["profit"] or Decimal("0.00")
+            for row in day_profit_qs
+        }
+
+        # ── Per-day top product (single query) ──────────────────────
+        day_top_qs = (
+            SaleItem.objects.filter(sale__in=sales_qs)
+            .annotate(day=TruncDate("sale__created_at"))
+            .values("day", "product__name")
+            .annotate(
+                units_sold=Sum("quantity"),
+                revenue=Sum(F("unit_price") * F("quantity")),
+            )
+            .order_by("day", "-units_sold")
+        )
+
+        day_products: dict[str, dict] = {}
+        for row in day_top_qs:
+            day_key = str(row["day"])
+            if day_key not in day_products:
+                day_products[day_key] = {
+                    "name": row["product__name"],
+                    "units": row["units_sold"],
+                    "revenue": float(row["revenue"]),
+                }
+
+        # Per-day sale totals & counts
+        day_sale_stats = (
+            sales_qs
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(total=Sum("total"), count=Count("id"))
+        )
+        for row in day_sale_stats:
+            day_key = str(row["day"])
+            day_totals[day_key] = row["total"] or Decimal("0.00")
+            day_counts[day_key] = row["count"] or 0
+
+        # ── Build week_days ─────────────────────────────────────────
         num_days = (report_end - report_start).days + 1
         day_names_es = ["lunes", "martes", "mi\u00e9rcoles", "jueves", "viernes", "s\u00e1bado", "domingo"]
 
         week_days = []
         for i in range(num_days):
             day = report_start + timedelta(days=i)
-            day_sales = day_groups.get(day, [])
-            day_total = sum(s.total for s in day_sales) if day_sales else Decimal("0.00")
-            day_count = len(day_sales)
-
-            # Top product for this day
-            product_qty = defaultdict(int)
-            product_revenue = defaultdict(Decimal)
-            for sale in day_sales:
-                for item in sale.items.all():
-                    product_qty[item.product.name] += item.quantity
-                    product_revenue[item.product.name] += item.subtotal
-
-            top_product = None
-            if product_qty:
-                best_name = max(product_qty, key=product_qty.get)
-                top_product = {
-                    "name": best_name,
-                    "units": product_qty[best_name],
-                    "revenue": float(product_revenue[best_name]),
-                }
-
+            day_key = day.isoformat()
             week_days.append({
-                "date": day.isoformat(),
+                "date": day_key,
                 "day_name": day_names_es[day.weekday()],
-                "total": float(day_total),
-                "count": day_count,
-                "profit": float(day_profits.get(day, Decimal("0.00"))),
-                "top_product": top_product,
+                "total": float(day_totals.get(day_key, Decimal("0.00"))),
+                "count": day_counts.get(day_key, 0),
+                "profit": float(day_profits.get(day_key, Decimal("0.00"))),
+                "top_product": day_products.get(day_key),
             })
 
         # Summary
