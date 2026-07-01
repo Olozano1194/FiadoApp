@@ -11,7 +11,7 @@ interface ProductsSectionProps {
 }
 
 const ProductsSection = ({ query, categoryId }: ProductsSectionProps) => {
-    const { products, fetchProducts } = useProductStore();
+    const { products, loading, error, fetchProducts } = useProductStore();
     const addToCart = useSaleStore(s => s.addToCart);
     const cart = useSaleStore(s => s.cart);
     const deferredQuery = useDeferredValue(query);
@@ -31,6 +31,22 @@ const ProductsSection = ({ query, categoryId }: ProductsSectionProps) => {
         const item = cart.find(i => i.product.id === productId);
         return item ? item.quantity : 0;
     };
+
+    if (error) {
+        return (
+            <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+                <p className="text-text-error">Error al cargar productos</p>
+            </div>
+        );
+    }
+
+    if (loading && products.length === 0) {
+        return (
+            <div className="flex-1 flex items-center justify-center text-on-surface-variant">
+                <p>Cargando productos...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 content-start">

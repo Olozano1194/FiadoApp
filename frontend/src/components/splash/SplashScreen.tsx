@@ -1,5 +1,3 @@
-import { type JSX } from 'react'
-
 interface SplashScreenProps {
   status: 'loading' | 'error' | 'retrying'
   onRetry?: () => void

@@ -37,7 +37,7 @@ const StockOrderModal = ({ isOpen, onClose }: StockOrderModalProps) => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch {
-            // Fallback silencioso si el navegador no soporta clipboard API
+            console.warn("Clipboard API no disponible");
         }
     };
 
