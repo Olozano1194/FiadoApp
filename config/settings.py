@@ -9,12 +9,15 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
+import logging
 import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Support PyInstaller packaging — FIADOAPP_DATA_DIR overrides BASE_DIR for persistent data
@@ -33,6 +36,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = 'django-insecure-dev-only-key-not-for-production'
+        logger.warning("Usando SECRET_KEY insegura para DEBUG — no usar en producción")
     else:
         raise RuntimeError(
             "DJANGO_SECRET_KEY no está definida. "
@@ -42,7 +46,7 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['testserver', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'testserver,localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -194,7 +198,6 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 104_857_600  # 100 MB
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "http://localhost:3000",
     "tauri://localhost",
     "https://tauri.localhost",
     "http://tauri.localhost",
