@@ -113,6 +113,8 @@ class ReportStatsView(APIView):
                 }
 
         # Per-day sale totals & counts
+        day_totals: dict[str, Decimal] = {}
+        day_counts: dict[str, int] = {}
         day_sale_stats = (
             sales_qs
             .annotate(day=TruncDate("created_at"))
