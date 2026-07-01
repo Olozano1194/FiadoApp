@@ -16,7 +16,7 @@ class ExportClientsView(APIView):
         headers = ["ID", "Nombre", "Teléfono", "Email", "Dirección", "Límite Crédito", "Deuda Actual"]
         ws.append(headers)
 
-        for client in Client.objects.all().order_by("name"):
+        for client in Client.objects.all().order_by("name").iterator():
             ws.append(
                 [
                     client.id,
@@ -52,7 +52,7 @@ class ExportProductsView(APIView):
         ]
         ws.append(headers)
 
-        for product in Product.objects.all().order_by("name").select_related("category"):
+        for product in Product.objects.all().order_by("name").select_related("category").iterator():
             ws.append(
                 [
                     product.id,
@@ -98,7 +98,7 @@ class ExportSalesView(APIView):
         if date_to:
             qs = qs.filter(created_at__date__lte=date_to)
 
-        for sale in qs:
+        for sale in qs.iterator():
             ws.append(
                 [
                     sale.id,
@@ -135,7 +135,7 @@ class ExportExpensesView(APIView):
         if date_to:
             qs = qs.filter(date__lte=date_to)
 
-        for expense in qs:
+        for expense in qs.iterator():
             ws.append(
                 [
                     expense.id,
