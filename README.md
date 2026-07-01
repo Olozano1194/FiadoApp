@@ -129,7 +129,25 @@ FiadoApp/
 │
 ├── coreApp/                   # App principal Django
 │   ├── models.py              # Modelos: Category, Product, Client, Sale, SaleItem, FiadoPayment
-│   ├── views.py               # ViewSets + APIViews (~516 líneas)
+│   ├── views/                 # ViewSets + APIViews organizados por dominio
+│   │   ├── auth.py            # Autenticación JWT
+│   │   ├── products.py        # Productos + stock bajo
+│   │   ├── clients.py         # Clientes + deudores
+│   │   ├── sales.py           # Ventas, historial, recientes
+│   │   ├── categories.py      # Categorías
+│   │   ├── expenses.py        # Gastos
+│   │   ├── payments.py        # Pagos de fiado
+│   │   ├── dashboard.py       # Dashboard stats
+│   │   ├── reports.py         # Reportes semanales + actividad reciente
+│   │   ├── imports.py         # Importación de productos desde Excel
+│   │   ├── import_helpers.py  # Helpers de importación
+│   │   ├── exports.py         # Exportación a Excel
+│   │   ├── cash_closure.py    # Cierre de caja
+│   │   ├── backup.py          # Backup manual
+│   │   ├── store_config.py    # Configuración de tienda
+│   │   ├── search.py          # Búsqueda global
+│   │   ├── health.py          # Health check
+│   │   └── helpers.py         # Utilidades compartidas
 │   ├── serializers.py         # Serializers con lógica de negocio
 │   └── urls.py                # Rutas API
 │
@@ -260,6 +278,9 @@ FiadoApp/
 | `api/export/clients/` | GET | Exportar clientes |
 | `api/export/products/` | GET | Exportar productos |
 | `api/export/sales/` | GET | Exportar ventas |
+| `api/import/products/template/` | GET | Descargar plantilla Excel |
+| `api/import/products/` | POST | Importar productos desde Excel |
+| `api/import/products/?preview=true` | POST | Validar sin persistir (preview) |
 
 ---
 
@@ -294,16 +315,14 @@ FiadoApp/
 
 ## Posibles Mejoras Futuras
 
-- [ ] **Migración a Desktop** con Tauri (React embebido + Rust backend opcional)
-- [ ] Lazy loading de páginas con `React.lazy()` + `Suspense`
+- [x] **Migración a Desktop** con Tauri (React embebido + Rust backend opcional)
+- [x] Reporte de ganancias (precio de costo vs precio de venta)
 - [ ] Tests automatizados (Vitest + pytest)
 - [ ] Paginación server-side en listados de productos y clientes
-- [ ] Modo offline (Service Workers + IndexedDB)
 - [ ] Roles de usuario (admin, cajero)
 - [ ] Historial de stock (entradas, salidas, ajustes)
 - [ ] Impresión de tickets
 - [ ] Múltiples precios (por unidad, por mayoreo)
-- [ ] Reporte de ganancias (precio de costo vs precio de venta)
 
 ---
 
