@@ -38,23 +38,22 @@ Chain strategy: pending
 
 ## Phase 3: Shell Scoping + Job Object
 
-- [ ] 3.1 `frontend/src-tauri/capabilities/default.json` — Remove `shell:allow-execute`, `shell:allow-spawn`, `shell:allow-stdin-write`, `shell:allow-keep`; keep only `core:default` and `shell:allow-open`
-- [ ] 3.2 `frontend/src-tauri/Cargo.toml` — Add `tauri-plugin-store = "2"` and `job_object = "0.1"` to `[dependencies]`
-- [ ] 3.3 `frontend/src-tauri/capabilities/default.json` — Add `store:default` to permissions array
-- [ ] 3.4 `frontend/src-tauri/src/lib.rs` — Register `tauri_plugin_store::init()` in builder
-- [ ] 3.5 `frontend/src-tauri/src/lib.rs` — Create Windows Job Object in `setup()` with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`, assign sidecar process after spawn, gate with `#[cfg(target_os = "windows")]`
+- [x] 3.1 `frontend/src-tauri/capabilities/default.json` — Remove `shell:allow-execute`, `shell:allow-spawn`, `shell:allow-stdin-write`, `shell:allow-kill`; keep only `core:default`, `shell:allow-open`, and add `store:default`
+- [x] 3.2 `frontend/src-tauri/Cargo.toml` — Add `tauri-plugin-store = "2"` and `job_object = "0.1"` to `[dependencies]`
+- [x] 3.3 `frontend/src-tauri/src/lib.rs` — Register `tauri_plugin_store::init()` in builder
+- [x] 3.4 `frontend/src-tauri/src/lib.rs` — Create Windows Job Object in `setup()` with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`, assign sidecar process after spawn, gate with `#[cfg(target_os = "windows")]`
 
 ## Phase 4: CSP Hardening
 
-- [ ] 4.1 `frontend/src-tauri/tauri.conf.json` — Remove `'unsafe-inline'` from `script-src` and `style-src`; remove `data:` from `img-src` in CSP
-- [ ] 4.2 Build production bundle and verify no CSP errors
+- [x] 4.1 `frontend/src-tauri/tauri.conf.json` — Remove `'unsafe-inline'` from `script-src` and `style-src`; remove `data:` from `img-src` in CSP
+- [x] 4.2 Build production bundle and verify no CSP errors
 
 ## Phase 5: JWT Plugin Store Migration
 
-- [ ] 5.1 `frontend/src/stores/authStore.ts` — Replace `localStorage.getItem/setItem/removeItem` with `tauri-plugin-store` reads/writes for `fiado_access_token` and `fiado_refresh_token`
-- [ ] 5.2 `frontend/src/stores/authStore.ts` — Initialize store as lazy singleton on first import
-- [ ] 5.3 `frontend/src/stores/authStore.ts` — Read `store_name` from login response and store in Zustand
-- [ ] 5.4 `frontend/src/stores/authStore.ts` — Update `restoreSession` to read tokens from plugin store on startup
+- [x] 5.1 `frontend/src/stores/authStore.ts` — Replace `localStorage.getItem/setItem/removeItem` with `tauri-plugin-store` reads/writes for `fiado_access_token` and `fiado_refresh_token`
+- [x] 5.2 `frontend/src/stores/authStore.ts` — Initialize store as lazy singleton on first import via `getStore()` function
+- [x] 5.3 `frontend/src/stores/authStore.ts` — Read `store_name` from login response and store in Zustand
+- [x] 5.4 `frontend/src/stores/authStore.ts` — Update `restoreSession` to read tokens from plugin store on startup
 
 ## Phase 6: Verification
 

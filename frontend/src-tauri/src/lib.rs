@@ -14,10 +14,21 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_store::init())
         .manage(SidecarState {
             child: Mutex::new(None),
         })
         .setup(|app| {
+            // ── Windows Job Object: ensure sidecar dies when parent exits ──
+            #[cfg(target_os = "windows")]
+            let _job = {
+                use job_object::{Job, LimitFlags};
+                let job = Job::new().expect("Failed to create Job Object");
+                job.set_limit_flags(LimitFlags::JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)
+                    .expect("Failed to set Job Object limit");
+                job
+            };
+
             // Spawn the Django sidecar
             let shell = app.shell();
             let sidecar_command = shell.sidecar("fiadoapp-backend")
@@ -33,6 +44,11 @@ pub fn run() {
                     // en %APPDATA%\FiadoApp\backend.log
                 }
                 Ok((mut rx, child)) => {
+                    // ── Assign sidecar to Windows Job Object ──
+                    #[cfg(target_os = "windows")]
+                    _job.assign_process(child.pid() as u32)
+                        .expect("Failed to assign sidecar to Job Object");
+
                     // Guardar el handle del proceso para limpiar al cerrar
                     let state = app.state::<SidecarState>();
                     *state.child.lock().unwrap() = Some(child);
