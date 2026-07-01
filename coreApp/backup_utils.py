@@ -14,7 +14,7 @@ from django.core import serializers
 from django.db import connection
 
 
-def detect_engine():
+def detect_engine() -> str:
     engine = settings.DATABASES['default']['ENGINE']
     if 'sqlite3' in engine:
         return 'sqlite'
@@ -23,7 +23,7 @@ def detect_engine():
     return 'unknown'
 
 
-def get_current_db_path():
+def get_current_db_path() -> str | None:
     db_settings = settings.DATABASES['default']
     if detect_engine() == 'sqlite':
         return db_settings['NAME']
@@ -72,7 +72,7 @@ def _serialize_mysql():
     }
 
 
-def backup_db(output_path=None):
+def backup_db(output_path: str | None = None) -> str:
     if output_path is None:
         os.makedirs(settings.BACKUP_ROOT, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -114,7 +114,7 @@ def backup_db(output_path=None):
     return output_path
 
 
-def validate_backup_file(file_path):
+def validate_backup_file(file_path: str) -> tuple[bool, str]:
     try:
         with gzip.open(file_path, 'rb') as f:
             header = f.read(16)
@@ -163,7 +163,7 @@ def validate_backup_file(file_path):
     return False, f"Motor de base de datos no soportado: {engine}"
 
 
-def restore_db(backup_file, create_safety_backup=True):
+def restore_db(backup_file: str, create_safety_backup: bool = True) -> bool:
     if create_safety_backup:
         safety_path = backup_db()
         logger.info("Safety backup created at: %s", safety_path)
@@ -231,7 +231,7 @@ def _restore_mysql(backup_file):
                 obj.save()
 
 
-def get_latest_backup():
+def get_latest_backup() -> str | None:
     """Return path to the most recent backup file."""
     import glob
     backup_dir = settings.BACKUP_ROOT
@@ -241,7 +241,7 @@ def get_latest_backup():
     return max(files, key=os.path.getmtime)
 
 
-def get_db_file_size():
+def get_db_file_size() -> int:
     engine = detect_engine()
     if engine == 'sqlite':
         db_path = get_current_db_path()
@@ -261,7 +261,7 @@ def get_db_file_size():
     return 0
 
 
-def get_db_info():
+def get_db_info() -> dict:
     engine = detect_engine()
     info = {'engine': engine}
     if engine == 'sqlite':
