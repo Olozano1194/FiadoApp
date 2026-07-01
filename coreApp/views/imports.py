@@ -169,6 +169,93 @@ def _match_product(row, col_map):
     return None
 
 
+def _extract_and_persist(row, col_map, product, preview):
+    """Extract values from *row* and create or update the product.
+
+    Returns
+    -------
+    dict
+        ``{"action": "created" | "updated" | None, "error": str | None}``
+    """
+    nombre = _get_str(row, col_map, "Nombre") or ""
+
+    price = _parse_decimal(_get_raw(row, col_map, "Precio Venta")) or Decimal("0")
+
+    costo = Decimal("0")
+    costo_raw = _get_raw(row, col_map, "Costo")
+    if costo_raw is not None and str(costo_raw).strip():
+        costo = _parse_decimal(costo_raw) or Decimal("0")
+
+    stock = 0
+    stock_raw = _get_raw(row, col_map, "Stock")
+    if stock_raw is not None and str(stock_raw).strip():
+        try:
+            stock = int(Decimal(str(stock_raw).strip()))
+        except (InvalidOperation, ValueError):
+            stock = 0
+
+    min_stock = 10
+    ms_raw = _get_raw(row, col_map, "Stock Mínimo")
+    if ms_raw is not None and str(ms_raw).strip():
+        try:
+            min_stock = int(Decimal(str(ms_raw).strip()))
+        except (InvalidOperation, ValueError):
+            min_stock = 10
+
+    barcode = _get_str(row, col_map, "Código Barras")
+    descripcion = _get_str(row, col_map, "Descripción") or ""
+
+    # Category lookup (preview evita crear categorías nuevas)
+    cat_name = _get_str(row, col_map, "Categoría")
+    category = None
+    if cat_name:
+        if preview:
+            category = Category.objects.filter(name=cat_name).first()
+        else:
+            category, _ = Category.objects.get_or_create(name=cat_name)
+
+    if preview:
+        return {"action": "updated" if product else "created", "error": None}
+
+    # ---- Persist ----
+    try:
+        if product is not None:
+            product.name = nombre
+            product.price = price
+            if "Costo" in col_map:
+                product.cost = costo
+            if "Stock" in col_map:
+                product.stock = stock
+            if "Stock Mínimo" in col_map:
+                product.min_stock = min_stock
+            if "Código Barras" in col_map:
+                product.barcode = barcode
+            if "Descripción" in col_map:
+                product.description = descripcion
+            if "Categoría" in col_map:
+                product.category = category
+            product.save()
+            return {"action": "updated", "error": None}
+        else:
+            Product.objects.create(
+                name=nombre,
+                price=price,
+                cost=costo,
+                stock=stock,
+                min_stock=min_stock,
+                barcode=barcode,
+                description=descripcion,
+                category=category,
+            )
+            return {"action": "created", "error": None}
+    except IntegrityError:
+        return {
+            "action": None,
+            "error": "Error de base de datos al guardar "
+            "el producto (posible código de barras duplicado)",
+        }
+
+
 def _detect_duplicate_barcodes(rows, col_map):
     """Pre-scan *rows* and return the **0‑based indices** of rows whose
     barcode appears more than once inside the file.
@@ -363,93 +450,14 @@ class ImportProductsView(APIView):
                     errors.append({"row": excel_row, "message": str(exc)})
                     continue
 
-                # ---- Extract values ----
-                nombre = _get_str(row, col_map, "Nombre") or ""
-
-                price = _parse_decimal(
-                    _get_raw(row, col_map, "Precio Venta")
-                ) or Decimal("0")
-
-                costo = Decimal("0")
-                costo_raw = _get_raw(row, col_map, "Costo")
-                if costo_raw is not None and str(costo_raw).strip():
-                    costo = _parse_decimal(costo_raw) or Decimal("0")
-
-                stock = 0
-                stock_raw = _get_raw(row, col_map, "Stock")
-                if stock_raw is not None and str(stock_raw).strip():
-                    try:
-                        stock = int(Decimal(str(stock_raw).strip()))
-                    except (InvalidOperation, ValueError):
-                        stock = 0
-
-                min_stock = 10
-                ms_raw = _get_raw(row, col_map, "Stock Mínimo")
-                if ms_raw is not None and str(ms_raw).strip():
-                    try:
-                        min_stock = int(Decimal(str(ms_raw).strip()))
-                    except (InvalidOperation, ValueError):
-                        min_stock = 10
-
-                barcode = _get_str(row, col_map, "Código Barras")
-                descripcion = _get_str(row, col_map, "Descripción") or ""
-
-                # Category lookup (preview evita crear categorías nuevas)
-                cat_name = _get_str(row, col_map, "Categoría")
-                category = None
-                if cat_name:
-                    if preview:
-                        category = Category.objects.filter(name=cat_name).first()
-                    else:
-                        category, _ = Category.objects.get_or_create(name=cat_name)
-
-                if preview:
-                    # En preview solo contamos qué pasaría
-                    if product is not None:
-                        updated += 1
-                    else:
-                        created += 1
-                else:
-                    # ---- Create or Update ----
-                    try:
-                        if product is not None:
-                            # Update existing
-                            product.name = nombre
-                            product.price = price
-                            if "Costo" in col_map:
-                                product.cost = costo
-                            if "Stock" in col_map:
-                                product.stock = stock
-                            if "Stock Mínimo" in col_map:
-                                product.min_stock = min_stock
-                            if "Código Barras" in col_map:
-                                product.barcode = barcode
-                            if "Descripción" in col_map:
-                                product.description = descripcion
-                            if "Categoría" in col_map:
-                                product.category = category
-                            product.save()
-                            updated += 1
-                        else:
-                            Product.objects.create(
-                                name=nombre,
-                                price=price,
-                                cost=costo,
-                                stock=stock,
-                                min_stock=min_stock,
-                                barcode=barcode,
-                                description=descripcion,
-                                category=category,
-                            )
-                            created += 1
-                    except IntegrityError:
-                        errors.append(
-                            {
-                                "row": excel_row,
-                                "message": "Error de base de datos al guardar "
-                                "el producto (posible código de barras duplicado)",
-                            }
-                        )
+                # Extract + persist (or preview)
+                result = _extract_and_persist(row, col_map, product, preview)
+                if result["error"]:
+                    errors.append({"row": excel_row, "message": result["error"]})
+                elif result["action"] == "created":
+                    created += 1
+                elif result["action"] == "updated":
+                    updated += 1
 
             result = {"created": created, "updated": updated, "errors": errors}
             if preview:
