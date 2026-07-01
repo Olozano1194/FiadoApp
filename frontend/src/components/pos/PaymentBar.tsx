@@ -3,6 +3,7 @@ import { useSaleStore } from '../../stores/saleStore';
 import ClientSelect from './ClientSelect';
 import { toast } from 'react-hot-toast';
 import { formatCurrency } from '../../utils/format';
+import { TOAST_DEFAULT_STYLES } from '../../utils/toastStyles';
 
 
 const formatCashInput = (value: string): string => {
@@ -45,13 +46,13 @@ const PaymentBar = () => {
       toast.success('Venta completada con éxito', {
         duration: 3000,
         position: 'bottom-right',
-        style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+        style: TOAST_DEFAULT_STYLES,
       });
     } else {
       toast.error(error || 'Error al procesar la venta', {
         duration: 3000,
         position: 'bottom-right',
-        style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+        style: TOAST_DEFAULT_STYLES,
       });
     }
   };

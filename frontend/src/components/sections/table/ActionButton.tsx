@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { toast } from 'react-hot-toast';
 //Icons
 import { RiDeleteBinLine, RiPencilLine } from "react-icons/ri";
+import { TOAST_DEFAULT_STYLES } from '../../../utils/toastStyles';
 
 interface ActionButtonsProps {
     id: number;
@@ -23,12 +24,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ id, editPath, onDelete, c
             toast.success('Eliminado correctamente', {
                 duration: 3000,
                 position: 'bottom-right',
-                style: {
-                    background: '#4b5563',   
-                    color: '#fff',           
-                    padding: '16px',
-                    borderRadius: '8px',
-                },
+                style: TOAST_DEFAULT_STYLES,
             });             
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Error al eliminar';

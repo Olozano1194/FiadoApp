@@ -15,6 +15,7 @@ import type { Category } from '../models/category';
 // Modal
 import ProductModal from '../components/ui/ProductModal';
 import { formatCurrency } from '../utils/format';
+import { TOAST_DEFAULT_STYLES } from '../utils/toastStyles';
 
 const emptyForm: ProductFormData = {
   name: '',
@@ -87,14 +88,14 @@ const ProductsPage = () => {
         toast.success('Producto Actualizado', {
           duration: 3000,
           position: 'bottom-right',
-          style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+          style: TOAST_DEFAULT_STYLES,
         });
       } else {
         await createProduct(data);
         toast.success('Producto Creado', {
           duration: 3000,
           position: 'bottom-right',
-          style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+          style: TOAST_DEFAULT_STYLES,
         });
       }
       closeModal();

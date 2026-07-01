@@ -17,6 +17,7 @@ import type { ClientFormData } from '../models/client';
 // components
 import SumaryBentoSection from '../components/sections/clients/SumaryBentoSection';
 import { formatCurrency } from '../utils/format';
+import { TOAST_DEFAULT_STYLES } from '../utils/toastStyles';
 
 const defaultForm: ClientFormData = {
   name: '',
@@ -65,14 +66,14 @@ const ClientsPage = () => {
         toast.success('Cliente Actualizado', {
           duration: 3000,
           position: 'bottom-right',
-          style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+          style: TOAST_DEFAULT_STYLES,
         });
       } else {
         await createClient(data);
         toast.success('Cliente Creado', {
           duration: 3000,
           position: 'bottom-right',
-          style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+          style: TOAST_DEFAULT_STYLES,
         });
       }
       closeModal();
@@ -218,7 +219,7 @@ const ClientsPage = () => {
             toast.success('Pago registrado correctamente', {
               duration: 3000,
               position: 'bottom-right',
-              style: { background: '#4b5563', color: '#fff', padding: '16px', borderRadius: '8px' },
+              style: TOAST_DEFAULT_STYLES,
             });
           }}
         />
