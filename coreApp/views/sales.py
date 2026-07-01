@@ -48,17 +48,6 @@ class SaleViewSet(viewsets.ModelViewSet):
             qs = Sale.objects.all().order_by("-created_at").select_related("client")
         page = self.paginate_queryset(qs)
         if page is not None:
-            results = [
-                {
-                    "id": sale.id,
-                    "cliente": sale.client.name if sale.client else "—",
-                    "fecha": sale.created_at.strftime("%Y-%m-%d"),
-                    "hora": sale.created_at.strftime("%H:%M"),
-                    "metodo_pago": sale.get_payment_method_display(),
-                    "estado": sale.get_status_display(),
-                    "total": str(sale.total),
-                }
-                for sale in page
-            ]
-            return self.get_paginated_response(results)
-        return Response({"detail": "No page?"}, status=400)
+            serializer = SaleSerializer(page, many=True, context={"request": request})
+            return self.get_paginated_response(serializer.data)
+        return Response({"detail": "Parámetro page requerido para paginación"}, status=400)

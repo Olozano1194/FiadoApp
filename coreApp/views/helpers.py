@@ -1,9 +1,12 @@
+import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import Sum
+from django.db.models import Count, Q, Sum
 from django.http import HttpResponse
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 from ..models import Expense, FiadoPayment, Sale, SaleItem
 
@@ -53,7 +56,8 @@ def _build_xlsx_response(workbook, filename: str) -> HttpResponse:
         for cell in col_cells:
             try:
                 lengths.append(len(str(cell.value)))
-            except Exception:
+            except Exception as e:
+                logger.warning("Error al leer celda en export XLSX: %s", e)
                 lengths.append(0)
         ws.column_dimensions[col_letter].width = min(max(lengths or [10]) + 2, 40)
 
@@ -81,29 +85,19 @@ def calculate_closure_data(date):
     today_start = timezone.make_aware(datetime.combine(date, datetime.min.time()))
     today_end = today_start + timedelta(days=1)
 
-    cash_sales = (
-        Sale.objects.filter(
-            created_at__range=(today_start, today_end),
-            status="COMPLETED",
-            payment_method="CASH",
-        ).aggregate(total=Sum("total"))["total"]
-        or Decimal("0.00")
+    # Single query: conditional aggregation for cash/credit breakdown
+    sales_agg = Sale.objects.filter(
+        created_at__range=(today_start, today_end),
+        status="COMPLETED",
+    ).aggregate(
+        cash_total=Sum("total", filter=Q(payment_method="CASH")),
+        credit_total=Sum("total", filter=Q(payment_method="CREDIT")),
+        sales_count=Count("id"),
     )
-
-    credit_sales = (
-        Sale.objects.filter(
-            created_at__range=(today_start, today_end),
-            status="COMPLETED",
-            payment_method="CREDIT",
-        ).aggregate(total=Sum("total"))["total"]
-        or Decimal("0.00")
-    )
-
+    cash_sales = sales_agg.get("cash_total") or Decimal("0.00")
+    credit_sales = sales_agg.get("credit_total") or Decimal("0.00")
     total_sales = cash_sales + credit_sales
-
-    sales_count = Sale.objects.filter(
-        created_at__range=(today_start, today_end), status="COMPLETED"
-    ).count()
+    sales_count = sales_agg.get("sales_count") or 0
 
     fiado_payments = (
         FiadoPayment.objects.filter(date__range=(today_start, today_end)).aggregate(
@@ -117,9 +111,10 @@ def calculate_closure_data(date):
         or Decimal("0.00")
     )
 
+    # N+1 fix: prefetch items for profit calculation
     today_sales = Sale.objects.filter(
         created_at__range=(today_start, today_end), status="COMPLETED"
-    )
+    ).prefetch_related("items")
 
     net_profit = Decimal("0.00")
     for sale in today_sales:

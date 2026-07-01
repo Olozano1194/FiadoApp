@@ -16,7 +16,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     @action(detail=False, url_path="low-stock")
     def low_stock(self, request):
         """Return ALL products where stock is below min_stock (no pagination)."""
-        products = Product.objects.filter(stock__lt=F("min_stock")).order_by("name")
+        products = Product.objects.filter(stock__lt=F("min_stock")).select_related("category").order_by("name")
         serializer = ProductSerializer(products, many=True, context={"request": request})
         return Response(serializer.data)
 

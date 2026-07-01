@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.db.models import F, Sum
+from django.db.models.functions import TruncDate
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -62,19 +63,24 @@ class DashboardStatsView(APIView):
         else:
             margen_dia = None
 
-        # Weekly sales trend (last 7 days)
+        # Weekly sales trend (last 7 days) — single query with TruncDate
         week_ago = today_start - timedelta(days=7)
-        weekly_sales = []
-        for i in range(7):
-            day = today_start - timedelta(days=i)
-            day_end = day + timedelta(days=1)
-            day_total = (
+        daily_totals = {
+            row["day"].isoformat(): str(row["total"])
+            for row in (
                 Sale.objects.filter(
-                    created_at__range=(day, day_end), status="COMPLETED"
-                ).aggregate(total=Sum("total"))["total"]
-                or Decimal("0.00")
+                    created_at__gte=week_ago, status="COMPLETED"
+                )
+                .annotate(day=TruncDate("created_at"))
+                .values("day")
+                .annotate(total=Sum("total"))
+                .order_by("day")
             )
-            weekly_sales.append({"date": day.date().isoformat(), "total": str(day_total)})
+        }
+        weekly_sales = [
+            {"date": (today_start - timedelta(days=i)).date().isoformat(), "total": daily_totals.get((today_start - timedelta(days=i)).date().isoformat(), "0.00")}
+            for i in range(7)
+        ]
 
         return Response(
             {
