@@ -6,6 +6,7 @@ export interface LoginCredentials {
 export interface AuthTokens {
   access: string;
   refresh: string;
+  store_name?: string;
 }
 
 export interface AuthUser {
