@@ -2,7 +2,7 @@ import os
 import glob
 import logging
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from coreApp.models import BackupConfig
@@ -23,8 +23,8 @@ class Command(BaseCommand):
         try:
             config = BackupConfig.get_singleton()
         except Exception as e:
-            logger.error(f"Error al obtener BackupConfig: {e}")
-            return
+            logger.error("Error al obtener BackupConfig: %s", e)
+            raise CommandError("No se pudo obtener la configuración de backup") from e
 
         if not config.enabled:
             logger.info("auto-backup disabled")
@@ -33,16 +33,16 @@ class Command(BaseCommand):
         try:
             backup_db()
         except Exception as e:
-            logger.error(f"Error durante backup_db: {e}")
-            return
+            logger.error("Error durante backup_db: %s", e)
+            raise CommandError("Error al crear el backup local") from e
 
         try:
             from django.utils import timezone
             config.last_backup = timezone.now()
             config.save()
         except Exception as e:
-            logger.error(f"Error al actualizar last_backup: {e}")
-            return
+            logger.error("Error al actualizar last_backup: %s", e)
+            # No crítico — el backup ya se creó correctamente
 
         # Upload to Supabase if enabled
         if config.supabase_enabled:
@@ -65,4 +65,4 @@ class Command(BaseCommand):
                 os.remove(oldest)
                 self.stdout.write(f"Eliminado backup antiguo: {oldest}")
         except Exception as e:
-            logger.error(f"Error durante la rotación de backups: {e}")
+            logger.error("Error durante la rotación de backups: %s", e)
