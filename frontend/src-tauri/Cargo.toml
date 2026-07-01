@@ -16,6 +16,8 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-shell = "2"
 tauri-plugin-opener = "2"
+tauri-plugin-store = "2"
+job_object = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = "0.8"
