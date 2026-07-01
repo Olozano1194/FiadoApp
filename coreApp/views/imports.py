@@ -273,11 +273,15 @@ class ImportProductsTemplateView(APIView):
 # ---------------------------------------------------------------------------
 
 class ImportProductsView(APIView):
-    """Accept an ``.xlsx`` file, match/create products, and report results."""
+    """Accept an ``.xlsx`` file, match/create products, and report results.
+
+    Pass ``?preview=true`` to validate without persisting any changes.
+    """
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        preview = request.query_params.get("preview", "").lower() == "true"
         file = request.FILES.get("file")
         if not file:
             return Response(
@@ -390,54 +394,67 @@ class ImportProductsView(APIView):
                 barcode = _get_str(row, col_map, "Código Barras")
                 descripcion = _get_str(row, col_map, "Descripción") or ""
 
-                # Category auto‑creation
+                # Category lookup (preview evita crear categorías nuevas)
                 cat_name = _get_str(row, col_map, "Categoría")
                 category = None
                 if cat_name:
-                    category, _ = Category.objects.get_or_create(name=cat_name)
+                    if preview:
+                        category = Category.objects.filter(name=cat_name).first()
+                    else:
+                        category, _ = Category.objects.get_or_create(name=cat_name)
 
-                # ---- Create or Update ----
-                try:
+                if preview:
+                    # En preview solo contamos qué pasaría
                     if product is not None:
-                        # Update existing
-                        product.name = nombre
-                        product.price = price
-                        if "Costo" in col_map:
-                            product.cost = costo
-                        if "Stock" in col_map:
-                            product.stock = stock
-                        if "Stock Mínimo" in col_map:
-                            product.min_stock = min_stock
-                        if "Código Barras" in col_map:
-                            product.barcode = barcode
-                        if "Descripción" in col_map:
-                            product.description = descripcion
-                        if "Categoría" in col_map:
-                            product.category = category
-                        product.save()
                         updated += 1
                     else:
-                        Product.objects.create(
-                            name=nombre,
-                            price=price,
-                            cost=costo,
-                            stock=stock,
-                            min_stock=min_stock,
-                            barcode=barcode,
-                            description=descripcion,
-                            category=category,
-                        )
                         created += 1
-                except IntegrityError:
-                    errors.append(
-                        {
-                            "row": excel_row,
-                            "message": "Error de base de datos al guardar "
-                            "el producto (posible código de barras duplicado)",
-                        }
-                    )
+                else:
+                    # ---- Create or Update ----
+                    try:
+                        if product is not None:
+                            # Update existing
+                            product.name = nombre
+                            product.price = price
+                            if "Costo" in col_map:
+                                product.cost = costo
+                            if "Stock" in col_map:
+                                product.stock = stock
+                            if "Stock Mínimo" in col_map:
+                                product.min_stock = min_stock
+                            if "Código Barras" in col_map:
+                                product.barcode = barcode
+                            if "Descripción" in col_map:
+                                product.description = descripcion
+                            if "Categoría" in col_map:
+                                product.category = category
+                            product.save()
+                            updated += 1
+                        else:
+                            Product.objects.create(
+                                name=nombre,
+                                price=price,
+                                cost=costo,
+                                stock=stock,
+                                min_stock=min_stock,
+                                barcode=barcode,
+                                description=descripcion,
+                                category=category,
+                            )
+                            created += 1
+                    except IntegrityError:
+                        errors.append(
+                            {
+                                "row": excel_row,
+                                "message": "Error de base de datos al guardar "
+                                "el producto (posible código de barras duplicado)",
+                            }
+                        )
 
-            return Response({"created": created, "updated": updated, "errors": errors})
+            result = {"created": created, "updated": updated, "errors": errors}
+            if preview:
+                result["preview"] = True
+            return Response(result)
 
         finally:
             if os.path.exists(tmp_path):
