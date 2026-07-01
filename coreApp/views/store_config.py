@@ -1,4 +1,4 @@
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -8,8 +8,6 @@ from ..models import StoreConfig
 class StoreConfigView(APIView):
 
     def get_permissions(self):
-        if self.request.method == "GET":
-            return [AllowAny()]
         return [IsAuthenticated()]
 
     def get(self, request):
