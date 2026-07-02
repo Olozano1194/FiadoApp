@@ -215,7 +215,7 @@ class SaleHistoryTest(BaseSaleTest):
             f"/api/sales/history/?client_id={self.client_model.id}"
         )
         self.assertEqual(len(response.data["results"]), 1)
-        self.assertEqual(response.data["results"][0]["cliente"], "Test Client")
+        self.assertEqual(response.data["results"][0]["client_name"], "Test Client")
 
     def test_history_requires_auth(self):
         self.client.force_authenticate(user=None)
