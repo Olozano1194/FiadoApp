@@ -18,7 +18,6 @@ const NotificationMenu = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     Promise.allSettled([
       fetchLowStock(),
       fetchDebtors(),
@@ -137,7 +136,7 @@ const NotificationMenu = () => {
       <MenuButton className="cursor-pointer text-nav relative hover:text-title p-2 transition-colors">
         <IoMdNotifications className="text-2xl text-surface-variant" />
         {totalNotifications > 0 && (
-          <span className="absolute -top-1 -right-1 bg-text-error text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+          <span className="absolute -top-1 -right-1 bg-text-error text-white text-[10px] font-bold rounded-full min-w-4.5 h-4.5 flex items-center justify-center px-1">
             {totalNotifications > 9 ? '9+' : totalNotifications}
           </span>
         )}
@@ -153,5 +152,4 @@ const NotificationMenu = () => {
     </Menu>
   );
 };
-
 export default NotificationMenu;
