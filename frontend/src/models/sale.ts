@@ -54,10 +54,9 @@ export interface RecentSale {
 
 export interface SaleHistoryItem {
   id: number;
-  cliente: string;
-  fecha: string;
-  hora: string;
-  metodo_pago: string;
-  estado: string;
+  client_name: string;
+  created_at: string;
+  payment_method: string;
+  status: string;
   total: string;
 }

@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -37,6 +39,29 @@ class SaleViewSet(viewsets.ModelViewSet):
             for sale in qs
         ]
         return Response(data)
+
+    @action(detail=True, methods=['post'], url_path='cancel')
+    def cancel(self, request, pk=None):
+        """Cancel a completed sale: restore stock, reduce client debt."""
+        sale = self.get_object()
+        if sale.status != Sale.Status.COMPLETED:
+            return Response(
+                {"detail": "Solo se pueden cancelar ventas completadas"},
+                status=400,
+            )
+        with transaction.atomic():
+            sale.status = Sale.Status.CANCELLED
+            sale.save(update_fields=["status"])
+
+            for item in sale.items.select_related("product"):
+                item.product.stock += item.quantity
+                item.product.save(update_fields=["stock"])
+
+            if sale.payment_method == Sale.PaymentMethod.CREDIT and sale.client:
+                sale.client.current_debt = max(0, sale.client.current_debt - sale.total)
+                sale.client.save(update_fields=["current_debt"])
+
+        return Response({"detail": "Venta cancelada correctamente"})
 
     @action(detail=False)
     def history(self, request):

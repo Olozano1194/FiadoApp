@@ -31,6 +31,9 @@ interface SaleStore {
   getCartTotal: () => number;
 }
 
+const extractResults = <T>(data: T[] | { results?: T[] }): T[] =>
+  Array.isArray(data) ? data : (data as { results: T[] }).results ?? [];
+
 export const useSaleStore = create<SaleStore>((set, get) => ({
   sales: [],
   recentSales: [],
@@ -47,7 +50,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const res = await salesApi.getSales();
-      set({ sales: res.data?.results ?? res.data, loading: false });
+      set({ sales: extractResults(res.data), loading: false });
     } catch {
       set({ loading: false, error: 'Error al cargar ventas' });
       toast.error('Error al cargar ventas');
@@ -66,7 +69,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     try {
       await salesApi.createSale(data as unknown as SaleCreatePayload);
       const res = await salesApi.getSales();
-      set({ sales: res.data?.results ?? res.data, error: null });
+      set({ sales: extractResults(res.data), error: null });
     } catch {
       set({ error: 'Error al crear la venta' });
     }
@@ -136,8 +139,13 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       };
       const res = await salesApi.createSale(payload);
       set({ lastSale: res.data, isSubmitting: false, cart: [], selectedClient: null, selectedPaymentMethod: 'CASH', cashReceived: 0, change: 0 });
-    } catch {
-      set({ isSubmitting: false, error: 'Error al procesar la venta' });
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } | string } };
+      const message =
+        typeof axiosErr?.response?.data === 'string'
+          ? axiosErr.response.data
+          : axiosErr?.response?.data?.detail || 'Error al procesar la venta';
+      set({ isSubmitting: false, error: message });
     }
   },
   getCartTotal: () => {

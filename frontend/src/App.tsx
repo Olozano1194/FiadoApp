@@ -9,6 +9,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import Error404 from './pages/Error404'
 import ProductsPage from './pages/ProductsPage'
 import ClientsPage from './pages/ClientsPage'
+import ClientHistoryPage from './pages/ClientHistoryPage'
 import PosPage from './pages/PosPage'
 import SalesHistoryPage from './pages/SalesHistoryPage'
 import ReportPage from './pages/ReportPage'
@@ -111,6 +112,7 @@ const App = () => {
           <Route index element={<HomePage />} />
           <Route path="inventario" element={<ProductsPage />} />
           <Route path="clientes" element={<ClientsPage />} />
+          <Route path="clientes/:id/historial" element={<ClientHistoryPage />} />
           <Route path="ventas/historial" element={<SalesHistoryPage />} />
           <Route path="ventas" element={<PosPage />} />
           <Route path="cierre" element={<CierrePage />} />

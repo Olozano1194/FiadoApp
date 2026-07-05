@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { getSalesHistory } from '../api/sales.api';
+import { getSalesHistory, cancelSale } from '../api/sales.api';
 import type { SaleHistoryItem } from '../models/sale';
 import { PaginationSection } from '../components/sections/table/section/PaginationSection';
 import { formatCurrency } from '../utils/format';
+import { toast } from 'react-hot-toast';
 
 const PAGE_SIZE = 15;
 
@@ -42,15 +43,34 @@ const SalesHistoryPage = () => {
     };
   }, [page]);
 
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+  const formatTime = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const badgeLabel = (status: string) => {
+    const map: Record<string, string> = {
+      COMPLETED: 'Completada',
+      CANCELLED: 'Cancelada',
+      PENDING: 'Pendiente',
+    };
+    return map[status] || status;
+  };
+
   const estadoBadge = (status: string) => {
-    const isComplete = status === 'Completado' || status === 'Registrado';
-    const isPending = status === 'Pendiente';
-    const isCancelled = status === 'Anulado' || status === 'Cancelado';
+    const isComplete = status === 'COMPLETED';
+    const isPending = status === 'PENDING';
+    const isCancelled = status === 'CANCELLED';
+    const label = badgeLabel(status);
     const base = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-    if (isComplete) return <span className={`${base} bg-green-100 text-green-800`}>{status}</span>;
-    if (isPending) return <span className={`${base} bg-yellow-100 text-yellow-800`}>{status}</span>;
-    if (isCancelled) return <span className={`${base} bg-red-100 text-red-800`}>{status}</span>;
-    return <span className={`${base} bg-gray-100 text-gray-800`}>{status}</span>;
+    if (isComplete) return <span className={`${base} bg-green-100 text-green-800`}>{label}</span>;
+    if (isPending) return <span className={`${base} bg-yellow-100 text-yellow-800`}>{label}</span>;
+    if (isCancelled) return <span className={`${base} bg-red-100 text-red-800`}>{label}</span>;
+    return <span className={`${base} bg-gray-100 text-gray-800`}>{label}</span>;
   };
 
   return (
@@ -75,7 +95,7 @@ const SalesHistoryPage = () => {
           <table className="border-collapse text-left w-full">
             <thead>
               <tr className="bg-surface-container-lowest/50">
-                {['N°', 'Cliente', 'Fecha', 'Hora', 'Método de Pago', 'Estado', 'Total'].map((header) => (
+                {['N°', 'Cliente', 'Fecha', 'Hora', 'Método de Pago', 'Estado', 'Total', 'Acción'].map((header) => (
                   <th
                     key={header}
                     className="border-b border-outline-variant/10 font-black px-3 py-4 text-[11px] text-secondary tracking-widest uppercase"
@@ -88,13 +108,13 @@ const SalesHistoryPage = () => {
             <tbody className="divide-y divide-outline-variant/10 text-sm lg:text-base">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-on-surface-variant animate-pulse">
+                  <td colSpan={8} className="text-center py-12 text-on-surface-variant animate-pulse">
                     Cargando ventas...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12">
+                  <td colSpan={8} className="text-center py-12">
                     <p className="text-text-error font-medium">{error}</p>
                     <button
                       onClick={() => { setPage(1); }}
@@ -106,7 +126,7 @@ const SalesHistoryPage = () => {
                 </tr>
               ) : sales.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-on-surface-variant">
+                  <td colSpan={8} className="text-center py-12 text-on-surface-variant">
                     <p className="text-lg">No hay ventas registradas</p>
                     <p className="text-sm mt-1">
                       Las ventas aparecerán aquí una vez que realices tu primera venta
@@ -117,13 +137,40 @@ const SalesHistoryPage = () => {
                 sales.map((sale, index) => (
                   <tr key={sale.id} className="group transition-colors hover:bg-nav/5">
                     <td className="px-3 py-4 text-outline">{(page - 1) * PAGE_SIZE + index + 1}</td>
-                    <td className="px-3 py-4 text-outline font-medium">{sale.cliente}</td>
-                    <td className="px-3 py-4 text-outline">{sale.fecha}</td>
-                    <td className="px-3 py-4 text-outline">{sale.hora}</td>
-                    <td className="px-3 py-4 text-outline">{sale.metodo_pago}</td>
-                    <td className="px-3 py-4">{estadoBadge(sale.estado)}</td>
+                    <td className="px-3 py-4 text-outline font-medium">{sale.client_name}</td>
+                    <td className="px-3 py-4 text-outline">{formatDate(sale.created_at)}</td>
+                    <td className="px-3 py-4 text-outline">{formatTime(sale.created_at)}</td>
+                    <td className="px-3 py-4 text-outline">{sale.payment_method === 'CREDIT' ? 'Fiado' : 'Efectivo'}</td>
+                    <td className="px-3 py-4">{estadoBadge(sale.status)}</td>
                     <td className="px-3 py-4 text-outline font-semibold">
                       {formatCurrency(parseFloat(sale.total) || 0)}
+                    </td>
+                    <td className="px-3 py-4">
+                      {sale.status === 'COMPLETED' && (
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm(`¿Anular venta #${sale.id}? Se restaurará el stock y la deuda del cliente.`)) return;
+                            try {
+                              await cancelSale(sale.id);
+                              toast.success('Venta anulada correctamente', {
+                                duration: 3000,
+                                position: 'bottom-right',
+                              });
+                              const res = await getSalesHistory(page, PAGE_SIZE);
+                              setSales(res.data.results);
+                              setTotalPages(Math.max(1, Math.ceil(res.data.count / PAGE_SIZE)));
+                            } catch {
+                              toast.error('Error al anular la venta', {
+                                duration: 3000,
+                                position: 'bottom-right',
+                              });
+                            }
+                          }}
+                          className="text-xs font-semibold text-text-error hover:text-error/80 transition-colors cursor-pointer"
+                        >
+                          Anular
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -132,7 +179,6 @@ const SalesHistoryPage = () => {
           </table>
         </div>
       </section>
-
       {/* Paginación server-side */}
       {!loading && !error && totalPages > 1 && (
         <PaginationSection

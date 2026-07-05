@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { ColumnDef } from '@tanstack/react-table';
 import Table from '../components/layout/Table';
@@ -135,6 +135,13 @@ const ClientsPage = () => {
         const debt = parseFloat(info.row.original.current_debt) || 0;
         return (
           <div className="flex items-center gap-2">
+            <Link
+              to={`/clientes/${info.row.original.id}/historial`}
+              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors px-2 py-1 cursor-pointer"
+              title="Ver historial completo"
+            >
+              Historial
+            </Link>
             {debt > 0 && (
               <button
                 onClick={() => setPayingClient(info.row.original)}

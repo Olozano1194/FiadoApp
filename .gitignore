@@ -210,4 +210,7 @@ frontend/src-tauri/binaries/_internal/
 # Gentle AI working directory
 .atl/
 
+# Vitest coverage reports
+frontend/coverage/
+
 # End of https://www.toptal.com/developers/gitignore/api/django,windows
