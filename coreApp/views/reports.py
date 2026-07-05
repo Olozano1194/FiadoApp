@@ -1,8 +1,9 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.db.models import Count, ExpressionWrapper, F, Sum, DecimalField
-from django.db.models.functions import Coalesce, TruncDate
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -78,53 +79,49 @@ class ReportStatsView(APIView):
             .order_by("-total_profit")[:10]
         )
 
-        # ── Per-day profit via SaleItem (single query) ──────────────
-        day_profit_qs = (
-            SaleItem.objects.filter(sale__in=sales_qs)
-            .annotate(day=TruncDate("sale__created_at"))
-            .values("day")
-            .annotate(profit=Sum(profit_expr))
-        )
-        day_profits: dict[str, Decimal] = {
-            str(row["day"]): row["profit"] or Decimal("0.00")
-            for row in day_profit_qs
-        }
+        # ── Python-side day grouping (avoids TruncDate None on SQLite) ──
+        sales_with_items = sales_qs.prefetch_related("items__product")
 
-        # ── Per-day top product (single query) ──────────────────────
-        day_top_qs = (
-            SaleItem.objects.filter(sale__in=sales_qs)
-            .annotate(day=TruncDate("sale__created_at"))
-            .values("day", "product__name")
-            .annotate(
-                units_sold=Sum("quantity"),
-                revenue=Sum(F("unit_price") * F("quantity")),
-            )
-            .order_by("day", "-units_sold")
+        day_totals: dict[str, Decimal] = defaultdict(Decimal)
+        day_counts: dict[str, int] = defaultdict(int)
+        day_profits: dict[str, Decimal] = defaultdict(Decimal)
+        day_product_agg: dict[str, dict[str, dict]] = defaultdict(
+            lambda: defaultdict(lambda: {"units": 0, "revenue": Decimal("0.00")})
         )
 
+        for sale in sales_with_items:
+            day_key = timezone.localtime(sale.created_at).date().isoformat()
+            day_totals[day_key] += sale.total
+            day_counts[day_key] += 1
+
+            for item in sale.items.all():
+                unit_price = item.unit_price
+                cost = item.cost_at_sale or Decimal("0.00")
+                qty = item.quantity
+                day_profits[day_key] += (unit_price - cost) * qty
+
+                # Aggregate by product per day
+                product_name = (
+                    item.product.name if item.product and hasattr(item, "product") else "—"
+                )
+                day_product_agg[day_key][product_name]["units"] += qty
+                day_product_agg[day_key][product_name]["revenue"] += unit_price * qty
+
+        # Pick top product per day (most units sold)
         day_products: dict[str, dict] = {}
-        for row in day_top_qs:
-            day_key = str(row["day"])
-            if day_key not in day_products:
-                day_products[day_key] = {
-                    "name": row["product__name"],
-                    "units": row["units_sold"],
-                    "revenue": float(row["revenue"]),
-                }
+        for day_key, products in day_product_agg.items():
+            top_name = max(products, key=lambda n: products[n]["units"])
+            top = products[top_name]
+            day_products[day_key] = {
+                "name": top_name,
+                "units": top["units"],
+                "revenue": float(top["revenue"]),
+            }
 
-        # Per-day sale totals & counts
-        day_totals: dict[str, Decimal] = {}
-        day_counts: dict[str, int] = {}
-        day_sale_stats = (
-            sales_qs
-            .annotate(day=TruncDate("created_at"))
-            .values("day")
-            .annotate(total=Sum("total"), count=Count("id"))
-        )
-        for row in day_sale_stats:
-            day_key = str(row["day"])
-            day_totals[day_key] = row["total"] or Decimal("0.00")
-            day_counts[day_key] = row["count"] or 0
+        # Convert defaultdicts to plain dicts for subsequent read-only access
+        day_totals = dict(day_totals)
+        day_counts = dict(day_counts)
+        day_profits = dict(day_profits)
 
         # ── Build week_days ─────────────────────────────────────────
         num_days = (report_end - report_start).days + 1
