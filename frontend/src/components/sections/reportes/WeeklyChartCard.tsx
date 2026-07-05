@@ -4,6 +4,17 @@ import { formatCurrency } from '../../../utils/format';
 
 const DAY_LABELS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
 
+function roundUpNice(n: number): number {
+  if (n <= 0) return 10000;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(n)));
+  const normalized = n / magnitude;
+  if (normalized <= 1) return magnitude;
+  if (normalized <= 2) return 2 * magnitude;
+  if (normalized <= 5) return 5 * magnitude;
+  if (normalized <= 7.5) return 7.5 * magnitude;
+  return 10 * magnitude;
+}
+
 
 function formatFullDate(dateStr: string): string {
   const date = new Date(dateStr + "T12:00:00");
@@ -44,9 +55,10 @@ const WeeklyChartCard = () => {
   const { stats, selectedDay, setSelectedDay, navigateWeek, weekStart, loading, error, fetchStats } = useReportStore();
 
   const weekDays = stats?.week_days ?? [];
-  const maxTotal = weekDays.length > 0
+  const rawMax = weekDays.length > 0
     ? Math.max(...weekDays.map((d) => d.total), 1)
     : 1;
+  const chartMax = roundUpNice(rawMax);
 
   if (loading && !stats) {
     return (
@@ -104,15 +116,20 @@ const WeeklyChartCard = () => {
         </button>
       </div>
 
-      <div className="flex gap-0.5 sm:gap-1 h-48 mb-4 w-full">
+      <div className="flex gap-0.5 sm:gap-1 h-48 mb-4 w-full items-end">
         {weekDays.map((day) => {
           const isSelected = selectedDay?.date === day.date;
-          const height = day.total > 0
-            ? Math.max((day.total / maxTotal) * 100, 4)
+          const pct = day.total > 0
+            ? Math.max((day.total / chartMax) * 100, 4)
             : 4;
 
           return (
-            <div key={day.date} className="flex-1 min-w-0 flex flex-col justify-end items-center">
+            <div key={day.date} className="flex-1 min-w-0 flex flex-col justify-end items-center self-stretch">
+              {day.total > 0 && (
+                <span className="text-[10px] font-semibold text-on-surface-variant leading-none mb-0.5">
+                  {formatCurrency(day.total)}
+                </span>
+              )}
               <button
                 onClick={() => setSelectedDay(isSelected ? null : day)}
                 className={`w-full rounded-t-lg transition-all cursor-pointer ${
@@ -120,7 +137,7 @@ const WeeklyChartCard = () => {
                     ? "bg-secondary"
                     : "bg-primary hover:opacity-80"
                 }`}
-                style={{ height: `${isSelected ? height + 8 : height}%` }}
+                style={{ height: `${isSelected ? pct + 8 : pct}%` }}
                 title={formatCurrency(day.total)}
               />
               <span className="font-medium text-xs text-on-surface-variant pt-0.5">
