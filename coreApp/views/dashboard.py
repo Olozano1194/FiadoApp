@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import F, Sum
-from django.db.models.functions import TruncDate
+from django.db.models import ExpressionWrapper, F, Sum, DecimalField
+from django.db.models.functions import Coalesce, TruncDate
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import Client, Expense, Product, Sale
+from ..models import Client, Expense, Product, Sale, SaleItem
 
 
 class DashboardStatsView(APIView):
@@ -54,12 +54,23 @@ class DashboardStatsView(APIView):
         # Low stock count
         low_stock_count = Product.objects.filter(stock__lt=F("min_stock")).count()
 
-        # Net today / ganancia_dia
-        net_today = today_total - today_expenses
+        # Gross profit from today's sales (unit_price - cost) * quantity
+        profit_expr = ExpressionWrapper(
+            (F("unit_price") - Coalesce(F("cost_at_sale"), Decimal("0.00"))) * F("quantity"),
+            output_field=DecimalField(max_digits=10, decimal_places=2),
+        )
+        gross_profit = (
+            SaleItem.objects.filter(sale__in=today_sales_qs)
+            .aggregate(total=Sum(profit_expr))["total"]
+            or Decimal("0.00")
+        )
 
-        # margen_dia
+        # Net profit = gross profit - today's expenses
+        net_profit = gross_profit - today_expenses
+
+        # margen_dia (profit margin %)
         if today_total > 0:
-            margen_dia = round(float((net_today / today_total) * 100), 1)
+            margen_dia = round(float((net_profit / today_total) * 100), 1)
         else:
             margen_dia = None
 
@@ -87,7 +98,7 @@ class DashboardStatsView(APIView):
                 "ventas_dia": str(today_total),
                 "gastos_hoy": str(today_expenses),
                 "cambio_vs_ayer": cambio_vs_ayer,
-                "ganancia_dia": str(net_today),
+                "ganancia_dia": str(net_profit),
                 "margen_dia": margen_dia,
                 "fiado_pendiente_total": str(total_debt),
                 "clientes_fiado_pendiente": clients_with_debt,

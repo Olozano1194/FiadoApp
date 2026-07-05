@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -32,7 +33,7 @@ class SaleViewSet(viewsets.ModelViewSet):
             {
                 "id": sale.id,
                 "cliente": sale.client.name if sale.client else "—",
-                "hora": sale.created_at.strftime("%H:%M"),
+                "hora": timezone.localtime(sale.created_at).strftime("%H:%M"),
                 "estado": sale.get_status_display(),
                 "total": str(sale.total),
             }
