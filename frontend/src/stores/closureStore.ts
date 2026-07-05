@@ -14,17 +14,18 @@ interface ClosureStore {
   reset: () => void;
 }
 
-export const useClosureStore = create<ClosureStore>((set, get) => ({
+export const useClosureStore = create<ClosureStore>((set) => ({
   preview: null,
   loading: false,
   creating: false,
   error: null,
+  isAlreadyClosed: false,
 
   fetchPreview: async () => {
     set({ loading: true, error: null });
     try {
       const data = await cashClosureApi.getPreview();
-      set({ preview: data, loading: false });
+      set({ preview: data, isAlreadyClosed: data?.already_closed ?? false, loading: false });
     } catch (err: unknown) {
       let message = 'Error al cargar previsualización';
       if (err && typeof err === 'object' && 'response' in err) {
@@ -51,11 +52,7 @@ export const useClosureStore = create<ClosureStore>((set, get) => ({
     }
   },
 
-  get isAlreadyClosed() {
-    return get().preview?.already_closed ?? false;
-  },
-
   reset: () => {
-    set({ preview: null, loading: false, creating: false, error: null });
+    set({ preview: null, loading: false, creating: false, error: null, isAlreadyClosed: false });
   },
 }));
