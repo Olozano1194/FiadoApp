@@ -65,18 +65,18 @@ class DashboardStatsView(APIView):
 
         # Weekly sales trend (last 7 days) — single query with TruncDate
         week_ago = today_start - timedelta(days=7)
-        daily_totals = {
-            row["day"].isoformat(): str(row["total"])
-            for row in (
-                Sale.objects.filter(
-                    created_at__gte=week_ago, status="COMPLETED"
-                )
-                .annotate(day=TruncDate("created_at"))
-                .values("day")
-                .annotate(total=Sum("total"))
-                .order_by("day")
+        daily_totals = {}
+        for row in (
+            Sale.objects.filter(
+                created_at__gte=week_ago, status="COMPLETED"
             )
-        }
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(total=Sum("total"))
+            .order_by("day")
+        ):
+            if row["day"] is not None:
+                daily_totals[row["day"].isoformat()] = str(row["total"])
         weekly_sales = [
             {"date": (today_start - timedelta(days=i)).date().isoformat(), "total": daily_totals.get((today_start - timedelta(days=i)).date().isoformat(), "0.00")}
             for i in range(7)
