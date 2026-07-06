@@ -88,6 +88,22 @@ export const restoreCloudBackup = async (filename: string): Promise<{ success: b
   return response.data;
 };
 
+// Migration helpers — list/restore/clean by UUID
+export const listCloudBackupsByUuid = async (uuid: string): Promise<{ backups: Array<{ name: string; size: number; updated_at: string }> }> => {
+  const response = await api.get(`backup/cloud/by-uuid/${encodeURIComponent(uuid)}/`);
+  return response.data;
+};
+
+export const restoreCloudBackupByUuid = async (uuid: string, filename: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post(`backup/cloud/by-uuid/${encodeURIComponent(uuid)}/${encodeURIComponent(filename)}/`);
+  return response.data;
+};
+
+export const cleanCloudUuid = async (uuid: string): Promise<{ success: boolean; message: string }> => {
+  const response = await api.delete(`backup/cloud/uuid/${encodeURIComponent(uuid)}/`);
+  return response.data;
+};
+
 export interface ImportError {
   row: number;
   message: string;

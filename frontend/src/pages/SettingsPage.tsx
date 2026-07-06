@@ -4,7 +4,7 @@ import { MdOutlineLock, MdOutlineFileDownload, MdOutlineFileUpload, MdOutlinePer
 import { RiGroupLine, RiShoppingBasketLine, RiMoneyDollarCircleLine, RiMoneyDollarBoxLine } from "react-icons/ri";
 import { useAuthStore } from "../stores/authStore";
 import { useStoreConfig } from "../stores/storeConfigStore";
-import { changePassword, downloadImportTemplate, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, importProducts, listCloudBackups, restoreCloudBackup, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
+import { changePassword, cleanCloudUuid, downloadImportTemplate, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, importProducts, listCloudBackups, listCloudBackupsByUuid, restoreCloudBackup, restoreCloudBackupByUuid, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
 import type { BackupConfig, CloudBackupEntry } from "../types/backup";
 import type { ImportError, ImportResult } from "../api/settings.api";
 //Mensajes
@@ -48,6 +48,14 @@ const SettingsPage = () => {
   const [cloudBackups, setCloudBackups] = useState<CloudBackupEntry[]>([]);
   const [loadingCloudList, setLoadingCloudList] = useState(false);
   const [restoringCloud, setRestoringCloud] = useState<string | null>(null);
+
+  // Migration
+  const [migrationUuid, setMigrationUuid] = useState('');
+  const [migrationBackups, setMigrationBackups] = useState<CloudBackupEntry[]>([]);
+  const [loadingMigrationList, setLoadingMigrationList] = useState(false);
+  const [restoringMigration, setRestoringMigration] = useState<string | null>(null);
+  const [cleaningUuid, setCleaningUuid] = useState(false);
+  const [showMigration, setShowMigration] = useState(false);
 
   // Import Products
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -183,6 +191,64 @@ const SettingsPage = () => {
     } finally {
       setRestoringCloud(null);
     }
+  };
+
+  // Migration handlers
+  const handleListMigrationBackups = async () => {
+    const uuid = migrationUuid.trim();
+    if (!uuid) { toast.error("Ingresá un UUID válido"); return; }
+    setLoadingMigrationList(true);
+    try {
+      const result = await listCloudBackupsByUuid(uuid);
+      setMigrationBackups(result.backups || []);
+      if (!result.backups?.length) toast.error("No se encontraron backups para ese UUID");
+    } catch {
+      toast.error("Error al buscar backups — verificá que el UUID sea correcto");
+    } finally {
+      setLoadingMigrationList(false);
+    }
+  };
+
+  const handleRestoreMigration = async (filename: string) => {
+    const uuid = migrationUuid.trim();
+    if (!uuid) return;
+    setRestoringMigration(filename);
+    try {
+      const result = await restoreCloudBackupByUuid(uuid, filename);
+      if (result.success) {
+        toast.success(result.message);
+        setMigrationBackups([]);
+        setMigrationUuid('');
+        // Recargar config para ver el nuevo UUID
+        const config = await getBackupConfig();
+        setBackupConfig(config);
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const msg = axiosErr?.response?.data?.error || "Error al restaurar desde migración";
+      toast.error(msg);
+    } finally {
+      setRestoringMigration(null);
+    }
+  };
+
+  const handleCleanUuid = async () => {
+    if (!backupConfig?.installation_uuid) return;
+    setCleaningUuid(true);
+    try {
+      await cleanCloudUuid(backupConfig.installation_uuid);
+      toast.success("UUID limpiado correctamente");
+    } catch {
+      toast.error("Error al limpiar UUID");
+    } finally {
+      setCleaningUuid(false);
+    }
+  };
+
+  const copyUuid = () => {
+    if (!backupConfig?.installation_uuid) return;
+    navigator.clipboard.writeText(backupConfig.installation_uuid);
+    toast.success("UUID copiado al portapapeles");
   };
 
   const handleDownloadTemplate = async () => {
@@ -695,6 +761,108 @@ const SettingsPage = () => {
             </div>
           )}
         </div>
+
+        {/* Migration — cambiar de PC */}
+        {backupConfig?.installation_uuid && (
+          <div className="mt-8 pt-6 border-t border-outline-variant">
+            <h3 className="text-lg font-semibold text-on-surface-variant mb-4">
+              Migrar desde otra instalación
+            </h3>
+
+            {/* UUID actual con copiar */}
+            <div className="p-4 bg-surface-container-high rounded-xl mb-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-on-surface-variant mb-1">UUID de esta instalación</p>
+                  <p className="text-sm font-mono text-outline break-all">{backupConfig.installation_uuid}</p>
+                </div>
+                <button
+                  onClick={copyUuid}
+                  className="px-4 py-2 bg-primary text-on-primary rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors whitespace-nowrap"
+                >
+                  Copiar UUID
+                </button>
+              </div>
+            </div>
+
+            {/* Toggle migración */}
+            <button
+              onClick={() => setShowMigration(!showMigration)}
+              className="text-sm text-primary hover:underline"
+            >
+              {showMigration ? "Ocultar migración" : "Migrar desde otra instalación"}
+            </button>
+
+            {showMigration && (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm text-on-surface-variant">
+                  Ingresá el UUID de la instalación anterior para listar sus backups y restaurarlos.
+                </p>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={migrationUuid}
+                    onChange={(e) => setMigrationUuid(e.target.value)}
+                    placeholder="UUID de la instalación anterior"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+                  />
+                  <button
+                    onClick={handleListMigrationBackups}
+                    disabled={loadingMigrationList || !migrationUuid.trim()}
+                    className="px-4 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {loadingMigrationList ? "Buscando..." : "Buscar"}
+                  </button>
+                </div>
+
+                {/* Migration backups list */}
+                {migrationBackups.length > 0 && (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    <p className="text-sm font-medium text-on-surface-variant">
+                      Backups encontrados ({migrationBackups.length})
+                    </p>
+                    {migrationBackups.map((bk) => (
+                      <div
+                        key={bk.name}
+                        className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant"
+                      >
+                        <div className="min-w-0 flex-1 mr-2">
+                          <p className="text-sm font-medium text-outline truncate">
+                            {bk.name}
+                          </p>
+                          <p className="text-xs text-on-surface-variant">
+                            {formatBytes(bk.size)} —{" "}
+                            {bk.updated_at
+                              ? new Date(bk.updated_at).toLocaleString("es-AR")
+                              : "—"}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleRestoreMigration(bk.name)}
+                          disabled={restoringMigration === bk.name}
+                          className="px-3 py-1.5 text-xs rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {restoringMigration === bk.name ? "Restaurando..." : "Restaurar"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Clean orphan UUID */}
+                <div className="pt-2">
+                  <button
+                    onClick={handleCleanUuid}
+                    disabled={cleaningUuid}
+                    className="text-sm text-on-surface-variant hover:text-red-500 underline transition-colors disabled:opacity-50"
+                  >
+                    {cleaningUuid ? "Limpiando..." : "Limpiar UUID actual (si quedó huérfano)"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {/* Exportar Datos */}
       <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
