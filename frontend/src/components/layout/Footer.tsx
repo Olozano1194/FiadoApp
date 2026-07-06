@@ -1,13 +1,9 @@
-import { useEffect } from "react";
-import { useStoreConfig } from "../../stores/storeConfigStore";
-
 const Footer: React.FC = () => {
-  const { config, fetchConfig } = useStoreConfig();
-  useEffect(() => { fetchConfig(); }, [fetchConfig]);
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-800 text-gray-400 text-center py-4 text-sm">
-      <p>© {new Date().getFullYear()} {config?.store_name || "La Tiendita"} — FiadoApp. Todos los derechos reservados.</p>
+    <footer className="text-center py-6 text-sm text-on-surface-variant border-t border-outline-variant mt-8">
+      <p>© {year} FiadoApp. Todos los derechos reservados.</p>
     </footer>
   );
 };
