@@ -16,6 +16,7 @@ from coreApp.views import (
     ExportExpensesView, ExportProductsView, ExportSalesView,
     ExportDbView, ImportDbView, BackupConfigView,
     CloudBackupUploadView, CloudBackupListView, CloudBackupRestoreView,
+    CloudBackupListByUuidView, CloudBackupRestoreByUuidView, CloudBackupCleanUuidView,
     ImportProductsView, ImportProductsTemplateView,
     StoreConfigView,
 )
@@ -73,5 +74,8 @@ urlpatterns = [
     path('api/backup/cloud/upload/', CloudBackupUploadView.as_view(), name='cloud-backup-upload'),
     path('api/backup/cloud/list/', CloudBackupListView.as_view(), name='cloud-backup-list'),
     path('api/backup/cloud/restore/<str:filename>/', CloudBackupRestoreView.as_view(), name='cloud-backup-restore'),
+    path('api/backup/cloud/by-uuid/<uuid:uuid>/', CloudBackupListByUuidView.as_view(), name='cloud-backup-list-by-uuid'),
+    path('api/backup/cloud/by-uuid/<uuid:uuid>/<str:filename>/', CloudBackupRestoreByUuidView.as_view(), name='cloud-backup-restore-by-uuid'),
+    path('api/backup/cloud/uuid/<uuid:uuid>/', CloudBackupCleanUuidView.as_view(), name='cloud-backup-clean-uuid'),
     path('api/store-config/', StoreConfigView.as_view(), name='store-config'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

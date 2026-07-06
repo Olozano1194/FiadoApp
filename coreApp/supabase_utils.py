@@ -89,6 +89,16 @@ def delete_remote_backup(remote_path):
     client.from_(settings.SUPABASE_BUCKET).remove([remote_path])
 
 
+def delete_remote_folder(installation_uuid):
+    """Delete ALL files under a given installation UUID folder."""
+    client = get_supabase_client()
+    folder = _remote_folder(installation_uuid)
+    files = client.from_(settings.SUPABASE_BUCKET).list(folder)
+    if files:
+        paths = [f"{folder}/{f['name']}" for f in files]
+        client.from_(settings.SUPABASE_BUCKET).remove(paths)
+
+
 def enforce_retention(installation_uuid, max_count=10):
     """Delete oldest backups if over the retention limit."""
     files = list_remote_backups(installation_uuid)

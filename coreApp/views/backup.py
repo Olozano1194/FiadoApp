@@ -15,6 +15,7 @@ from ..supabase_utils import (
     download_remote_backup,
     upload_backup,
     enforce_retention,
+    delete_remote_folder,
 )
 
 
@@ -178,5 +179,43 @@ class CloudBackupRestoreView(APIView):
             local_path = download_remote_backup(remote_path)
             restore_db(local_path, create_safety_backup=True)
             return Response({"success": True, "message": "Database restored from cloud backup"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+class CloudBackupListByUuidView(APIView):
+    """List remote backups for a given UUID (migration helper)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, uuid):
+        try:
+            backups = list_remote_backups(uuid)
+            return Response({"backups": backups})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+class CloudBackupRestoreByUuidView(APIView):
+    """Restore a backup from a given UUID (migration helper)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, uuid, filename):
+        remote_path = f"backups/{uuid}/{filename}"
+        try:
+            local_path = download_remote_backup(remote_path)
+            restore_db(local_path, create_safety_backup=True)
+            return Response({"success": True, "message": "Database restored from installation anterior"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+class CloudBackupCleanUuidView(APIView):
+    """Delete ALL backups for a given UUID (clean up orphaned folders)."""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, uuid):
+        try:
+            delete_remote_folder(uuid)
+            return Response({"success": True, "message": f"UUID {uuid} limpiado correctamente"})
         except Exception as e:
             return Response({"error": str(e)}, status=500)

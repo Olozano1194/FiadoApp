@@ -11,7 +11,7 @@ from .search import SearchView
 from .reports import ReportStatsView, RecentActivityView
 from .auth import ChangePasswordView
 from .exports import ExportClientsView, ExportExpensesView, ExportProductsView, ExportSalesView
-from .backup import ExportDbView, ImportDbView, BackupConfigView, CloudBackupUploadView, CloudBackupListView, CloudBackupRestoreView
+from .backup import ExportDbView, ImportDbView, BackupConfigView, CloudBackupUploadView, CloudBackupListView, CloudBackupRestoreView, CloudBackupListByUuidView, CloudBackupRestoreByUuidView, CloudBackupCleanUuidView
 from .imports import ImportProductsView, ImportProductsTemplateView
 from .store_config import StoreConfigView
 
@@ -39,6 +39,9 @@ __all__ = [
     "CloudBackupUploadView",
     "CloudBackupListView",
     "CloudBackupRestoreView",
+    "CloudBackupListByUuidView",
+    "CloudBackupRestoreByUuidView",
+    "CloudBackupCleanUuidView",
     "ImportProductsView",
     "ImportProductsTemplateView",
     "StoreConfigView",
