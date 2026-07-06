@@ -7,7 +7,7 @@ $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $FrontendDir = Join-Path $ProjectRoot "frontend"
 $SrcTauriDir = Join-Path $FrontendDir "src-tauri"
 $BinariesDir = Join-Path $SrcTauriDir "binaries"
-$DistBackend = Join-Path $ProjectRoot "dist" "fiadoapp-backend"
+$DistBackend = Join-Path (Join-Path $ProjectRoot "dist") "fiadoapp-backend"
 
 Write-Host "=== FiadoApp Tauri Build ===" -ForegroundColor Cyan
 Write-Host "Project root: $ProjectRoot"
@@ -74,7 +74,7 @@ Write-Host "  Copied: _internal/ ($internalCount archivos)"
 
 # Step 4: Limpiar cache de Tauri para evitar binarios desactualizados
 Write-Host "[4/5] Limpiando cache de Tauri..." -ForegroundColor Yellow
-$tauriReleaseDir = Join-Path $SrcTauriDir "target" "release"
+$tauriReleaseDir = Join-Path (Join-Path $SrcTauriDir "target") "release"
 if (Test-Path $tauriReleaseDir) {
     # Solo limpiar el bundle, no toda la compilacion Rust (eso tarda mucho)
     $bundleDir = Join-Path $tauriReleaseDir "bundle"
@@ -100,7 +100,7 @@ try {
     Pop-Location
 }
 
-$msiPath = Join-Path $SrcTauriDir "target" "release" "bundle" "msi"
+$msiPath = "$SrcTauriDir\target\release\bundle\msi"
 if (Test-Path $msiPath) {
     $msiFiles = Get-ChildItem -Path $msiPath -Filter "*.msi"
     Write-Host "" -ForegroundColor Cyan
