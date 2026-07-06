@@ -123,7 +123,7 @@ describe('settings.api', () => {
     });
 
     it('updateBackupConfig puts backup/config/ with data', async () => {
-      const data = { backups_enabled: false };
+      const data = { enabled: false };
       const response = { success: true };
       vi.mocked(mockApi.put).mockResolvedValue({ data: response });
 
