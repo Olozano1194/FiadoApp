@@ -4,7 +4,6 @@ import { CiSearch } from "react-icons/ci";
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { Menu } from '@headlessui/react';
 import NotificationMenu from "../../components/headerNav/NotificationMenu";
-import logo from "../../assets/logo.png";
 import { useAuthStore } from "../../stores/authStore";
 import { searchAll } from "../../api/search.api";
 import type { SearchResult } from "../../api/search.api";
@@ -71,11 +70,18 @@ const NavHeader = () => {
     <nav className="flex items-center justify-between gap-x-2 w-full">
       <Menu>
         <div className="flex gap-2 w-auto items-center">
-          <img
-            className="rounded-lg size-9 h-8 w-auto cursor-pointer"
-            src={logo}
-            alt="logo"
-          />
+          <span className="flex items-center justify-center size-9 rounded-xl bg-primary text-on-primary select-none shadow-xs">
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              {/* Techo */}
+              <path d="M2 9L12 2L22 9" />
+              {/* Cuerpo de la tienda */}
+              <rect x="4" y="9" width="16" height="13" rx="1.5" />
+              {/* Puerta */}
+              <rect x="9.5" y="14.5" width="5" height="7.5" rx="0.75" />
+              {/* Toldo/mostrador */}
+              <path d="M6.5 12.5H17.5" strokeWidth="2" />
+            </svg>
+          </span>
           <button className="font-bold text-xl tracking-tight text-text-primary cursor-pointer">
             FiadoApp
           </button>
