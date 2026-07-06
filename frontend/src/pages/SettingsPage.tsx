@@ -543,7 +543,7 @@ const SettingsPage = () => {
                       frequency_hours: parseInt(e.target.value) || 24,
                     })
                   }
-                  className="w-full max-w-[200px] px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full max-w-50 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               {/* Max Backups */}
@@ -562,7 +562,7 @@ const SettingsPage = () => {
                       max_backups: parseInt(e.target.value) || 10,
                     })
                   }
-                  className="w-full max-w-[200px] px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full max-w-50 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               {/* Info text */}
@@ -626,7 +626,7 @@ const SettingsPage = () => {
                       max_remote_backups: parseInt(e.target.value) || 10,
                     })
                   }
-                  className="w-full max-w-[200px] px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full max-w-50 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 

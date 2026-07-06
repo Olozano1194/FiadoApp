@@ -9,7 +9,7 @@ const Spinner = () => (
   <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 )
 
-const SplashScreen = ({ status, onRetry, errorMessage, attempt }: SplashScreenProps): JSX.Element => {
+const SplashScreen = ({ status, onRetry, errorMessage, attempt }: SplashScreenProps) => {
   if (status === 'error') {
     return (
       <section className="h-screen w-screen flex items-center justify-center bg-surface-container-low">
