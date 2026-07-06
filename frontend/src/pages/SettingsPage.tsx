@@ -6,7 +6,7 @@ import { useAuthStore } from "../stores/authStore";
 import { useStoreConfig } from "../stores/storeConfigStore";
 import { changePassword, cleanCloudUuid, downloadImportTemplate, exportClients, exportDb, exportExpenses, exportProducts, exportSales, getBackupConfig, importDb, importProducts, listCloudBackups, listCloudBackupsByUuid, restoreCloudBackup, restoreCloudBackupByUuid, triggerDownload, updateBackupConfig, uploadCloudBackup } from "../api/settings.api";
 import type { BackupConfig, CloudBackupEntry } from "../types/backup";
-import type { ImportError, ImportResult } from "../api/settings.api";
+import type { ImportResult } from "../api/settings.api";
 //Mensajes
 import { toast } from "react-hot-toast";
 
