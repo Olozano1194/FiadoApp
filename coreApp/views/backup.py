@@ -122,7 +122,8 @@ class BackupConfigView(APIView):
         config = BackupConfig.get_singleton()
 
         for field in ['enabled', 'frequency_hours', 'max_backups', 'backup_folder',
-                       'supabase_enabled', 'supabase_bucket', 'max_remote_backups']:
+                       'supabase_enabled', 'supabase_bucket', 'max_remote_backups',
+                       'installation_uuid']:
             if field in request.data:
                 setattr(config, field, request.data[field])
 
@@ -188,6 +189,11 @@ class CloudBackupListByUuidView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, uuid):
+        if not settings.SUPABASE_URL or not settings.SUPABASE_SERVICE_KEY:
+            return Response(
+                {"error": "Supabase no está configurado en este servidor"},
+                status=400,
+            )
         try:
             backups = list_remote_backups(uuid)
             return Response({"backups": backups})
@@ -200,6 +206,11 @@ class CloudBackupRestoreByUuidView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, uuid, filename):
+        if not settings.SUPABASE_URL or not settings.SUPABASE_SERVICE_KEY:
+            return Response(
+                {"error": "Supabase no está configurado en este servidor"},
+                status=400,
+            )
         remote_path = f"backups/{uuid}/{filename}"
         try:
             local_path = download_remote_backup(remote_path)
@@ -214,6 +225,11 @@ class CloudBackupCleanUuidView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, uuid):
+        if not settings.SUPABASE_URL or not settings.SUPABASE_SERVICE_KEY:
+            return Response(
+                {"error": "Supabase no está configurado en este servidor"},
+                status=400,
+            )
         try:
             delete_remote_folder(uuid)
             return Response({"success": True, "message": f"UUID {uuid} limpiado correctamente"})
