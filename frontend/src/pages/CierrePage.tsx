@@ -65,7 +65,7 @@ const CierrePage = () => {
 
   if (loading) {
     return (
-      <section className="max-w-3xl mx-auto space-y-6">
+      <section className="max-w-5xl mx-auto space-y-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 bg-surface-container-low rounded-lg" />
           <div className="h-40 bg-surface-container-low rounded-xl" />
@@ -78,7 +78,7 @@ const CierrePage = () => {
 
   if (error && !preview) {
     return (
-      <section className="max-w-3xl mx-auto space-y-6">
+      <section className="max-w-5xl mx-auto space-y-6">
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <p className="text-red-700 font-semibold">{error}</p>
           <button
@@ -93,7 +93,7 @@ const CierrePage = () => {
   }
 
   return (
-    <section className="max-w-3xl mx-auto space-y-6">
+    <section className="max-w-7xl mx-auto space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-on-bg">Cierre de Caja</h2>
         <p className="text-sm text-on-surface-variant">
@@ -120,9 +120,9 @@ const CierrePage = () => {
       )}
 
       {/* Resumen del día */}
-      <div className="bg-white border border-outline-variant rounded-xl p-6">
-        <h3 className="text-lg font-bold text-on-bg mb-4">Resumen del Día</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="bg-white border border-outline-variant rounded-xl p-6 lg:p-8">
+        <h3 className="text-lg font-bold text-on-bg mb-4 lg:mb-6">Resumen del Día</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           <SummaryRow label="💵 Ventas Efectivo" value={formatCurrency(preview?.cash_sales ?? 0)} />
           <SummaryRow label="💳 Ventas Crédito" value={formatCurrency(preview?.credit_sales ?? 0)} />
           <SummaryRow
@@ -147,12 +147,12 @@ const CierrePage = () => {
           <SummaryRow label="📈 Ganancia Neta" value={formatCurrency(preview?.net_profit ?? 0)} />
         </div>
 
-        <div className="mt-6 pt-4 border-t border-outline-variant">
-          <div className="bg-primary/5 rounded-lg p-4 text-center">
-            <p className="text-sm text-on-surface-variant font-medium">
+        <div className="mt-6 lg:mt-8 pt-4 lg:pt-6 border-t border-outline-variant">
+          <div className="bg-primary/5 rounded-lg p-4 lg:p-6 text-center">
+            <p className="text-sm lg:text-base text-on-surface-variant font-medium">
               💵 Efectivo Esperado
             </p>
-            <p className="text-3xl font-bold text-text-primary">
+            <p className="text-3xl lg:text-4xl font-bold text-text-primary">
               {formatCurrency(expectedCash)}
             </p>
           </div>
@@ -160,8 +160,8 @@ const CierrePage = () => {
       </div>
 
       {/* Input de efectivo contado */}
-      <div className="bg-white border border-outline-variant rounded-xl p-6">
-        <h3 className="text-lg font-bold text-on-bg mb-4">Efectivo Contado</h3>
+      <div className="bg-white border border-outline-variant rounded-xl p-6 lg:p-8">
+        <h3 className="text-lg font-bold text-on-bg mb-4 lg:mb-6">Efectivo Contado</h3>
 
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">
@@ -248,9 +248,9 @@ interface SummaryRowProps {
 }
 
 const SummaryRow = ({ label, value }: SummaryRowProps) => (
-  <div className="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
-    <span className="text-sm font-medium text-on-surface-variant">{label}</span>
-    <span className="text-sm font-bold text-on-bg">{value}</span>
+  <div className="flex items-center justify-between p-3 lg:p-5 xl:p-6 bg-surface-container-low rounded-lg lg:rounded-xl">
+    <span className="text-sm lg:text-base xl:text-lg font-medium text-on-surface-variant">{label}</span>
+    <span className="text-sm lg:text-base xl:text-lg font-bold text-on-bg">{value}</span>
   </div>
 );
 export default CierrePage;
