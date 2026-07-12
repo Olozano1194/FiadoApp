@@ -56,6 +56,7 @@ const SettingsPage = () => {
   const [restoringMigration, setRestoringMigration] = useState<string | null>(null);
   const [cleaningUuid, setCleaningUuid] = useState(false);
   const [showMigration, setShowMigration] = useState(false);
+  const [savingUuid, setSavingUuid] = useState(false);
 
   // Import Products
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -202,8 +203,10 @@ const SettingsPage = () => {
       const result = await listCloudBackupsByUuid(uuid);
       setMigrationBackups(result.backups || []);
       if (!result.backups?.length) toast.error("No se encontraron backups para ese UUID");
-    } catch {
-      toast.error("Error al buscar backups — verificá que el UUID sea correcto");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const msg = axiosErr?.response?.data?.error || "Error al buscar backups — verificá que el UUID sea correcto";
+      toast.error(msg);
     } finally {
       setLoadingMigrationList(false);
     }
@@ -327,7 +330,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <section className="max-w-3xl mx-auto space-y-8">
+    <section className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-on-surface">Ajustes</h1>
@@ -337,7 +340,7 @@ const SettingsPage = () => {
       </div>
 
       {/* Perfil */}
-      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+      <div className="bg-white border border-outline-variant rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xl text-text-primary">
             <MdOutlinePerson />
@@ -434,7 +437,7 @@ const SettingsPage = () => {
         </form>
       </div>
       {/* Nombre de la Tienda */}
-      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+      <div className="bg-white border border-outline-variant rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xl text-text-primary">
             <MdStorefront />
@@ -474,7 +477,7 @@ const SettingsPage = () => {
       </div>
 
       {/* Backup de Base de Datos */}
-      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+      <div className="bg-white border border-outline-variant rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xl text-text-primary">
             <MdOutlineStorage />
@@ -763,13 +766,13 @@ const SettingsPage = () => {
         </div>
 
         {/* Migration — cambiar de PC */}
-        {backupConfig?.installation_uuid && (
-          <div className="mt-8 pt-6 border-t border-outline-variant">
-            <h3 className="text-lg font-semibold text-on-surface-variant mb-4">
-              Migrar desde otra instalación
-            </h3>
+        <div className="mt-8 pt-6 border-t border-outline-variant">
+          <h3 className="text-lg font-semibold text-on-surface-variant mb-4">
+            Migrar desde otra instalación
+          </h3>
 
-            {/* UUID actual con copiar */}
+          {/* UUID actual con copiar (solo si existe) */}
+          {backupConfig?.installation_uuid ? (
             <div className="p-4 bg-surface-container-high rounded-xl mb-4">
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="min-w-0 flex-1">
@@ -784,72 +787,112 @@ const SettingsPage = () => {
                 </button>
               </div>
             </div>
+          ) : (
+            <div className="p-4 bg-surface-container-high rounded-xl mb-4">
+              <p className="text-sm text-on-surface-variant mb-3">
+                Esta instalación no tiene UUID aún. Si tenés el UUID de una instalación anterior, guardalo acá para migrar tus backups.
+              </p>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={migrationUuid}
+                  onChange={(e) => setMigrationUuid(e.target.value)}
+                  placeholder="UUID de la instalación anterior"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+                />
+                <button
+                  onClick={async () => {
+                    const uuid = migrationUuid.trim();
+                    if (!uuid) { toast.error("Ingresá un UUID válido"); return; }
+                    setSavingUuid(true);
+                    try {
+                      await updateBackupConfig({ installation_uuid: uuid });
+                      toast.success("UUID guardado correctamente");
+                      // Recargar config
+                      const config = await getBackupConfig();
+                      setBackupConfig(config);
+                      setMigrationUuid('');
+                    } catch {
+                      toast.error("Error al guardar el UUID");
+                    } finally {
+                      setSavingUuid(false);
+                    }
+                  }}
+                  disabled={savingUuid || !migrationUuid.trim()}
+                  className="px-4 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {savingUuid ? "Guardando..." : "Guardar UUID"}
+                </button>
+              </div>
+            </div>
+          )}
 
-            {/* Toggle migración */}
-            <button
-              onClick={() => setShowMigration(!showMigration)}
-              className="text-sm text-primary hover:underline"
-            >
-              {showMigration ? "Ocultar migración" : "Migrar desde otra instalación"}
-            </button>
+          {/* Toggle migración */}
+          <button
+            onClick={() => setShowMigration(!showMigration)}
+            className="text-sm text-primary hover:underline"
+          >
+            {showMigration ? "Ocultar migración" : "Migrar desde otra instalación"}
+          </button>
 
-            {showMigration && (
-              <div className="mt-4 space-y-4">
-                <p className="text-sm text-on-surface-variant">
-                  Ingresá el UUID de la instalación anterior para listar sus backups y restaurarlos.
-                </p>
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    value={migrationUuid}
-                    onChange={(e) => setMigrationUuid(e.target.value)}
-                    placeholder="UUID de la instalación anterior"
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
-                  />
-                  <button
-                    onClick={handleListMigrationBackups}
-                    disabled={loadingMigrationList || !migrationUuid.trim()}
-                    className="px-4 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
-                  >
-                    {loadingMigrationList ? "Buscando..." : "Buscar"}
-                  </button>
-                </div>
+          {showMigration && (
+            <div className="mt-4 space-y-4">
+              <p className="text-sm text-on-surface-variant">
+                Ingresá el UUID de la instalación anterior para listar sus backups y restaurarlos.
+              </p>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={migrationUuid}
+                  onChange={(e) => setMigrationUuid(e.target.value)}
+                  placeholder="UUID de la instalación anterior"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+                />
+                <button
+                  onClick={handleListMigrationBackups}
+                  disabled={loadingMigrationList || !migrationUuid.trim()}
+                  className="px-4 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {loadingMigrationList ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
 
-                {/* Migration backups list */}
-                {migrationBackups.length > 0 && (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    <p className="text-sm font-medium text-on-surface-variant">
-                      Backups encontrados ({migrationBackups.length})
-                    </p>
-                    {migrationBackups.map((bk) => (
-                      <div
-                        key={bk.name}
-                        className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant"
-                      >
-                        <div className="min-w-0 flex-1 mr-2">
-                          <p className="text-sm font-medium text-outline truncate">
-                            {bk.name}
-                          </p>
-                          <p className="text-xs text-on-surface-variant">
-                            {formatBytes(bk.size)} —{" "}
-                            {bk.updated_at
-                              ? new Date(bk.updated_at).toLocaleString("es-AR")
-                              : "—"}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => handleRestoreMigration(bk.name)}
-                          disabled={restoringMigration === bk.name}
-                          className="px-3 py-1.5 text-xs rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors disabled:opacity-50 whitespace-nowrap"
-                        >
-                          {restoringMigration === bk.name ? "Restaurando..." : "Restaurar"}
-                        </button>
+              {/* Migration backups list */}
+              {migrationBackups.length > 0 && (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-medium text-on-surface-variant">
+                    Backups encontrados ({migrationBackups.length})
+                  </p>
+                  {migrationBackups.map((bk) => (
+                    <div
+                      key={bk.name}
+                      className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant"
+                    >
+                      <div className="min-w-0 flex-1 mr-2">
+                        <p className="text-sm font-medium text-outline truncate">
+                          {bk.name}
+                        </p>
+                        <p className="text-xs text-on-surface-variant">
+                          {formatBytes(bk.size)} —{" "}
+                          {bk.updated_at
+                            ? new Date(bk.updated_at).toLocaleString("es-AR")
+                            : "—"}
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <button
+                        onClick={() => handleRestoreMigration(bk.name)}
+                        disabled={restoringMigration === bk.name}
+                        className="px-3 py-1.5 text-xs rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+                      >
+                        {restoringMigration === bk.name ? "Restaurando..." : "Restaurar"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-                {/* Clean orphan UUID */}
+              {/* Clean orphan UUID (solo si existe UUID) */}
+              {backupConfig?.installation_uuid && (
                 <div className="pt-2">
                   <button
                     onClick={handleCleanUuid}
@@ -859,13 +902,13 @@ const SettingsPage = () => {
                     {cleaningUuid ? "Limpiando..." : "Limpiar UUID actual (si quedó huérfano)"}
                   </button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
       {/* Exportar Datos */}
-      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+      <div className="bg-white border border-outline-variant rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xl text-text-primary">
             <MdOutlineFileDownload />
@@ -940,7 +983,7 @@ const SettingsPage = () => {
         </div>
       </div>
       {/* Importar Productos */}
-      <div className="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant">
+      <div className="bg-white border border-outline-variant rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xl text-text-primary">
             <MdOutlineFileUpload />
