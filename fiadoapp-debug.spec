@@ -24,6 +24,8 @@ a = Analysis(
     pathex=[str(PROJECT_ROOT)],
     binaries=[],
     datas=[
+        (str(PROJECT_ROOT / '.env.example'), '.env.example'),
+        (str(PROJECT_ROOT / 'build.env'), 'build.env'),
         (str(PROJECT_ROOT / 'coreApp' / 'fixtures'), 'coreApp/fixtures'),
         (str(PROJECT_ROOT / 'coreApp' / 'migrations'), 'coreApp/migrations'),
     ],

@@ -208,6 +208,9 @@ frontend/src-tauri/gen/
 frontend/src-tauri/binaries/fiadoapp-backend-*
 frontend/src-tauri/binaries/_internal/
 
+# Bundled secrets (not committed — created locally before PyInstaller build)
+build.env
+
 # Gentle AI working directory
 .atl/
 
