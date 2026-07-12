@@ -49,8 +49,8 @@ const NavHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    useAuthStore.getState().logout();
+  const handleLogout = async () => {
+    await useAuthStore.getState().logout();
     navigate("/login");
   };
 

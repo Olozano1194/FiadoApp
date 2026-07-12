@@ -66,15 +66,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const { access, refresh, store_name } = res.data;
       const user = decodeJwtPayload(access);
 
-      // Persist tokens — via plugin-store in Tauri, localStorage fallback in browser
+      // Persist tokens — plugin-store (Tauri) + localStorage (Axios interceptor sync)
       const store = await getStore();
       if (store) {
         await store.set(STORE_ACCESS, access);
         await store.set(STORE_REFRESH, refresh);
-      } else {
-        localStorage.setItem(STORE_ACCESS, access);
-        localStorage.setItem(STORE_REFRESH, refresh);
       }
+      // Siempre sincronizar a localStorage para el interceptor de Axios (lectura síncrona)
+      localStorage.setItem(STORE_ACCESS, access);
+      localStorage.setItem(STORE_REFRESH, refresh);
 
       set({
         user,
@@ -98,14 +98,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   logout: async () => {
-    const store = await getStore();
-    if (store) {
-      await store.remove(STORE_ACCESS);
-      await store.remove(STORE_REFRESH);
-    } else {
-      localStorage.removeItem(STORE_ACCESS);
-      localStorage.removeItem(STORE_REFRESH);
+    try {
+      const store = await getStore();
+      if (store) {
+        await store.remove(STORE_ACCESS).catch(() => {});
+        await store.remove(STORE_REFRESH).catch(() => {});
+      }
+    } catch {
+      // Si el plugin store falla, igual limpiamos localStorage
     }
+    // Siempre limpiar localStorage (interceptor de Axios + modo browser)
+    localStorage.removeItem(STORE_ACCESS);
+    localStorage.removeItem(STORE_REFRESH);
     set({
       user: null,
       accessToken: null,
@@ -138,6 +142,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       await authApi.verify(access);
       const user = decodeJwtPayload(access);
+      // Sync back to localStorage en caso de que el interceptor lo haya limpiado
+      localStorage.setItem(STORE_ACCESS, access);
+      localStorage.setItem(STORE_REFRESH, storedRefresh);
       set({
         user,
         accessToken: access,
@@ -155,10 +162,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         if (store) {
           await store.set(STORE_ACCESS, newAccess);
           await store.set(STORE_REFRESH, newRefresh);
-        } else {
-          localStorage.setItem(STORE_ACCESS, newAccess);
-          localStorage.setItem(STORE_REFRESH, newRefresh);
         }
+        // Siempre sincronizar a localStorage para el interceptor de Axios
+        localStorage.setItem(STORE_ACCESS, newAccess);
+        localStorage.setItem(STORE_REFRESH, newRefresh);
 
         set({
           user,
