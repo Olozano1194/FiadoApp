@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './index.css';
 import { Toaster } from 'react-hot-toast';
+import { TOAST_DEFAULT_STYLES } from './utils/toastStyles';
 import App from './App.tsx';
 import { useAuthStore } from './stores/authStore';
 
@@ -32,6 +33,6 @@ createRoot(document.getElementById('root')!).render(
     <Router>
       <AppWithAuth />
     </Router>
-    <Toaster />
+    <Toaster toastOptions={{ style: TOAST_DEFAULT_STYLES }} />
   </StrictMode>,
 )
