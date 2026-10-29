@@ -28,6 +28,13 @@ INQUEBRANTABLES no admiten excepciones sin aprobación explícita del mantenedor
 - El hook `pre-push` bloquea el push hasta que se apruebe explícitamente.
 - Para aprobar: `scripts/approve-push.sh` (o `.ps1`).
 
+## 3.1 No push directo a master/main (INQUEBRANTABLE)
+
+- **Nunca** se hace push directo a `master` ni a `main`.
+- Todo cambio entra por rama feature/fix y Pull Request, con revisión.
+- El hook `pre-push` bloquea cualquier push cuyo destino sea `master` o `main`.
+- Excepción: solo el mantenedor puede forzar, documentando el motivo en el commit/PR.
+
 ## 4. Límite de tamaño por archivo (INQUEBRANTABLE)
 
 - Ningún archivo de **código fuente** nuevo o modificado puede superar **250 líneas**, incluyendo tests.

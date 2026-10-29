@@ -11,6 +11,7 @@ Aplica SIEMPRE que se trabaje en este repositorio.
 
 1. **Commits en español** con Conventional Commits: `tipo(scope): descripción`.
 2. **Visto bueno obligatorio** antes de commit y antes de push (hooks bloquean).
+3. **No push directo a master/main**: todo entra por rama + PR.
 3. **Máximo 250 líneas** por archivo (incluye tests).
 4. **Código junior-friendly**: funciones pequeñas, nombres descriptivos, sin magia, comentarios del "por qué".
 5. **SDD + skills**: cargar skills de `.agents/skills` y del registry según contexto.

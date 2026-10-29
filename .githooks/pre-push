@@ -4,6 +4,20 @@ set -euo pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 APPROVAL_FILE="$REPO_ROOT/.git/approval-push"
 
+# Bloquear push directo a master/main (INQUEBRANTABLE)
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ -z "$remote_ref" ]; then
+    continue
+  fi
+  case "$remote_ref" in
+    refs/heads/master|refs/heads/main)
+      echo "❌ PUSH BLOQUEADO: no se permite push directo a '$remote_ref'."
+      echo "   Crea una rama feature/fix y abre un Pull Request."
+      exit 1
+      ;;
+  esac
+done
+
 if [ ! -f "$APPROVAL_FILE" ]; then
   echo "❌ PUSH BLOQUEADO: falta visto bueno del mantenedor."
   echo "   Ejecuta: scripts/approve-push.sh (o .ps1 en Windows)"
