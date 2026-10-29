@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+APPROVAL_FILE="$REPO_ROOT/.git/approval-push"
+
+if [ ! -f "$APPROVAL_FILE" ]; then
+  echo "❌ PUSH BLOQUEADO: falta visto bueno del mantenedor."
+  echo "   Ejecuta: scripts/approve-push.sh (o .ps1 en Windows)"
+  exit 1
+fi
+
+# El hash almacenado debe coincidir con el HEAD actual
+CURRENT_HEAD=$(git rev-parse HEAD)
+STORED_HEAD=$(cat "$APPROVAL_FILE")
+
+if [ "$CURRENT_HEAD" != "$STORED_HEAD" ]; then
+  echo "❌ PUSH BLOQUEADO: HEAD cambió desde la aprobación."
+  echo "   Vuelve a aprobar: scripts/approve-push.sh"
+  rm -f "$APPROVAL_FILE"
+  exit 1
+fi
+
+# Consumir aprobación (un solo uso)
+rm -f "$APPROVAL_FILE"
+echo "✅ Pre-push OK: aprobación válida."
+exit 0

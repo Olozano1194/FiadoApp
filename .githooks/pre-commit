@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# pre-commit: valida aprobación y límite de 250 líneas por archivo staged.
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+APPROVAL_FILE="$REPO_ROOT/.git/approval-commit"
+
+# 1. Visto bueno obligatorio
+if [ ! -f "$APPROVAL_FILE" ]; then
+  echo "❌ COMMIT BLOQUEADO: falta visto bueno del mantenedor."
+  echo "   Ejecuta: scripts/approve-commit.sh (o .ps1 en Windows)"
+  echo "   y vuelve a intentar el commit."
+  exit 1
+fi
+
+# Hash del diff staged actual
+CURRENT_HASH=$(git diff --cached | sha256sum | awk '{print $1}')
+STORED_HASH=$(cat "$APPROVAL_FILE")
+
+if [ "$CURRENT_HASH" != "$STORED_HASH" ]; then
+  echo "❌ COMMIT BLOQUEADO: el staged cambió desde la aprobación."
+  echo "   Vuelve a aprobar: scripts/approve-commit.sh"
+  rm -f "$APPROVAL_FILE"
+  exit 1
+fi
+
+# 2. Límite de 250 líneas por archivo staged
+MAX_LINES=250
+OVER=0
+while IFS=$'\t' read -r added deleted path; do
+  # binarios: added/deleted son "-"
+  if [ "$added" = "-" ] || [ "$deleted" = "-" ]; then
+    continue
+  fi
+  # solo archivos nuevos o modificados (added > 0)
+  if [ "$added" -eq 0 ]; then
+    continue
+  fi
+  # El límite de 250 líneas aplica a código fuente; la documentación de referencia
+  # (skills, docs, markdown) queda exenta por ser material de consulta.
+  case "$path" in
+    *.md|*.txt|*.json|*.yml|*.yaml|*.toml|*.cfg|*.ini) continue ;;
+    .agents/*) continue ;;
+  esac
+
+  lines=$(git show ":$path" 2>/dev/null | wc -l)
+  if [ "$lines" -gt "$MAX_LINES" ]; then
+    echo "❌ ARCHIVO DEMASIADO GRANDE: $path tiene $lines líneas (máx $MAX_LINES)."
+    OVER=1
+  fi
+done < <(git diff --cached --numstat)
+
+if [ "$OVER" -ne 0 ]; then
+  echo ""
+  echo "Divide el archivo o reduce su tamaño antes de commitear."
+  exit 1
+fi
+
+# Consumir aprobación (un solo uso)
+rm -f "$APPROVAL_FILE"
+echo "✅ Pre-commit OK: aprobación válida y tamaño de archivos OK."
+exit 0

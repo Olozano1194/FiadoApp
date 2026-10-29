@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MSG_FILE="$1"
+MSG=$(head -n 1 "$MSG_FILE")
+
+# Conventional Commits: tipo(scope): descripción  o  tipo: descripción
+PATTERN='^(feat|fix|chore|docs|style|refactor|test|perf|ci|build|revert)(\([a-zA-Z0-9_./-]+\))?: .+'
+
+if ! echo "$MSG" | grep -qE "$PATTERN"; then
+  echo "❌ MENSAJE DE COMMIT INVÁLIDO."
+  echo "   Formato requerido: tipo(scope): descripción en español"
+  echo "   Ejemplo: feat(frontend): agregar filtro de clientes"
+  echo "   Tipos: feat fix chore docs style refactor test perf ci build revert"
+  exit 1
+fi
+
+# Verificar que la descripción no esté vacía y tenga al menos 5 caracteres
+DESC=$(echo "$MSG" | sed -E 's/^[a-z]+(\([^)]*\))?: //')
+if [ "${#DESC}" -lt 5 ]; then
+  echo "❌ La descripción del commit es demasiado corta."
+  exit 1
+fi
+
+echo "✅ Mensaje de commit válido."
+exit 0
